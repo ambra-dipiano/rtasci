@@ -14,10 +14,11 @@ from gammapy.modeling.models import PointSpatialModel, PowerLawSpectralModel, Sk
 print(f'Imports : {time.time() - t} s\n')
 
 t = time.time()
-rootpath = '/home/ambra/Desktop/CTA/projects/REMOTE/'
-caldb = f'{rootpath}/caldb/data/cta/prod3b-v2/bcf/South_z20_50h/irf_file.fits'
+rootpath = '/home/ambra/Desktop/CTA/projects/'
+caldb = f'{rootpath}/caldb/data/cta/prod3b-v2/bcf/South_z20_0.5h/irf_file.fits'
 irfs = load_cta_irfs(caldb)
-filename = f'{rootpath}/gammapy_integration/DATA/crab_on/crab_on_texp10s_n00.fits'
+filename = f'{rootpath}/DATA/obs/crab/crab_onax.fits'
+print(f'Fits: {filename.replace(rootpath, "")}\n')
 obs_id = 1
 print(f'Setup : {time.time() - t} s\n')
 
@@ -35,7 +36,7 @@ observation = Observation.create(
     pointing=pointing, obs_id=f'{1:02d}', tstart=gti.table['START']*u.s, 
     tstop=gti.table['STOP']*u.s, irfs=irfs, reference_time=gti.time_ref)
 observation._events = events
-print(observation.gti)
+#print(observation.gti)
 observations = Observations()
 observations.append(observation)
 # fix pointing info
@@ -80,8 +81,7 @@ analysis_3d = Analysis(config_3d)
 analysis_3d.observations = observations
 # perform data reduction
 analysis_3d.get_datasets()
-
-print(analysis_3d.get_datasets())
+#print(analysis_3d.get_datasets())
 print(f'Data Reduction {time.time() - t} s\n')
 
 # target significance
@@ -110,9 +110,17 @@ print(f'Modelling: {time.time() - t} s\n')
 t = time.time()
 fit = Fit([stacked_3d])
 result = fit.run()
-print(result.parameters.to_table())
+#print(result.parameters.to_table())
 print(f'\nFitting : {time.time() - t} s\n')
 
+# flux
+t = time.time()
+phflux = spectral_model.integral_error(0.05 * u.TeV, 20 * u.TeV)
+enflux = spectral_model.energy_flux_error(0.05 * u.TeV, 20 * u.TeV)
+print(f'\nPH-FLUX  {phflux[0]} +/- {phflux[1]}')
+print(f'EN-FLUX {enflux[0]} +/- {phflux[1]}')
+
+print(f'\nFlux points : {time.time() - t} s\n')
 #print(result)
 
 print('Total time :', time.time() - clock0)

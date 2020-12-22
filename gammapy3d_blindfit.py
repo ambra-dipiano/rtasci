@@ -15,7 +15,7 @@ print(f'Imports : {time.time() - t} s\n')
 
 t = time.time()
 rootpath = '/home/ambra/Desktop/CTA/projects/'
-caldb = f'{rootpath}/caldb/data/cta/prod3b-v2/bcf/South_z20_50h/irf_file.fits'
+caldb = f'{rootpath}/caldb/data/cta/prod3b-v2/bcf/South_z20_0.5h/irf_file.fits'
 irfs = load_cta_irfs(caldb)
 filename = f'{rootpath}/DATA/obs/crab/crab_onax.fits'
 print(f'Fits: {filename.replace(rootpath, "")}\n')
@@ -89,8 +89,11 @@ t = time.time()
 stacked_3d = analysis_3d.datasets.stack_reduce(name="stacked_3d")
 estimator = ExcessMapEstimator(correlation_radius='0.1 deg', selection_optional=[])
 maps = estimator.run(stacked_3d)
-hotspots_table = find_peaks(maps["sqrt_ts"].get_image_by_idx((0,)), threshold=3, min_distance='0.5 deg')
-hotspots = SkyCoord(hotspots_table["ra"], hotspots_table["dec"])
+hotspots_table = find_peaks(maps["sqrt_ts"].get_image_by_idx((0,)), threshold=9, min_distance='0.5 deg')
+try:
+    hotspots = SkyCoord(hotspots_table["ra"], hotspots_table["dec"])
+except KeyError:
+    raise Warning('No candidates found.')
 print(f'Hotsposts: {hotspots.ra[0], hotspots.dec[0]}\n')
 print(f'Blind search: {time.time() - t} s\n')
 
