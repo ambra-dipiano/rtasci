@@ -16,10 +16,10 @@ from lib.RTAManageXml import ManageXml
 print(f'Imports : {time.time() - t} s\n')
 
 t = time.time()
-obspath = '/home/ambra/Desktop/CTA/projects/DATA/selections/crab'
+obspath = '/home/ambra/Desktop/CTA/projects/DATA/obs/crab'
 rtapath = '/home/ambra/Desktop/CTA/projects/DATA/rta_products/crab'
 modelpath = '/home/ambra/Desktop/CTA/projects/DATA/models'
-filename = f'{obspath}/crab_onax_texp2s_n01.fits'
+filename = f'{obspath}/crab_onax.fits'
 print(f'Fits: {filename.replace(obspath, "")}\n')
 skyname = filename.replace(obspath,rtapath).replace('.fits', '_skymap.fits')
 detname = skyname.replace('_skymap.fits',f'_model.xml')
