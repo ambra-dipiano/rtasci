@@ -184,8 +184,6 @@ class ManageXml():
             if self.if_cut is True:
                 att_cutoff = {'name': 'CutoffEnergy', 'scale': '1e6', 'value': '1.0', 'min': '0.01', 'max': '1000.0', 'free': '1'}
                 self.src_att.append(att_cutoff)
-
-            return self.src_att, self.bkg_att
         else:
             pass
 
@@ -204,7 +202,7 @@ class ManageXml():
         i = 0
         for src in self.root.findall('source'):
             i += 1
-            if src.attrib['name'] != 'Background' and src.attrib['name'] != 'CTABackgroundModel':
+            if src.attrib['name'] not in ('Background', 'CTABackgroundModel'):
                 src.set('tscalc', '1') if self.tscalc is True else None
                 # remove spectral component ---!
                 rm = src.find('spectrum')
@@ -216,14 +214,14 @@ class ManageXml():
                     spc = ET.SubElement(src, 'spectrum', attrib={'type': 'PowerLaw'})
                 spc.text = '\n\t\t\t'.replace('\t', ' ' * 2)
                 spc.tail = '\n\t\t'.replace('\t', ' ' * 2)
-                src.insert(0, spc)
+                #src.insert(0, spc)
                 # new spectral params ---!
                 for j in range(len(self.src_att)):
                     prm = ET.SubElement(spc, 'parameter', attrib=self.src_att[j])
                     if prm.attrib['name'] == 'Prefactor' and i > 1:
                         prm.set('value', str(float(prm.attrib['value']) / 2 ** (i - 1)))
                     prm.tail = '\n\t\t\t'.replace('\t', ' ' * 2) if j < len(self.src_att) else '\n\t\t'.replace('\t', ' ' * 2)
-                    spc.insert(j, prm)
+                    #spc.insert(j, prm)
             # background ---!
             else:
                 # set bkg attributes ---!
