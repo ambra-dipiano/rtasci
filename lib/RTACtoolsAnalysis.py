@@ -36,6 +36,10 @@ class RTACtoolsAnalysis() :
         # ctools miscellaneous ---!
         self.seed = 1  # MC seed ---!
         self.usepnt = True  # use pointing coordinates
+        self.refit = False  # refit after initial fit
+        self.stats = 'DEFAULT'  # statistics for likelihood fit
+        self.accuracy = 0.005  # max like accuracy
+        self.max_iter = 50  # max iteration max like
         self.coord_sys = 'CEL'  # coordinate system <CEL|GAL> ---!
         self.sky_subtraction = 'IRF'  # skymap subtraction type <NONE|IRF|RING> ---!
         self.inexclusion = 'NONE'  # exlude sky regions <NONE/file> ---!
@@ -131,9 +135,11 @@ class RTACtoolsAnalysis() :
         like['outmodel'] = self.output
         like['caldb'] = self.caldb
         like['irf'] = self.irf
-        like['refit'] = True
-        like['max_iter'] = 500
-        like['fix_spat_for_ts'] = False
+        like['refit'] = self.refit
+        like['max_iter'] = self.max_iter
+        like['like_accuracy'] = self.accuracy
+        like['fix_spat_for_ts'] = True
+        like['statistic'] = self.stats
         like["nthreads"] = self.nthreads
         like['logfile'] = self.output.replace('.xml', '.log')
         like['debug'] = self.debug
