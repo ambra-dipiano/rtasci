@@ -9,12 +9,13 @@ from gammapy.irf import load_cta_irfs
 print(f'Imports : {time.time() - t} s')
 
 t = time.time()
-rootpath = '/home/ambra/Desktop/CTA/projects/REMOTE/'
-caldb = f'{rootpath}/caldb/data/cta/prod3b-v2/bcf/South_z20_50h/irf_file.fits'
+rootpath = '/home/ambra/Desktop/CTA/projects/'
+caldb = f'{rootpath}/caldb/data/cta/prod3b-v2/bcf/South_z20_0.5h/irf_file.fits'
 irfs = load_cta_irfs(caldb)
-filename = f'{rootpath}/gammapy_integration/DATA/crab/crab_texp2s_n00.fits'
+filename = f'{rootpath}/DATA/obs/crab/crab_offax.fits'
+print(f'Fits: {filename.replace(rootpath, "")}\n')
 obs_id = 1
-print(f'Setup : {time.time() - t} s')
+print(f'Setup : {time.time() - t} s\n')
 
 # read phlist
 t = time.time()
@@ -28,7 +29,7 @@ observation = Observation.create(
     pointing=pointing, obs_id=f'{obs_id:02d}', tstart=gti.table['START'] * u.s, 
     tstop=gti.table['STOP'] * u.s, irfs=irfs, reference_time=gti.time_ref)
 observation._events = events
-print('\n', observation.gti)
+#print('\n', observation.gti)
 observations = Observations() 
 observations.append(observation)
 
@@ -37,7 +38,7 @@ observation.fixed_pointing_info
 # target
 #target = SkyCoord(pointing.ra, pointing.dec - 0.5 * u.deg, unit='deg', frame='icrs')
 target = {'ra': pointing.ra.value, 'dec': pointing.dec.value - 0.5}
-print(f'Create observation : {time.time() - t} s')
+print(f'Create observation : {time.time() - t} s\n')
 
 # configure a 1d analysis
 t = time.time()
@@ -59,7 +60,7 @@ config_1d.datasets.geom.selection.offset_max = '3 deg'
 # write
 #config_1d.write(f"{rootpath}/cfg/config1d.yaml", overwrite=True)
 #config_1d = AnalysisConfig.read(f"{rootpath}/cfg/config1d.yaml")
-print(f'Configuration : {time.time() - t} s')
+print(f'Configuration : {time.time() - t} s\n')
 
 #print(config_1d)
 
@@ -68,17 +69,17 @@ t = time.time()
 analysis_1d = Analysis(config_1d)
 analysis_1d.observations = observations
 analysis_1d.get_datasets()
-print(f'Data Reduction : {time.time() - t} s')
+print(f'Data Reduction : {time.time() - t} s\n')
 
 # statistics
 t = time.time()
 stats = analysis_1d.datasets.info_table()
 #print(stats.columns)
-print('\n', stats['sqrt_ts'])
-print('\n', stats['excess'])
-print(f'Statistics : {time.time() - t} s')
+print(f'{stats["sqrt_ts"]}\n')
+#print('\n', stats['excess'])
+print(f'Statistics : {time.time() - t} s\n')
 
 
 
 
-print(f'Total : {time.time() - clock0} s')
+print(f'Total : {time.time() - clock0} s\n')
