@@ -18,9 +18,9 @@ rootpath = '/home/ambra/Desktop/CTA/projects/'
 caldb = f'{rootpath}/caldb/data/cta/prod3b-v2/bcf/South_z20_50h/irf_file.fits'
 irfs = load_cta_irfs(caldb)
 filename = f'{rootpath}/DATA/obs/crab/crab_onax.fits'
+print(f'Fits: {filename.replace(rootpath, "")}\n')
 obs_id = 1
 print(f'Setup : {time.time() - t} s\n')
-
 
 # read phlist
 t = time.time()
@@ -35,7 +35,7 @@ observation = Observation.create(
     pointing=pointing, obs_id=f'{1:02d}', tstart=gti.table['START']*u.s, 
     tstop=gti.table['STOP']*u.s, irfs=irfs, reference_time=gti.time_ref)
 observation._events = events
-print(observation.gti)
+#print(observation.gti)
 observations = Observations()
 observations.append(observation)
 # fix pointing info
@@ -89,9 +89,9 @@ t = time.time()
 stacked_3d = analysis_3d.datasets.stack_reduce(name="stacked_3d")
 estimator = ExcessMapEstimator(correlation_radius='0.1 deg', selection_optional=[])
 maps = estimator.run(stacked_3d)
-hotspots_table = find_peaks(maps["sqrt_ts"].get_image_by_idx((0,)), threshold=5, min_distance='0.5 deg')
+hotspots_table = find_peaks(maps["sqrt_ts"].get_image_by_idx((0,)), threshold=3, min_distance='0.5 deg')
 hotspots = SkyCoord(hotspots_table["ra"], hotspots_table["dec"])
-print(f'Hotsposts: {hotspots}\n')
+print(f'Hotsposts: {hotspots.ra[0], hotspots.dec[0]}\n')
 print(f'Blind search: {time.time() - t} s\n')
 
 # target significance
@@ -119,7 +119,7 @@ print(f'Modelling: {time.time() - t} s\n')
 t = time.time()
 fit = Fit([stacked_3d])
 result = fit.run()
-print(result.parameters.to_table())
+#print(result.parameters.to_table())
 print(f'\nFitting : {time.time() - t} s\n')
 
 # flux
