@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 import collections
 
-# true source coords from FITS ---!
+# center of fov from FITS ---!
 def get_pointing(fits_file):
     with fits.open(fits_file) as hdul:
         ra = hdul[0].header['RA']
