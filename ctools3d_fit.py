@@ -27,13 +27,12 @@ fitname = detname.replace('_model.xml','_fit.xml')
 model = f'{modelpath}/crab.xml'
 print(f'Setup : {time.time() - t} s\n')
 
-
-# get candidate and modify model
+# set model
 t = time.time()
-detection = ManageXml(model)
-detection.setTsTrue() 
-detection.parametersFreeFixed(src_free=['Prefactor'])
-detection.closeXml()
+model = ManageXml(model)
+model.setTsTrue() 
+model.parametersFreeFixed(src_free=['Prefactor'])
+model.closeXml()
 print(f'Modelling: {time.time() - t} s\n')
 
 # initialise + fitting
