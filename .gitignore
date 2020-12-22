@@ -4,3 +4,4 @@
 cfg/
 log/
 lib/old*
+lib/__pycache__
