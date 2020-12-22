@@ -31,6 +31,7 @@ class RTACtoolsAnalysis() :
         self.e = [0.03, 150.0]  # energy range (TeV) ---!
         self.roi = 5  # region of indeterest (deg) ---!
         self.pointing = [83.63, 22.01]  # RA/DEC or GLON/GLAT (deg) ---!
+        self.target = [83.63, 22.51]  # RA/DEC or GLON/GLAT (deg) ---!
         self.sigma = 5  # Gaussian significance (sigmas) ---!
         self.max_src = 10  # Max number of candidates to list during blind-detection ---!
         # ctools miscellaneous ---!
@@ -56,6 +57,7 @@ class RTACtoolsAnalysis() :
         self.eref = 1  # energy reference for flux computation ---!
         self.sens_type = 'Differential'  # sensitivity type <Integral|Differential> ---!
         self.nthreads = 1
+        self.stack = False
 
     # ctselect wrapper ---!
     def run_selection(self, prefix=None):
@@ -125,6 +127,45 @@ class RTACtoolsAnalysis() :
         if self.if_log:
             detection.logFileOpen()
         detection.execute()
+        return
+
+    # csphagen wrapper ---!
+    def run_onoff(self, method='reflected', ebins=10, ebins_alg='LOG', binfile=None, exp=None, use_model_bkg=True):
+        onoff = ctools.csphagen()
+        onoff['inobs'] = self.input
+        onoff['inmodel'] = self.model
+        onoff['outobs'] = self.output
+        onoff['outmodel'] = self.output.replace('.xml', '_model.xml')
+        onoff['caldb'] = self.caldb
+        onoff['irf'] = self.irf
+        onoff['ebinalg'] = ebins_alg 
+        onoff['emin'] = self.e[0] 
+        onoff['emax'] = self.e[1]
+        onoff['enumbins'] = ebins 
+        onoff['ebinfile'] = binfile if binfile != None else None
+        onoff['ebingamma'] = exp if exp != None else None
+        onoff['coordsys'] = self.coord_sys 
+        if self.coord_sys == 'CEL':
+            onoff['ra'] = self.target[0]
+            onoff['dec'] = self.target[1]
+        else:
+            onoff['lon'] = self.target[0] 
+            onoff['lat'] = self.target[1]
+        onoff['rad'] = self.roi 
+        onoff['srcregfile'] = self.output.replace('.xml', '_on.reg')
+        onoff['bkgmethod'] = method.upper()
+        onoff['use_model_bkg'] = use_model_bkg 
+        onoff['maxoffset'] = self.roi - 1
+        onoff['stack'] = self.stack 
+        onoff['etruemin'] = self.e[0] * 0.2 
+        onoff['etruemax'] =  self.e[1] * 1.2
+        onoff['etruebins'] = round(ebins * 1.5) 
+        onoff["nthreads"] = self.nthreads
+        onoff['logfile'] = self.output.replace('.xml', '.log')
+        onoff['debug'] = self.debug
+        if self.if_log:
+            onoff.logFileOpen()
+        onoff.execute()
         return
 
     # ctlike wrapper ---!
