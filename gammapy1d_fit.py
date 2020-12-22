@@ -11,10 +11,11 @@ from gammapy.modeling.models import PowerLawSpectralModel, SkyModel
 print(f'Imports : {time.time() - t} s\n')
 
 t = time.time()
-rootpath = '/home/ambra/Desktop/CTA/projects/REMOTE/'
-caldb = f'{rootpath}/caldb/data/cta/prod3b-v2/bcf/South_z20_50h/irf_file.fits'
+rootpath = '/home/ambra/Desktop/CTA/projects/'
+caldb = f'{rootpath}/caldb/data/cta/prod3b-v2/bcf/South_z20_0.5h/irf_file.fits'
 irfs = load_cta_irfs(caldb)
-filename = f'{rootpath}/gammapy_integration/DATA/crab/crab_texp10s_n00.fits'
+filename = f'{rootpath}/DATA/selections/crab/crab_offax_texp2s_n01.fits'
+print(f'Fits: {filename.replace(rootpath, "")}\n')
 obs_id = 1
 print(f'Setup : {time.time() - t} s\n')
 
@@ -30,7 +31,7 @@ observation = Observation.create(
     pointing=pointing, obs_id=f'{obs_id:02d}', tstart=gti.table['START'] * u.s, 
     tstop=gti.table['STOP'] * u.s, irfs=irfs, reference_time=gti.time_ref)
 observation._events = events
-print(observation.gti)
+#print(observation.gti)
 observations = Observations() 
 observations.append(observation)
 
@@ -92,13 +93,12 @@ t = time.time()
 fit_1d = Fit([stacked_1d])
 result_1d = fit_1d.run()
 #print(result_1d)
-print(result_1d.parameters.to_table(), '\n')
-print(f'\nFitting : {time.time() - t} s\n')
+#print(result_1d.parameters.to_table(), '\n')
+print(f'Fitting : {time.time() - t} s\n')
 
 # flux
 t = time.time()
 print(f'\nPH-FLUX {spectral_model.integral(0.05 * u.TeV, 20 * u.TeV)} +/- {spectral_model.integral_error(0.05 * u.TeV, 20 * u.TeV)}')
-print(f'EN-FLUX {spectral_model.energy_flux(0.05 * u.TeV, 20 * u.TeV)} +/- {spectral_model.energy_flux_error(0.05 * u.TeV, 20 * u.TeV)}')
 
 print(f'\nFlux points : {time.time() - t} s\n')
 
