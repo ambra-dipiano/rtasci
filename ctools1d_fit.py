@@ -48,7 +48,7 @@ analysis.model = model
 analysis.src_name = 'Crab'
 analysis.target = [target[0][0], target[1][0]]
 analysis.output = onoff_obs
-analysis.run_onoff(prefix=onoff_obs.replace('.xml',''), use_model_bkg=False)
+analysis.run_onoff(prefix=onoff_obs.replace('.xml',''))
 print(f'Onoff: {time.time() - t} s\n')
 
 # onoff
