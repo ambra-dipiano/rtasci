@@ -130,17 +130,16 @@ class RTACtoolsAnalysis() :
         return
 
     # csphagen wrapper ---!
-    def run_onoff(self, method='reflected', ebins=10, ebins_alg='LOG', binfile=None, exp=None, use_model_bkg=True):
+    def run_onoff(self, method='reflected', prefix='onoff', ebins=10, ebins_alg='LOG', binfile=None, exp=None, use_model_bkg=True):
         onoff = cscripts.csphagen()
         onoff['inobs'] = self.input
         onoff['inmodel'] = self.model
+        onoff['prefix'] = prefix
         onoff['outobs'] = self.output
-        if '.fits' in self.output:
-            onoff['outmodel'] = self.output.replace('.fits', '_model.xml')
-        elif '.xml' in self.output:
+        if '.xml' in self.output:
             onoff['outmodel'] = self.output.replace('.xml', '_model.xml')
         else:
-            raise ValueError('output obs must be either .fits or .xml file')
+            raise ValueError('output obs must be a .xml file')
         onoff['caldb'] = self.caldb
         onoff['irf'] = self.irf
         onoff['srcname'] = self.src_name
