@@ -21,18 +21,16 @@ rtapath = '/home/ambra/Desktop/CTA/projects/DATA/rta_products/crab'
 modelpath = '/home/ambra/Desktop/CTA/projects/DATA/models'
 filename = f'{obspath}/crab_onax.fits'
 print(f'Fits: {filename.replace(obspath, "")}\n')
-skyname = filename.replace(obspath,rtapath).replace('.fits', '_skymap.fits')
-detname = skyname.replace('_skymap.fits',f'_model.xml')
-fitname = detname.replace('_model.xml','_fit.xml')
+fitname = filename.replace(obspath,rtapath).replace('.fits', '_fit.xml')
 model = f'{modelpath}/crab.xml'
 print(f'Setup : {time.time() - t} s\n')
 
 # set model
 t = time.time()
-model = ManageXml(model)
-model.setTsTrue() 
-model.parametersFreeFixed(src_free=['Prefactor'])
-model.closeXml()
+xml = ManageXml(model)
+xml.setTsTrue() 
+xml.parametersFreeFixed(src_free=['Prefactor'])
+xml.closeXml()
 print(f'Modelling: {time.time() - t} s\n')
 
 # initialise + fitting
@@ -52,11 +50,9 @@ print(f'Fitting: {time.time() - t} s\n')
 t = time.time()
 results = ManageXml(fitname)
 try:
-    coords = results.getRaDec()
     ts = results.getTs()[0]
 except IndexError:
-    raise Warning('No candidates found.')
-print(f'Hotspots:{coords}\n')
+    raise Warning('Target not found.')
 print(f'sqrt_ts: {np.sqrt(ts)}')
 print(f'Statistics: {time.time() - t} s\n')
 
