@@ -42,6 +42,7 @@ class RTACtoolsAnalysis() :
         self.accuracy = 0.005  # max like accuracy
         self.max_iter = 50  # max iteration max like
         self.coord_sys = 'CEL'  # coordinate system <CEL|GAL> ---!
+        self.proj = 'CAR'  # projection method ---!
         self.sky_subtraction = 'IRF'  # skymap subtraction type <NONE|IRF|RING> ---!
         self.inexclusion = 'NONE'  # exlude sky regions <NONE/file> ---!
         self.bkg_type = 'irf'  # background model <Irf|Aeff|Racc> ---!
@@ -174,6 +175,40 @@ class RTACtoolsAnalysis() :
         if self.if_log:
             onoff.logFileOpen()
         onoff.execute()
+        return
+
+    # ctbin wrapper ---!
+    def run_binning(self, prefix='cube_', ebins_alg='LOG', ebins=10, binfile=None, exp=None, nbins=(200,200), wbin=0.02):
+        bins = ctools.ctbin()
+        bins['inobs'] = self.input
+        bins['outobs'] = self.output
+        bins['stack'] = self.stack
+        bins['prefix'] = prefix
+        bins['ebinalg'] = ebins_alg
+        bins['emin'] = self.e[0]
+        bins['emax'] = self.e[1]
+        bins['enumbins'] = ebins
+        if binfile != None:
+            bins['ebinfile'] = binfile 
+        if exp != None:
+            bins['ebingamma'] = exp
+        bins['usepnt'] = self.usepnt
+        bins['nxpix'] = nbins[0]
+        bins['nypix'] = nbins[1]
+        bins['binsz'] = wbin
+        bins['coordsys'] = self.coord_sys
+        bins['proj'] = self.proj
+        if self.usepnt is False:
+            bins['xref'] = self.target[0] 
+            bins['yref'] = self.target[1] 
+        if '.fits' in self.output:
+            bins['logfile'] = self.output.replace('.fits', '.log')
+        elif '.xml' in self.output:
+            bins['logfile'] = self.output.replace('.xml', '.log')
+        bins['debug'] = self.debug
+        if self.if_log:
+            bins.logFileOpen()
+        bins.execute()
         return
 
     # ctlike wrapper ---!
