@@ -130,7 +130,7 @@ class RTACtoolsAnalysis() :
         return
 
     # csphagen wrapper ---!
-    def run_onoff(self, method='reflected', prefix='onoff', ebins=10, ebins_alg='LOG', binfile=None, exp=None, use_model_bkg=True):
+    def run_onoff(self, method='reflected', prefix='onoff', radius=0.2, ebins=10, ebins_alg='LOG', binfile=None, exp=None, use_model_bkg=True):
         onoff = cscripts.csphagen()
         onoff['inobs'] = self.input
         onoff['inmodel'] = self.model
@@ -158,7 +158,7 @@ class RTACtoolsAnalysis() :
         else:
             onoff['lon'] = self.target[0] 
             onoff['lat'] = self.target[1]
-        onoff['rad'] = self.roi 
+        onoff['rad'] = radius
         onoff['srcregfile'] = self.output.replace('.xml', '_on.reg')
         onoff['bkgregfile'] = self.output.replace('.xml', '_off.reg')
         onoff['bkgmethod'] = method.upper()
