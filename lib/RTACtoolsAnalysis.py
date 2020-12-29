@@ -131,19 +131,27 @@ class RTACtoolsAnalysis() :
 
     # csphagen wrapper ---!
     def run_onoff(self, method='reflected', ebins=10, ebins_alg='LOG', binfile=None, exp=None, use_model_bkg=True):
-        onoff = ctools.csphagen()
+        onoff = cscripts.csphagen()
         onoff['inobs'] = self.input
         onoff['inmodel'] = self.model
         onoff['outobs'] = self.output
-        onoff['outmodel'] = self.output.replace('.xml', '_model.xml')
+        if '.fits' in self.output:
+            onoff['outmodel'] = self.output.replace('.fits', '_model.xml')
+        elif '.xml' in self.output:
+            onoff['outmodel'] = self.output.replace('.xml', '_model.xml')
+        else:
+            raise ValueError('output obs must be either .fits or .xml file')
         onoff['caldb'] = self.caldb
         onoff['irf'] = self.irf
+        onoff['srcname'] = self.src_name
         onoff['ebinalg'] = ebins_alg 
         onoff['emin'] = self.e[0] 
         onoff['emax'] = self.e[1]
         onoff['enumbins'] = ebins 
-        onoff['ebinfile'] = binfile if binfile != None else None
-        onoff['ebingamma'] = exp if exp != None else None
+        if binfile != None:
+            onoff['ebinfile'] = binfile
+        if exp != None:
+            onoff['ebingamma'] = exp
         onoff['coordsys'] = self.coord_sys 
         if self.coord_sys == 'CEL':
             onoff['ra'] = self.target[0]
@@ -153,6 +161,7 @@ class RTACtoolsAnalysis() :
             onoff['lat'] = self.target[1]
         onoff['rad'] = self.roi 
         onoff['srcregfile'] = self.output.replace('.xml', '_on.reg')
+        onoff['bkgregfile'] = self.output.replace('.xml', '_off.reg')
         onoff['bkgmethod'] = method.upper()
         onoff['use_model_bkg'] = use_model_bkg 
         onoff['maxoffset'] = self.roi - 1
