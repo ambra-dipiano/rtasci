@@ -8,12 +8,18 @@
 # *******************************************************************************
 
 import time
+import sys
+texp = sys.argv[1]
+first = sys.argv[2]
+
+# start timing
 t = time.time()
 clock0 = time.time()
 from lib.RTACtoolsAnalysis import RTACtoolsAnalysis
 from lib.RTAUtils import *
 from lib.RTAManageXml import ManageXml
-print(f'Imports : {time.time() - t} s\n')
+timport = time.time() - t
+print(f'Imports : {timport} s\n')
 
 t = time.time()
 obspath = '/home/ambra/Desktop/CTA/projects/DATA/obs/crab'
@@ -25,7 +31,8 @@ onoff_obs = filename.replace(obspath,rtapath).replace('.fits','_cspha.xml')
 onoff_model = onoff_obs.replace('.xml','_model.xml')
 fitname = onoff_obs.replace('.xml','_fit.xml')
 print(f'Fits: {filename.replace(obspath, "")}\n')
-print(f'Setup : {time.time() - t} s\n')
+tsetup = time.time() - t
+print(f'Setup : {tsetup} s\n')
 
 # set model
 t = time.time()
@@ -34,7 +41,8 @@ xml.setTsTrue()
 xml.parametersFreeFixed(src_free=['Prefactor'])
 target = xml.getRaDec()
 xml.closeXml()
-print(f'Modelling: {time.time() - t} s\n')
+tmodel = time.time() - t
+print(f'Modelling: {tmodel} s\n')
 
 # onoff
 t = time.time()
@@ -49,7 +57,8 @@ analysis.src_name = 'Crab'
 analysis.target = [target[0][0], target[1][0]]
 analysis.output = onoff_obs
 analysis.run_onoff(prefix=onoff_obs.replace('.xml',''), ebins=20)
-print(f'Onoff: {time.time() - t} s\n')
+tonoff = time.time() - t
+print(f'Onoff: {tonoff} s\n')
 
 # onoff
 t = time.time()
@@ -57,7 +66,8 @@ analysis.input = onoff_obs
 analysis.model = onoff_model
 analysis.output = fitname
 analysis.run_maxlikelihood()
-print(f'Fitting: {time.time() - t} s\n')
+tfit = time.time() - t
+print(f'Fitting: {tfit} s\n')
 
 # statistics
 t = time.time()
@@ -67,7 +77,8 @@ try:
 except IndexError:
     raise Warning('Target not found.')
 print(f'sqrt_ts: {np.sqrt(ts)}')
-print(f'Statistics: {time.time() - t} s\n')
+tstat = time.time() - t
+print(f'Statistics: {tstat} s\n')
 
 # flux
 t = time.time()
@@ -77,7 +88,19 @@ err = results.getPrefError()[0]
 phflux = phflux_powerlaw(index, pref, pivot, analysis.e, unit='TeV')
 phflux_err = phflux_powerlaw(index, err, pivot, analysis.e, unit='TeV')
 print(f'PH-FLUX {phflux} +/- {phflux_err}\n')
-print(f'Flux points : {time.time() - t} s\n')
+tflux = time.time() - t
+print(f'Flux points : {tflux} s\n')
+ttotal = time.time() - clock0
+print(f'Total time: {ttotal} s\n')
 
-
-print(f'Total time: {time.time() - clock0} s\n')
+logname = f'/home/ambra/Desktop/CTA/projects/DATA/outputs/crab/ctools1d_fitbin_offcrab.csv'
+if first:
+    hdr = 'texp sqrt_ts flux flux_err ttotal timport tsetup tmodel tonoff tfit tstat tflux\n'
+    log = open(logname, 'w+')
+    log.write(hdr)
+    log.write(f'{texp} {np.sqrt(ts)} {phflux} {phflux_err} {ttotal} {timport} {tsetup} {tmodel} {tonoff} {tfit} {tstat} {tflux}\n')
+    log.close()
+else:
+    log = open(logname, 'a')
+    log.write(f'{texp} {np.sqrt(ts)} {phflux} {phlux_err} {ttotal} {timport} {tsetup} {tmodel} {tonoff} {tfit} {tstat} {tflux}\n')
+    log.close()

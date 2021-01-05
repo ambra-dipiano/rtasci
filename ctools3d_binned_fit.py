@@ -108,7 +108,7 @@ except IndexError:
     raise Warning('Target not found.')
 print(f'sqrt_ts: {np.sqrt(ts)}')
 tstat = time.time() - t
-print(f'Statistics: {} s\n')
+print(f'Statistics: {tstat} s\n')
 
 # flux
 t = time.time()
@@ -128,10 +128,11 @@ if first:
     hdr = 'texp sqrt_ts flux flux_err ttotal timport tsetup tobs tcube texpcube tpsfcube tbkgcube tmodel tfit tstat tflux\n'
     log = open(logname, 'w+')
     log.write(hdr)
+    log.write(f'{texp} {np.sqrt(ts)} {phflux} {phlux_err} {ttotal} {timport} {tsetup} {tmodel} {tonoff} {tfit} {tstat} {tflux}\n')
     log.close()
 else:
     log = open(logname, 'a')
-    log.write(f'{texp} {np.sqrt(ts)} {phflux} {phlux_err} {ttotal} {timport} {tsetup} {tobs} {tcube} {texpcube} {tepsfcube} {tbkgcube} {tmodel} {tfit} {tstat} {tflux}\n')
+    log.write(f'{texp} {np.sqrt(ts)} {phflux} {phflux_err} {ttotal} {timport} {tsetup} {tobs} {tcube} {texpcube} {tepsfcube} {tbkgcube} {tmodel} {tfit} {tstat} {tflux}\n')
     log.close()
 
 
