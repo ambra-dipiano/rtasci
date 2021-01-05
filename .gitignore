@@ -3,5 +3,7 @@
 /.
 cfg/
 log/
+jobs/
 lib/old*
 lib/__pycache__/*
+*.sh
