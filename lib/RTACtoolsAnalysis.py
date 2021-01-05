@@ -12,6 +12,20 @@ import ctools
 import cscripts
 import numpy as np
 
+# create observation list with gammalib ---!
+def make_obslist(obslist, items, names):
+    if type(items) != type(list()):
+        items = [items]
+    if type(names) != type(list()):
+        names = [names]
+    xml = gammalib.GXml()
+    obslib = xml.append('observation_list title="observation library"')
+    for i, item in enumerate(items):
+        obs = obslib.append(f'observation name="{names[i]}" run="{i+1:02d}" instrument="CTA"')
+        obs.append('parameter name="EventList" file="%s"' % item)
+    xml.save(obslist)
+    return 
+
 class RTACtoolsAnalysis() :
     '''
     WRITE DOCS
@@ -183,7 +197,8 @@ class RTACtoolsAnalysis() :
         bins['inobs'] = self.input
         bins['outobs'] = self.output
         bins['stack'] = self.stack
-        bins['prefix'] = prefix
+        if prefix != None:
+            bins['prefix'] = prefix
         bins['ebinalg'] = ebins_alg
         bins['emin'] = self.e[0]
         bins['emax'] = self.e[1]
@@ -237,7 +252,10 @@ class RTACtoolsAnalysis() :
         if not self.usepnt:
             exp['xref'] = self.target[0] 
             exp['yref'] = self.target[1] 
-        exp['logfile'] = self.output.replace('.fits', '.log')
+        if '.fits' in self.output:
+            exp['logfile'] = self.output.replace('.fits', '.log')
+        elif '.xml' in self.output:
+            exp['logfile'] = self.output.replace('.xml', '.log')
         exp['debug'] = self.debug
         if self.if_log:
             exp.logFileOpen()
@@ -272,7 +290,10 @@ class RTACtoolsAnalysis() :
             psf['yref'] = self.target[1] 
         psf['amax'] = amax 
         psf['anumbins'] = abins
-        psf['logfile'] = self.output.replace('.fits', '.log')
+        if '.fits' in self.output:
+            psf['logfile'] = self.output.replace('.fits', '.log')
+        elif '.xml' in self.output:
+            psf['logfile'] = self.output.replace('.xml', '.log')
         psf['debug'] = self.debug
         if self.if_log:
             psf.logFileOpen()
@@ -283,23 +304,33 @@ class RTACtoolsAnalysis() :
     def run_bkgcube(self, cube, model):
         bkg = ctools.ctbkgcube()
         bkg['inobs'] = self.input
+        bkg['inmodel'] = self.model
         bkg['incube'] = cube
         bkg['caldb'] = self.caldb
         bkg['irf'] = self.irf
         bkg['outcube'] = self.output
         bkg['outmodel'] = model    
-        psf['logfile'] = self.output.replace('.fits', '.log')
-        psf['debug'] = self.debug
+        if '.fits' in self.output:
+            bkg['logfile'] = self.output.replace('.fits', '.log')
+        elif '.xml' in self.output:
+            bkg['logfile'] = self.output.replace('.xml', '.log')
+        bkg['debug'] = self.debug
         if self.if_log:
-            psf.logFileOpen()
-        psf.execute()       
+            bkg.logFileOpen()
+        bkg.execute()       
         return
 
     # ctlike wrapper ---!
-    def run_maxlikelihood(self):
+    def run_maxlikelihood(self, binned=False, exp=None, bkg=None, psf=None, edisp=False, edispcube=None):
         like = ctools.ctlike()
         like['inobs'] = self.input
         like['inmodel'] = self.model
+        if binned:
+            like['expcube'] = exp
+            like['psfcube'] = psf
+            like['bkgcube'] = bkg
+        if edisp:
+            like['edispcube'] = edispcube
         like['outmodel'] = self.output
         like['caldb'] = self.caldb
         like['irf'] = self.irf
