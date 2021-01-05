@@ -211,6 +211,90 @@ class RTACtoolsAnalysis() :
         bins.execute()
         return
 
+    # ctexpcube wrapper ---!
+    def run_expcube(self, cube, ebins=10, nbins=(200,200), wbin=0.02, ebin_alg='LOG', ebinfile=None, ebingamma=None, addbounds=False):
+        exp = ctools.ctexpcube()
+        exp['inobs'] = self.input
+        exp['incube'] = cube
+        exp['caldb'] = self.caldb
+        exp['irf'] = self.irf
+        exp['outcube'] = self.output
+        exp['ebinalg'] = ebin_alg
+        exp['emin'] = self.e[0]
+        exp['emax'] = self.e[1]
+        exp['enumbins'] = ebins
+        if ebinfile != None:
+            exp['ebinfile'] = ebinfile
+        if ebingamma != None:
+            exp['ebingamma'] = ebingamma
+        exp['addbounds'] = addbounds
+        exp['usepnt'] = self.usepnt
+        exp['nxpix'] = nbins[0]
+        exp['nypix'] = nbins[1]
+        exp['binsz'] = wbin
+        exp['coordsys'] = self.coord_sys
+        exp['proj'] = self.proj
+        if not self.usepnt:
+            exp['xref'] = self.target[0] 
+            exp['yref'] = self.target[1] 
+        exp['logfile'] = self.output.replace('.fits', '.log')
+        exp['debug'] = self.debug
+        if self.if_log:
+            exp.logFileOpen()
+        exp.execute()
+        return
+    
+    # ctpsfcube wrapper ---!
+    def run_psfcube(self, cube, ebins=10, nbins=(200,200), wbin=0.02, amax=0.3, abins=200, ebin_alg='LOG', ebinfile=None, ebingamma=None, addbounds=False):
+        psf = ctools.ctpsfcube()
+        psf['inobs'] = self.input
+        psf['incube'] = cube
+        psf['caldb'] = self.caldb
+        psf['irf'] = self.irf
+        psf['outcube'] = self.output
+        psf['ebinalg'] = ebin_alg
+        psf['emin'] = self.e[0]
+        psf['emax'] = self.e[1]
+        psf['enumbins'] = ebins
+        if ebinfile != None:
+            psf['ebinfile'] = ebinfile
+        if ebingamma != None:
+            psf['ebingamma'] = ebingamma
+        psf['addbounds'] = addbounds
+        psf['usepnt'] = self.usepnt
+        psf['nxpix'] = nbins[0]
+        psf['nypix'] = nbins[1]
+        psf['binsz'] = wbin
+        psf['coordsys'] = self.coord_sys
+        psf['proj'] = self.proj
+        if not self.usepnt:
+            psf['xref'] = self.target[0] 
+            psf['yref'] = self.target[1] 
+        psf['amax'] = amax 
+        psf['anumbins'] = abins
+        psf['logfile'] = self.output.replace('.fits', '.log')
+        psf['debug'] = self.debug
+        if self.if_log:
+            psf.logFileOpen()
+        psf.execute()
+        return
+
+    # ctbkgcube wrapper ---!
+    def run_bkgcube(self, cube, model):
+        bkg = ctools.ctbkgcube()
+        bkg['inobs'] = self.input
+        bkg['incube'] = cube
+        bkg['caldb'] = self.caldb
+        bkg['irf'] = self.irf
+        bkg['outcube'] = self.output
+        bkg['outmodel'] = model    
+        psf['logfile'] = self.output.replace('.fits', '.log')
+        psf['debug'] = self.debug
+        if self.if_log:
+            psf.logFileOpen()
+        psf.execute()       
+        return
+
     # ctlike wrapper ---!
     def run_maxlikelihood(self):
         like = ctools.ctlike()
