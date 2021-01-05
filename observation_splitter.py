@@ -6,12 +6,12 @@ import astropy.io.fits as fits
 from gammapy.data import DataStore
 import os
 
-pathin = Path('/home/ambra/Desktop/CTA/projects/DATA/selections/crab/')
+pathin = Path('/home/ambra/Desktop/CTA/projects/DATA/obs/crab/')
 pathout = Path('/home/ambra/Desktop/CTA/projects/DATA/selections/crab')
-filename = 'crab_offax_texp10s_n01.fits'
+filename = 'crab_offax.fits'
 nameroot = 'crab_offax'
 fitsfile = pathin / filename
-nbins = 5
+nbins = 1
 
 data_store = DataStore.from_events_files([fitsfile])
 observations = data_store.get_observations()
