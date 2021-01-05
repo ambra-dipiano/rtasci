@@ -1,0 +1,174 @@
+---------------------------------------------------------------------- 1000 s
+
+Imports : 1.307866096496582 s
+
+Invalid unit found in background table! Assuming (s-1 MeV-1 sr-1)
+Fits: /DATA/obs/crab/crab_offax.fits
+
+Setup : 0.09307146072387695 s
+
+Create observation : 0.025949716567993164 s
+
+Configuration : 0.0023038387298583984 s
+
+No thresholds defined for obs 01
+Data Reduction : 0.7126388549804688 s
+
+     sqrt_ts     
+-----------------
+89.35503822487046 
+
+Statistics : 0.24870824813842773 s
+
+Modelling : 0.01143193244934082 s
+
+Fitting : 0.16469788551330566 s
+
+/home/ambra/anaconda3/envs/gammapy-0.18.2/lib/python3.7/site-packages/astropy/units/quantity.py:377: VisibleDeprecationWarning: Creating an ndarray from ragged nested sequences (which is a list-or-tuple of lists-or-tuples-or ndarrays with different lengths or shapes) is deprecated. If you meant to do this, you must specify 'dtype=object' when creating the ndarray
+  subok=False, ndmin=ndmin)
+
+PH-FLUX 1.2628588020560802e-09 1 / (cm2 s) +/- [1.26285880e-09 2.16065593e-11] 1 / (cm2 s)
+
+Flux points : 0.003341197967529297 s
+
+Total : 2.5702059268951416 s
+
+---------------------------------------------------------------------- 100 s
+
+Imports : 1.3893671035766602 s
+
+Invalid unit found in background table! Assuming (s-1 MeV-1 sr-1)
+Fits: /DATA/selections/crab/crab_offax_texp100s_n01.fits
+
+Setup : 0.09300041198730469 s
+
+Create observation : 0.019359588623046875 s
+
+Configuration : 0.0028815269470214844 s
+
+No thresholds defined for obs 01
+Data Reduction : 0.25048136711120605 s
+
+     sqrt_ts      
+------------------
+30.233193977300164 
+
+Statistics : 0.23587584495544434 s
+
+Modelling : 0.011620044708251953 s
+
+Fitting : 0.1576247215270996 s
+
+/home/ambra/anaconda3/envs/gammapy-0.18.2/lib/python3.7/site-packages/astropy/units/quantity.py:377: VisibleDeprecationWarning: Creating an ndarray from ragged nested sequences (which is a list-or-tuple of lists-or-tuples-or ndarrays with different lengths or shapes) is deprecated. If you meant to do this, you must specify 'dtype=object' when creating the ndarray
+  subok=False, ndmin=ndmin)
+
+PH-FLUX 1.2722090531847047e-09 1 / (cm2 s) +/- [1.27220905e-09 6.57102321e-11] 1 / (cm2 s)
+
+Flux points : 0.004192352294921875 s
+
+Total : 2.16460919380188 s
+
+---------------------------------------------------------------------- 10 s
+
+Imports : 1.3623805046081543 s
+
+Invalid unit found in background table! Assuming (s-1 MeV-1 sr-1)
+Fits: /DATA/selections/crab/crab_offax_texp10s_n01.fits
+
+Setup : 0.0910484790802002 s
+
+Create observation : 0.01929926872253418 s
+
+Configuration : 0.0021669864654541016 s
+
+No thresholds defined for obs 01
+Data Reduction : 0.20977401733398438 s
+
+     sqrt_ts     
+-----------------
+9.225956166679357 
+
+Statistics : 0.2292790412902832 s
+
+Modelling : 0.010926485061645508 s
+
+Fitting : 0.1411583423614502 s
+
+/home/ambra/anaconda3/envs/gammapy-0.18.2/lib/python3.7/site-packages/astropy/units/quantity.py:377: VisibleDeprecationWarning: Creating an ndarray from ragged nested sequences (which is a list-or-tuple of lists-or-tuples-or ndarrays with different lengths or shapes) is deprecated. If you meant to do this, you must specify 'dtype=object' when creating the ndarray
+  subok=False, ndmin=ndmin)
+
+PH-FLUX 1.3464958071711074e-09 1 / (cm2 s) +/- [1.34649581e-09 2.23574026e-10] 1 / (cm2 s)
+
+Flux points : 0.003515958786010742 s
+
+Total : 2.069735050201416 s
+
+---------------------------------------------------------------------- 5 s
+
+Imports : 1.3436470031738281 s
+
+Invalid unit found in background table! Assuming (s-1 MeV-1 sr-1)
+Fits: /DATA/selections/crab/crab_offax_texp5s_n01.fits
+
+Setup : 0.0969839096069336 s
+
+Create observation : 0.020809412002563477 s
+
+Configuration : 0.0025625228881835938 s
+
+No thresholds defined for obs 01
+Data Reduction : 0.22949910163879395 s
+
+     sqrt_ts     
+-----------------
+9.225956166679357 
+
+Statistics : 0.24211740493774414 s
+
+Modelling : 0.01028585433959961 s
+
+Fitting : 0.14203310012817383 s
+
+/home/ambra/anaconda3/envs/gammapy-0.18.2/lib/python3.7/site-packages/astropy/units/quantity.py:377: VisibleDeprecationWarning: Creating an ndarray from ragged nested sequences (which is a list-or-tuple of lists-or-tuples-or ndarrays with different lengths or shapes) is deprecated. If you meant to do this, you must specify 'dtype=object' when creating the ndarray
+  subok=False, ndmin=ndmin)
+
+PH-FLUX 1.3464958071711074e-09 1 / (cm2 s) +/- [1.34649581e-09 2.23574026e-10] 1 / (cm2 s)
+
+Flux points : 0.0037996768951416016 s
+
+Total : 2.0919556617736816 s
+
+---------------------------------------------------------------------- 2 s
+
+Imports : 1.3258135318756104 s
+
+Invalid unit found in background table! Assuming (s-1 MeV-1 sr-1)
+Fits: /DATA/selections/crab/crab_offax_texp2s_n01.fits
+
+Setup : 0.09213805198669434 s
+
+Create observation : 0.02062225341796875 s
+
+Configuration : 0.0021610260009765625 s
+
+No thresholds defined for obs 01
+Data Reduction : 0.22820568084716797 s
+
+     sqrt_ts     
+-----------------
+3.703206231576678 
+
+Statistics : 0.23488497734069824 s
+
+Modelling : 0.010835886001586914 s
+
+Fitting : 0.13404440879821777 s
+
+/home/ambra/anaconda3/envs/gammapy-0.18.2/lib/python3.7/site-packages/astropy/units/quantity.py:377: VisibleDeprecationWarning: Creating an ndarray from ragged nested sequences (which is a list-or-tuple of lists-or-tuples-or ndarrays with different lengths or shapes) is deprecated. If you meant to do this, you must specify 'dtype=object' when creating the ndarray
+  subok=False, ndmin=ndmin)
+
+PH-FLUX 6.677181231225172e-10 1 / (cm2 s) +/- [6.67718123e-10 4.01172551e-10] 1 / (cm2 s)
+
+Flux points : 0.003906726837158203 s
+
+Total : 2.052800178527832 s

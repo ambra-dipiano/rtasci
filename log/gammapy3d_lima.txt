@@ -1,0 +1,29 @@
+Imports : 1.2800583839416504 s
+
+Invalid unit found in background table! Assuming (s-1 MeV-1 sr-1)
+Setup : 0.0837547779083252 s
+
+GTI info:
+- Number of GTIs: 1
+- Duration: 10.1010101010101 s
+- Start: [51544.5] MET
+- Start: ['2000-01-01T12:00:00.000'] (time standard: TT)
+- Stop: [51544.50011691] MET
+- Stop: ['2000-01-01T12:00:10.101'] (time standard: TT)
+
+Observation: 0.030809640884399414 s
+
+Configuration: 0.0026438236236572266 s
+
+No thresholds defined for obs 01
+No thresholds defined for obs 01
+None
+Data Reduction 7.68437123298645 s
+
+     sqrt_ts     
+-----------------
+37.82927822021648 
+
+Statistics: 0.3146183490753174 s
+
+Total time: 9.396369695663452 s

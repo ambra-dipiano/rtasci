@@ -1,0 +1,109 @@
+---------------------------------------------------------------------- 1000 s
+
+Imports : 1.3350310325622559 s
+Invalid unit found in background table! Assuming (s-1 MeV-1 sr-1)
+Fits: /DATA/obs/crab/crab_offax.fits
+
+Setup : 0.09209942817687988 s
+
+Create observation : 0.02447676658630371 s
+
+Configuration : 0.0023195743560791016 s
+
+Data Reduction : 0.7112534046173096 s
+
+    sqrt_ts     
+----------------
+84.1811211255874
+
+Statistics : 0.24732136726379395 s
+
+Total : 2.4126293659210205 s
+
+---------------------------------------------------------------------- 100 s
+
+Imports : 1.3205382823944092 s
+Invalid unit found in background table! Assuming (s-1 MeV-1 sr-1)
+Fits: /DATA/selections/crab/crab_offax_texp100s_n01.fits
+
+Setup : 0.09130096435546875 s
+
+Create observation : 0.01861572265625 s
+
+Configuration : 0.0021834373474121094 s
+
+Data Reduction : 0.26116442680358887 s
+
+     sqrt_ts     
+-----------------
+27.44423398451519
+
+Statistics : 0.23900866508483887 s
+
+Total : 1.9329535961151123 s
+
+---------------------------------------------------------------------- 10 s
+
+Imports : 1.3135924339294434 s
+Invalid unit found in background table! Assuming (s-1 MeV-1 sr-1)
+Fits: /DATA/selections/crab/crab_offax_texp10s_n01.fits
+
+Setup : 0.09030795097351074 s
+
+Create observation : 0.01909351348876953 s
+
+Configuration : 0.002201080322265625 s
+
+Data Reduction : 0.21591973304748535 s
+
+    sqrt_ts     
+----------------
+8.83660489226682
+
+Statistics : 0.23190641403198242 s
+
+Total : 1.8731553554534912 s
+
+---------------------------------------------------------------------- 5 s
+
+Imports : 1.3208441734313965 s
+Invalid unit found in background table! Assuming (s-1 MeV-1 sr-1)
+Fits: /DATA/selections/crab/crab_offax_texp5s_n01.fits
+
+Setup : 0.10469889640808105 s
+
+Create observation : 0.02156209945678711 s
+
+Configuration : 0.0024700164794921875 s
+
+Data Reduction : 0.22945427894592285 s
+
+    sqrt_ts     
+----------------
+8.83660489226682
+
+Statistics : 0.24556183815002441 s
+
+Total : 1.9247331619262695 s
+
+---------------------------------------------------------------------- 2 s
+
+Imports : 1.3023529052734375 s
+Invalid unit found in background table! Assuming (s-1 MeV-1 sr-1)
+Fits: /DATA/selections/crab/crab_offax_texp2s_n01.fits
+
+Setup : 0.09277224540710449 s
+
+Create observation : 0.019606351852416992 s
+
+Configuration : 0.002141237258911133 s
+
+Data Reduction : 0.213653564453125 s
+
+     sqrt_ts      
+------------------
+3.1611280500285863
+
+Statistics : 0.23172783851623535 s
+
+Total : 1.8623814582824707 s

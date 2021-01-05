@@ -1,0 +1,36 @@
+Imports : 1.2967395782470703 s
+
+Invalid unit found in background table! Assuming (s-1 MeV-1 sr-1)
+Setup : 0.08878302574157715 s
+
+GTI info:
+- Number of GTIs: 1
+- Duration: 10.1010101010101 s
+- Start: [51544.5] MET
+- Start: ['2000-01-01T12:00:00.000'] (time standard: TT)
+- Stop: [51544.50011691] MET
+- Stop: ['2000-01-01T12:00:10.101'] (time standard: TT)
+
+Observation: 0.02342391014099121 s
+
+Configuration: 0.0024771690368652344 s
+
+No thresholds defined for obs 01
+No thresholds defined for obs 01
+None
+Data Reduction 6.254342317581177 s
+
+Hotsposts: <SkyCoord (ICRS): (ra, dec) in deg
+    [(83.64378687, 22.01999965), (83.64378535, 21.99999965),
+     (83.66535604, 21.99999683)]>
+
+Blind search: 0.10925936698913574 s
+
+     sqrt_ts     
+-----------------
+37.82927822021648 
+
+Statistics: 0.30919647216796875 s
+
+Total time: 8.084348917007446 s
+
