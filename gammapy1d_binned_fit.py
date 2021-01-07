@@ -1,6 +1,20 @@
+# *******************************************************************************
+# Copyright (C) 2020 INAF
+#
+# This software is distributed under the terms of the BSD-3-Clause license
+#
+# Authors:
+# Ambra Di Piano <ambra.dipiano@inaf.it>
+# *******************************************************************************
+
 import time
-clock0 = time.time()
+import sys
+texp = sys.argv[1]
+first = sys.argv[2]
+
+# start timing
 t = time.time()
+clock0 = time.time()
 #from astropy.coordinates import SkyCoord
 from astropy import units as u
 from gammapy.analysis import Analysis, AnalysisConfig
@@ -8,16 +22,18 @@ from gammapy.data import EventList, GTI, Observation, Observations
 from gammapy.irf import load_cta_irfs
 from gammapy.modeling import Fit
 from gammapy.modeling.models import PowerLawSpectralModel, SkyModel
-print(f'Imports : {time.time() - t} s\n')
+timport = time.time() - t
+print(f'Imports : {timport} s\n')
 
 t = time.time()
 rootpath = '/home/ambra/Desktop/CTA/projects/'
 caldb = f'{rootpath}/caldb/data/cta/prod3b-v2/bcf/South_z20_0.5h/irf_file.fits'
 irfs = load_cta_irfs(caldb)
-filename = f'{rootpath}/DATA/selections/crab/crab_offax_texp2s_n01.fits'
-print(f'Fits: {filename.replace(rootpath, "")}\n')
+filename = f'{rootpath}/DATA/selections/crab/crab_offax_texp{texp}s_n01.fits'
 obs_id = 1
-print(f'Setup : {time.time() - t} s\n')
+print(f'Fits: {filename.replace(rootpath, "")}\n')
+tsetup = time.time() - t
+print(f'Setup : {tsetup} s\n')
 
 # read phlist
 t = time.time()
@@ -34,13 +50,13 @@ observation._events = events
 #print(observation.gti)
 observations = Observations() 
 observations.append(observation)
-
 # fix pointing info
 observation.fixed_pointing_info
 # target
 #target = SkyCoord(pointing.ra, pointing.dec - 0.5 * u.deg, unit='deg', frame='icrs')
 target = {'ra': pointing.ra.value, 'dec': pointing.dec.value - 0.5}
-print(f'Create observation : {time.time() - t} s\n')
+tobs = time.time() - t
+print(f'Create observation : {tobs} s\n')
 
 # configure a 1d analysis
 t = time.time()
@@ -62,22 +78,23 @@ config_1d.datasets.geom.selection.offset_max = '3 deg'
 # write
 #config_1d.write("config1d.yaml", overwrite=True)
 #config_1d = AnalysisConfig.read("config1d.yaml")
-print(f'Configuration : {time.time() - t} s\n')
-
-#print(config_1d)
+tconf = time.time() - t
+print(f'Configuration : {tconf} s\n')
 
 # instantiate data reduction passing directly the config object
 t = time.time()
 analysis_1d = Analysis(config_1d)
 analysis_1d.observations = observations
 analysis_1d.get_datasets()
-print(f'Data Reduction : {time.time() - t} s\n')
+tred = time.time() - t
+print(f'Data Reduction : {tred} s\n')
 
 # statistics
 t = time.time()
 stats = analysis_1d.datasets.info_table()
 print(stats['sqrt_ts'], '\n')
-print(f'Statistics : {time.time() - t} s\n')
+tstat = time.time() - t
+print(f'Statistics : {tstat} s\n')
 
 # prepare models
 t = time.time()
@@ -86,20 +103,37 @@ spectral_model = PowerLawSpectralModel(index=2.3, amplitude="2e-12 TeV-1 cm-2 s-
 spectral_model.parameters['index'].frozen = True
 sky_model=SkyModel(spectral_model=spectral_model, name="Crab")
 stacked_1d.models = sky_model
-print(f'Modelling : {time.time() - t} s\n')
+tmodel = time.time() - t
+print(f'Modelling : {tmodel} s\n')
 
 # fitting
 t = time.time()
 fit_1d = Fit([stacked_1d])
 result_1d = fit_1d.run()
-#print(result_1d)
 #print(result_1d.parameters.to_table(), '\n')
-print(f'Fitting : {time.time() - t} s\n')
+tfit = time.time() - t
+print(f'Fitting : {tfit} s\n')
 
 # flux
 t = time.time()
-print(f'\nPH-FLUX {spectral_model.integral(0.05 * u.TeV, 20 * u.TeV)} +/- {spectral_model.integral_error(0.05 * u.TeV, 20 * u.TeV)}')
+phflux = spectral_model.integral(0.05 * u.TeV, 20 * u.TeV)
+phflux_err = spectral_model.integral_error(0.05 * u.TeV, 20 * u.TeV)
+print(f'\nPH-FLUX {phflux} +/- {phflux_err}')
+tflux = time.time() - t
+print(f'\nFlux : {tflux} s\n')
 
-print(f'\nFlux points : {time.time() - t} s\n')
+ttotal = time.time() - clock0
+print(f'Total time: {ttotal} s\n')
+print('\n\n-----------------------------------------------------\n\n')
 
-print(f'Total : {time.time() - clock0} s\n')
+logname = f'/home/ambra/Desktop/CTA/projects/DATA/outputs/crab/ctools1d_fit.csv'
+if first:
+    hdr = 'texp sqrt_ts flux flux_err ttotal timport tsetup tobs tconf tred tstat tmodel tfit tflux\n'
+    log = open(logname, 'w+')
+    log.write(hdr)
+    log.write(f'{texp} {stats["sqrt_ts"]} {phflux} {phflux_err} {ttotal} {timport} {tsetup} {tconf} {tred} {tstat} {tmodel} {tfit} {tflux}\n')
+    log.close()
+else:
+    log = open(logname, 'a')
+    log.write(f'{texp} {stats["sqrt_ts"]} {phflux} {phflux_err} {ttotal} {timport} {tsetup} {tconf} {tred} {tstat} {tmodel} {tfit} {tflux}\n')
+    log.close()
