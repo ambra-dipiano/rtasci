@@ -56,7 +56,7 @@ analysis.model = model
 analysis.src_name = 'Crab'
 analysis.target = [target[0][0], target[1][0]]
 analysis.output = onoff_obs
-analysis.run_onoff(prefix=onoff_obs.replace('.xml',''), ebins=20)
+analysis.run_onoff(prefix=onoff_obs.replace('.xml',''), ebins=10)
 tonoff = time.time() - t
 print(f'Onoff: {tonoff} s\n')
 
@@ -90,10 +90,12 @@ phflux_err = phflux_powerlaw(index, err, pivot, analysis.e, unit='TeV')
 print(f'PH-FLUX {phflux} +/- {phflux_err}\n')
 tflux = time.time() - t
 print(f'Flux points : {tflux} s\n')
+
 ttotal = time.time() - clock0
 print(f'Total time: {ttotal} s\n')
+print('\n\n-----------------------------------------------------\n\n')
 
-logname = f'/home/ambra/Desktop/CTA/projects/DATA/outputs/crab/ctools1d_fitbin_offcrab.csv'
+logname = f'/home/ambra/Desktop/CTA/projects/DATA/outputs/crab/ctools1d_binned_fit.csv'
 if first:
     hdr = 'texp sqrt_ts flux flux_err ttotal timport tsetup tmodel tonoff tfit tstat tflux\n'
     log = open(logname, 'w+')

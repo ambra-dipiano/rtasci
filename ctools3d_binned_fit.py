@@ -53,7 +53,7 @@ analysis.e = [0.05, 20]
 analysis.usepnt = True
 analysis.input = obslist
 analysis.output = cube
-analysis.run_binning(prefix=cube.replace('.xml','_'), ebins=20)
+analysis.run_binning(prefix=cube.replace('.xml','_'), ebins=10)
 tcube = time.time() - t
 print(f'Binning: {tcube} s\n')
 
@@ -61,7 +61,7 @@ print(f'Binning: {tcube} s\n')
 t = time.time()
 analysis.input = obslist
 analysis.output = expcube
-analysis.run_expcube(cube=cube.replace('.xml','_cta.fits'), ebins=20)
+analysis.run_expcube(cube=cube.replace('.xml','_cta.fits'), ebins=10)
 texpcube = time.time() - t
 print(f'Exp. cube: {texpcube} s\n')
 
@@ -69,7 +69,7 @@ print(f'Exp. cube: {texpcube} s\n')
 t = time.time()
 analysis.input = obslist
 analysis.output = psfcube
-analysis.run_psfcube(cube=cube.replace('.xml','_cta.fits'), ebins=20)
+analysis.run_psfcube(cube=cube.replace('.xml','_cta.fits'), ebins=10)
 tpsfcube = time.time() - t
 print(f'Psf. cube: {tpsfcube} s\n')
 
@@ -120,10 +120,12 @@ phflux_err = phflux_powerlaw(index, err, pivot, analysis.e, unit='TeV')
 print(f'PH-FLUX {phflux} +/- {phflux_err}\n')
 tflux = time.time() - t
 print(f'Flux points : {tflux} s\n')
+
 ttotal = time.time() - clock0
 print(f'Total time: {ttotal} s\n')
+print('\n\n-----------------------------------------------------\n\n')
 
-logname = f'/home/ambra/Desktop/CTA/projects/DATA/outputs/crab/ctools3d_fitbin_offcrab.csv'
+logname = f'/home/ambra/Desktop/CTA/projects/DATA/outputs/crab/ctools3d_binned_fit.csv'
 if first:
     hdr = 'texp sqrt_ts flux flux_err ttotal timport tsetup tobs tcube texpcube tpsfcube tbkgcube tmodel tfit tstat tflux\n'
     log = open(logname, 'w+')
