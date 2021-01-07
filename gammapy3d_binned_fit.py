@@ -1,4 +1,18 @@
+# *******************************************************************************
+# Copyright (C) 2020 INAF
+#
+# This software is distributed under the terms of the BSD-3-Clause license
+#
+# Authors:
+# Ambra Di Piano <ambra.dipiano@inaf.it>
+# *******************************************************************************
+
 import time
+import sys
+texp = sys.argv[1]
+first = sys.argv[2]
+
+# start timing
 t = time.time()
 clock0 = time.time()
 import astropy.units as u
@@ -11,16 +25,18 @@ from gammapy.modeling import Fit
 from gammapy.estimators import ExcessMapEstimator
 from gammapy.estimators.utils import find_peaks
 from gammapy.modeling.models import PointSpatialModel, PowerLawSpectralModel, SkyModel, FoVBackgroundModel
-print(f'Imports : {time.time() - t} s\n')
+timport = time.time() - t
+print(f'Imports : {timport} s\n')
 
 t = time.time()
 rootpath = '/home/ambra/Desktop/CTA/projects/'
 caldb = f'{rootpath}/caldb/data/cta/prod3b-v2/bcf/South_z20_0.5h/irf_file.fits'
 irfs = load_cta_irfs(caldb)
-filename = f'{rootpath}/DATA/obs/crab/crab_onax.fits'
-print(f'Fits: {filename.replace(rootpath, "")}\n')
+filename = f'{rootpath}/DATA/selections/crab/crab_onax_texp{texp}s_n01.fits'
 obs_id = 1
-print(f'Setup : {time.time() - t} s\n')
+print(f'Fits: {filename.replace(rootpath, "")}\n')
+tsetup = time.time() - t
+print(f'Setup : {tsetup} s\n')
 
 
 # read phlist
@@ -41,7 +57,8 @@ observations = Observations()
 observations.append(observation)
 # fix pointing info
 observation.fixed_pointing_info
-print(f'Observation: {time.time() - t} s\n')
+tobs = time.time() - t
+print(f'Create observation : {tobs} s\n')
 
 # configure a 3d analysis 
 t = time.time()
@@ -70,7 +87,8 @@ config_3d.datasets.safe_mask.methods = ['aeff-default', 'offset-max']
 config_3d.datasets.map_selection = ['counts', 'exposure', 'background', 'psf', 'edisp']
 # save the configuration for later and overwrite if already existing
 #config_3d.write(filepath + 'tests/prototype3d.yaml', overwrite=True)
-print(f'Configuration: {time.time() - t} s\n')
+tconf = time.time() - t
+print(f'Configuration : {tconf} s\n')
 
 #print(config_3d)
 
@@ -82,7 +100,8 @@ analysis_3d.observations = observations
 # perform data reduction
 analysis_3d.get_datasets()
 #print(analysis_3d.get_datasets())
-print(f'Data Reduction {time.time() - t} s\n')
+tred = time.time() - t
+print(f'Data Reduction : {tred} s\n')
 
 # target significance
 t = time.time()
@@ -90,7 +109,8 @@ target = SkyCoord(pointing.ra.deg, pointing.dec.deg, unit='deg', frame='icrs')
 target_region = CircleSkyRegion(target.icrs, 0.1 * u.deg)
 stats = analysis_3d.datasets.info_table(cumulative=False)
 print(stats['sqrt_ts'])
-print(f'Statistics: {time.time() - t} s\n')
+tstat = time.time() - t
+print(f'Statistics: {tstat} s\n')
 
 # modelling
 t = time.time()
@@ -104,23 +124,37 @@ sky_model = SkyModel(spatial_model=spatial_model, spectral_model=spectral_model,
 bkg_model = FoVBackgroundModel(dataset_name="stacked_3d")
 bkg_model.parameters['norm'].frozen = False
 stacked_3d.models = [bkg_model, sky_model]
-print(f'Modelling: {time.time() - t} s\n')
+tmodel = time.time() - t
+print(f'Modelling: {tmodel} s\n')
 
 # fitting
 t = time.time()
 fit = Fit([stacked_3d])
 result = fit.run()
 #print(result.parameters.to_table())
-print(f'\nFitting : {time.time() - t} s\n')
+tfit = time.time() - t
+print(f'\nFitting : {tfit} s\n')
 
 # flux
 t = time.time()
-phflux = spectral_model.integral_error(0.05 * u.TeV, 20 * u.TeV)
-enflux = spectral_model.energy_flux_error(0.05 * u.TeV, 20 * u.TeV)
-print(f'\nPH-FLUX  {phflux[0]} +/- {phflux[1]}')
-print(f'EN-FLUX {enflux[0]} +/- {phflux[1]}')
+phflux = spectral_model.integral(0.05 * u.TeV, 20 * u.TeV)
+phflux_err = spectral_model.integral_error(0.05 * u.TeV, 20 * u.TeV)
+print(f'\nPH-FLUX {phflux} +/- {phflux_err}')
+tflux = time.time() - t
+print(f'\nFlux : {tflux} s\n')
 
-print(f'\nFlux points : {time.time() - t} s\n')
-#print(result)
+ttotal = time.time() - clock0
+print(f'Total time: {ttotal} s\n')
+print('\n\n-----------------------------------------------------\n\n')
 
-print('Total time :', time.time() - clock0)
+logname = f'/home/ambra/Desktop/CTA/projects/DATA/outputs/crab/gammapy3d_binned_blindfit.csv'
+if first:
+    hdr = 'texp sqrt_ts flux flux_err ttotal timport tsetup tobs tconf tred tblind tstat tmodel tfit tflux\n'
+    log = open(logname, 'w+')
+    log.write(hdr)
+    log.write(f'{texp} {stats["sqrt_ts"]} {phflux} {phflux_err} {ttotal} {timport} {tsetup} {tconf} {tred} {tblind} {tstat} {tmodel} {tfit} {tflux}\n')
+    log.close()
+else:
+    log = open(logname, 'a')
+    log.write(f'{texp} {stats["sqrt_ts"]} {phflux} {phflux_err} {ttotal} {timport} {tsetup} {tconf} {tred} {tblind} {tstat} {tmodel} {tfit} {tflux}\n')
+    log.close()

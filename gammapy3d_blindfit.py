@@ -161,12 +161,12 @@ print('\n\n-----------------------------------------------------\n\n')
 
 logname = f'/home/ambra/Desktop/CTA/projects/DATA/outputs/crab/gammapy3d_blindfit.csv'
 if first:
-    hdr = 'texp sqrt_ts flux flux_err ttotal timport tsetup tobs tconf tred tblind tstat tmodel tfit tflux\n'
+    hdr = 'texp sqrt_ts flux flux_err ra dec ttotal timport tsetup tobs tconf tred tblind tstat tmodel tfit tflux\n'
     log = open(logname, 'w+')
     log.write(hdr)
-    log.write(f'{texp} {stats["sqrt_ts"]} {phflux} {phflux_err} {ttotal} {timport} {tsetup} {tconf} {tred} {tblind} {tstat} {tmodel} {tfit} {tflux}\n')
+    log.write(f'{texp} {stats["sqrt_ts"]} {phflux} {phflux_err} {ra} {dec} {ttotal} {timport} {tsetup} {tconf} {tred} {tblind} {tstat} {tmodel} {tfit} {tflux}\n')
     log.close()
 else:
     log = open(logname, 'a')
-    log.write(f'{texp} {stats["sqrt_ts"]} {phflux} {phflux_err} {ttotal} {timport} {tsetup} {tconf} {tred} {tblind} {tstat} {tmodel} {tfit} {tflux}\n')
+    log.write(f'{texp} {stats["sqrt_ts"]} {phflux} {phflux_err} {ra} {dec} {ttotal} {timport} {tsetup} {tconf} {tred} {tblind} {tstat} {tmodel} {tfit} {tflux}\n')
     log.close()
