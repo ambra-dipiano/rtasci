@@ -26,8 +26,10 @@ obspath = '/home/ambra/Desktop/CTA/projects/DATA/selections/crab/'
 rtapath = '/home/ambra/Desktop/CTA/projects/DATA/rta_products/crab/'
 modelpath = '/home/ambra/Desktop/CTA/projects/DATA/models/'
 filename = f'{obspath}crab_offax_texp{texp}s_n01.fits'
-fitname = filename.replace(obspath,rtapath).replace('.fits', '_fit.xml')
 model = f'{modelpath}crab.xml'
+onoff_obs = filename.replace(obspath,rtapath).replace('.fits','_cspha.xml')
+onoff_model = onoff_obs.replace('.xml','_model.xml')
+fitname = onoff_obs.replace('.xml','_fit.xml')
 print(f'Fits: {filename.replace(obspath, "")}\n')
 tsetup = time.time() - t
 print(f'Setup : {tsetup} s\n')
@@ -37,11 +39,12 @@ t = time.time()
 xml = ManageXml(model)
 xml.setTsTrue() 
 xml.parametersFreeFixed(src_free=['Prefactor'])
+target = xml.getRaDec()
 xml.closeXml()
 tmodel = time.time() - t
 print(f'Modelling: {tmodel} s\n')
 
-# initialise + fitting
+# onoff
 t = time.time()
 analysis = RTACtoolsAnalysis()
 analysis.nthreads = 1
@@ -50,6 +53,17 @@ analysis.irf = 'South_z20_0.5h'
 analysis.e = [0.05, 20]
 analysis.input = filename
 analysis.model = model
+analysis.src_name = 'Crab'
+analysis.target = [target[0][0], target[1][0]]
+analysis.output = onoff_obs
+analysis.run_onoff(prefix=onoff_obs.replace('.xml',''), ebins=1)
+tonoff = time.time() - t
+print(f'Onoff: {tonoff} s\n')
+
+# onoff
+t = time.time()
+analysis.input = onoff_obs
+analysis.model = onoff_model
 analysis.output = fitname
 analysis.run_maxlikelihood()
 tfit = time.time() - t
@@ -81,14 +95,14 @@ ttotal = time.time() - clock0
 print(f'Total time: {ttotal} s\n')
 print('\n\n-----------------------------------------------------\n\n')
 
-logname = f'/home/ambra/Desktop/CTA/projects/DATA/outputs/crab/ctools3d_fit.csv'
+logname = f'/home/ambra/Desktop/CTA/projects/DATA/outputs/crab/ctools1d_fit.csv'
 if first:
-    hdr = 'texp sqrt_ts flux flux_err ttotal timport tsetup tmodel tfit tstat tflux\n'
+    hdr = 'texp sqrt_ts flux flux_err ttotal timport tsetup tmodel tonoff tfit tstat tflux\n'
     log = open(logname, 'w+')
     log.write(hdr)
-    log.write(f'{texp} {np.sqrt(ts)} {phflux} {phflux_err} {ttotal} {timport} {tsetup} {tmodel} {tfit} {tstat} {tflux}\n')
+    log.write(f'{texp} {np.sqrt(ts)} {phflux} {phflux_err} {ttotal} {timport} {tsetup} {tmodel} {tonoff} {tfit} {tstat} {tflux}\n')
     log.close()
 else:
     log = open(logname, 'a')
-    log.write(f'{texp} {np.sqrt(ts)} {phflux} {phflux_err} {ttotal} {timport} {tsetup} {tmodel} {tfit} {tstat} {tflux}\n')
+    log.write(f'{texp} {np.sqrt(ts)} {phflux} {phlux_err} {ttotal} {timport} {tsetup} {tmodel} {tonoff} {tfit} {tstat} {tflux}\n')
     log.close()

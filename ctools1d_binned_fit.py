@@ -22,7 +22,7 @@ timport = time.time() - t
 print(f'Imports : {timport} s\n')
 
 t = time.time()
-obspath = '/home/ambra/Desktop/CTA/projects/DATA/obs/crab/'
+obspath = '/home/ambra/Desktop/CTA/projects/DATA/selections/crab/'
 rtapath = '/home/ambra/Desktop/CTA/projects/DATA/rta_products/crab/'
 modelpath = '/home/ambra/Desktop/CTA/projects/DATA/models/'
 filename = f'{obspath}crab_offax_texp{texp}s_n01.fits'
