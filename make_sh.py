@@ -15,9 +15,11 @@ sh.write('\nconda activate ctools')
 for i in range(N):
     if i == 0:
         sh.write(f'\n\tpython3 {path}/{script} 1000 {True}')
+        sh.write(f'\n\tpython3 {path}/{script} 100 {False}')
         sh.write(f'\n\tpython3 {path}/{script} 10 {False}')
     else:
         sh.write(f'\n\tpython3 {path}/{script} 1000 {False}')
+        sh.write(f'\n\tpython3 {path}/{script} 100 {False}')
         sh.write(f'\n\tpython3 {path}/{script} 10 {False}')
 
 sh.write('\n')
