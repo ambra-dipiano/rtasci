@@ -22,11 +22,11 @@ timport = time.time() - t
 print(f'Imports : {timport} s\n')
 
 t = time.time()
-obspath = '/home/ambra/Desktop/CTA/projects/DATA/obs/crab'
-rtapath = '/home/ambra/Desktop/CTA/projects/DATA/rta_products/crab'
-modelpath = '/home/ambra/Desktop/CTA/projects/DATA/models'
-filename = f'{obspath}/crab_offax.fits'
-model = f'{modelpath}/crab.xml'
+obspath = '/home/ambra/Desktop/CTA/projects/DATA/obs/crab/'
+rtapath = '/home/ambra/Desktop/CTA/projects/DATA/rta_products/crab/'
+modelpath = '/home/ambra/Desktop/CTA/projects/DATA/models/'
+filename = f'{obspath}crab_offax_texp{texp}s_n01.fits'
+model = f'{modelpath}crab.xml'
 onoff_obs = filename.replace(obspath,rtapath).replace('.fits','_cspha.xml')
 onoff_model = onoff_obs.replace('.xml','_model.xml')
 fitname = onoff_obs.replace('.xml','_fit.xml')

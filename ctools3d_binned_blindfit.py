@@ -15,8 +15,9 @@ first = sys.argv[2]
 # start timing
 t = time.time()
 clock0 = time.time()
+import numpy as np
 from lib.RTACtoolsAnalysis import RTACtoolsAnalysis, make_obslist
-from lib.RTAUtils import *
+from lib.RTAUtils import phflux_powerlaw
 from lib.RTAManageXml import ManageXml
 timport = time.time() - t
 print(f'Imports : {timport} s\n')
@@ -24,33 +25,68 @@ print(f'Imports : {timport} s\n')
 t = time.time()
 obspath = '/home/ambra/Desktop/CTA/projects/DATA/selections/crab/'
 rtapath = '/home/ambra/Desktop/CTA/projects/DATA/rta_products/crab/'
-modelpath = '/home/ambra/Desktop/CTA/projects/DATA/models/'
 filename = f'{obspath}crab_offax_texp{texp}s_n01.fits'
+skyname = filename.replace(obspath,rtapath).replace('.fits', '_skymap.fits')
+detname = skyname.replace('_skymap.fits',f'_model.xml')
 obslist = filename.replace('.fits', '_obs.xml')
 cube = filename.replace(obspath,rtapath).replace('.fits','_cube.xml')
 expcube = cube.replace('.xml', '_exp.xml')
 psfcube = cube.replace('.xml', '_psf.xml')
 bkgcube = cube.replace('.xml', '_bkg.xml')
-inmodel = f'{modelpath}crab.xml'
 outmodel = cube.replace('.xml', '_model.xml')
 fitname = filename.replace(obspath,rtapath).replace('.fits', '_fit.xml')
 print(f'Fits: {filename.replace(obspath, "")}\n')
 tsetup = time.time() - t
 print(f'Setup : {tsetup} s\n')
 
+# observaition
 t = time.time()
 make_obslist(obslist, filename, 'Crab')
 tobs = time.time() - t
 print(f'Observation: {tobs} s\n')
 
-# initialise + binning
+# initialise + skymap
 t = time.time()
 analysis = RTACtoolsAnalysis()
 analysis.nthreads = 1
 analysis.caldb = 'prod3b-v2'
 analysis.irf = 'South_z20_0.5h'
 analysis.e = [0.05, 20]
-analysis.usepnt = True
+analysis.input = filename
+analysis.output = skyname
+analysis.run_skymap()
+tsky = time.time() - t
+print(f'Skymap: {tsky} s\n')
+
+# initialise
+t = time.time()
+analysis.sigma = 3
+analysis.max_src = 1
+analysis.input = skyname
+analysis.output = detname
+analysis.run_blindsearch()
+tblind = time.time() - t
+print(f'Blind-search: {tblind} s\n')
+
+# get candidate and modify model
+t = time.time()
+detection = ManageXml(detname)
+detection.modXml(overwrite=True)
+detection.setTsTrue() 
+detection.parametersFreeFixed(src_free=['Prefactor'])
+try:
+    coords = detection.getRaDec()
+    ra = coords[0][0]
+    dec = coords[1][0]
+except IndexError:
+    raise Warning('No candidates found.')
+print(f'Hotspots:{coords}\n')
+detection.closeXml()
+tmodel = time.time() - t
+print(f'Modelling: {tmodel} s\n')
+
+analysis.usepnt = False
+analysis.target = (ra, dec)
 analysis.input = obslist
 analysis.output = cube
 analysis.run_binning(prefix=cube.replace('.xml','_'), ebins=10)
@@ -76,7 +112,7 @@ print(f'Psf. cube: {tpsfcube} s\n')
 # bkg cube
 t = time.time()
 analysis.input = obslist
-analysis.model = inmodel
+analysis.model = detname
 analysis.output = bkgcube
 analysis.run_bkgcube(cube=cube.replace('.xml','_cta.fits'), model=outmodel)
 tbkgcube = time.time() - t
@@ -88,8 +124,8 @@ xml = ManageXml(outmodel)
 xml.setTsTrue() 
 xml.parametersFreeFixed(src_free=['Prefactor'])
 xml.closeXml()
-tmodel = time.time() - t
-print(f'Modelling: {tmodel} s\n')
+tmodel += time.time() - t
+print(f'Modelling2: {tmodel} s\n')
 
 # fitting
 analysis.input = cube
@@ -105,7 +141,7 @@ results = ManageXml(fitname)
 try:
     ts = results.getTs()[0]
 except IndexError:
-    raise Warning('Target not found.')
+    raise Warning('No candidates found.')
 print(f'sqrt_ts: {np.sqrt(ts)}')
 tstat = time.time() - t
 print(f'Statistics: {tstat} s\n')
@@ -127,15 +163,16 @@ print('\n\n-----------------------------------------------------\n\n')
 
 logname = f'/home/ambra/Desktop/CTA/projects/DATA/outputs/crab/ctools3d_binned_fit.csv'
 if first:
-    hdr = 'texp sqrt_ts flux flux_err ttotal timport tsetup tobs tcube texpcube tpsfcube tbkgcube tmodel tfit tstat tflux\n'
+    hdr = 'texp sqrt_ts flux flux_err ra dec ttotal timport tsetup tobs tcube texpcube tpsfcube tbkgcube tmodel tfit tstat tflux\n'
     log = open(logname, 'w+')
     log.write(hdr)
-    log.write(f'{texp} {np.sqrt(ts)} {phflux} {phflux_err} {ttotal} {timport} {tsetup} {tobs} {tcube} {texpcube} {tpsfcube} {tbkgcube} {tmodel} {tfit} {tstat} {tflux}\n')
+    log.write(f'{texp} {np.sqrt(ts)} {phflux} {phflux_err} {ra} {dec} {ttotal} {timport} {tsetup} {tobs} {tsky} {tblind} {tcube} {texpcube} {tpsfcube} {tbkgcube} {tmodel} {tfit} {tstat} {tflux}\n')
     log.close()
 else:
     log = open(logname, 'a')
-    log.write(f'{texp} {np.sqrt(ts)} {phflux} {phflux_err} {ttotal} {timport} {tsetup} {tobs} {tcube} {texpcube} {tpsfcube} {tbkgcube} {tmodel} {tfit} {tstat} {tflux}\n')
+    log.write(f'{texp} {np.sqrt(ts)} {phflux} {phflux_err} {ra} {dec} {ttotal} {timport} {tsetup} {tobs} {tsky} {tblind} {tcube} {texpcube} {tpsfcube} {tbkgcube} {tmodel} {tfit} {tstat} {tflux}\n')
     log.close()
+
 
 
 
