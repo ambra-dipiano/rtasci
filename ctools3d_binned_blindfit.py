@@ -161,9 +161,9 @@ ttotal = time.time() - clock0
 print(f'Total time: {ttotal} s\n')
 print('\n\n-----------------------------------------------------\n\n')
 
-logname = f'/home/ambra/Desktop/CTA/projects/DATA/outputs/crab/ctools3d_binned_fit.csv'
+logname = f'/home/ambra/Desktop/CTA/projects/DATA/outputs/crab/ctools3d_binned_blindfit.csv'
 if first:
-    hdr = 'texp sqrt_ts flux flux_err ra dec ttotal timport tsetup tobs tcube texpcube tpsfcube tbkgcube tmodel tfit tstat tflux\n'
+    hdr = 'texp sqrt_ts flux flux_err ra dec ttotal timport tsetup tobs tsky tblind tcube texpcube tpsfcube tbkgcube tmodel tfit tstat tflux\n'
     log = open(logname, 'w+')
     log.write(hdr)
     log.write(f'{texp} {np.sqrt(ts)} {phflux} {phflux_err} {ra} {dec} {ttotal} {timport} {tsetup} {tobs} {tsky} {tblind} {tcube} {texpcube} {tpsfcube} {tbkgcube} {tmodel} {tfit} {tstat} {tflux}\n')
