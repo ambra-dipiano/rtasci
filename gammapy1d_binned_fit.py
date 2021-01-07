@@ -126,7 +126,7 @@ ttotal = time.time() - clock0
 print(f'Total time: {ttotal} s\n')
 print('\n\n-----------------------------------------------------\n\n')
 
-logname = f'/home/ambra/Desktop/CTA/projects/DATA/outputs/crab/gammapy_binned_1d_fit.csv'
+logname = f'/home/ambra/Desktop/CTA/projects/DATA/outputs/crab/gammapy1d_binned_fit.csv'
 if first:
     hdr = 'texp sqrt_ts flux flux_err ttotal timport tsetup tobs tconf tred tstat tmodel tfit tflux\n'
     log = open(logname, 'w+')
