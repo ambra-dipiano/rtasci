@@ -76,9 +76,9 @@ config_3d.datasets.geom.wcs.binsize = '0.02 deg'
 # The FoV radius to use for cutouts
 config_3d.datasets.geom.selection.offset_max = 2.5 * u.deg
 # reconstructed energy axis for the counts map 
-config_3d.datasets.geom.axes.energy = dict(min= "0.05 TeV", max="10 TeV", nbins=10)
+config_3d.datasets.geom.axes.energy = dict(min= "0.05 TeV", max="10 TeV", nbins=1)
 # true energy axis for the IRF maps (should always be wider range and larger nbins)
-config_3d.datasets.geom.axes.energy_true = dict(min= "0.03 TeV", max="30 TeV", nbins=30)
+config_3d.datasets.geom.axes.energy_true = dict(min= "0.03 TeV", max="30 TeV", nbins=1)
 # backgroun
 config_3d.datasets.background = {'method': 'fov_background', 'exclusion': None}
 # safe mask from IRF and max offset
@@ -147,7 +147,7 @@ ttotal = time.time() - clock0
 print(f'Total time: {ttotal} s\n')
 print('\n\n-----------------------------------------------------\n\n')
 
-logname = f'/home/ambra/Desktop/CTA/projects/DATA/outputs/crab/gammapy3d_binned_fit.csv'
+logname = f'/home/ambra/Desktop/CTA/projects/DATA/outputs/crab/gammapy3d_fit.csv'
 if first:
     hdr = 'texp sqrt_ts flux flux_err ttotal timport tsetup tobs tconf tred tstat tmodel tfit tflux\n'
     log = open(logname, 'w+')
