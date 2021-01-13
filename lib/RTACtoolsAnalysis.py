@@ -30,8 +30,9 @@ class RTACtoolsAnalysis() :
     '''
     WRITE DOCS
     '''
-    def __init__(self):
+    def __init__(self, on_ram=False):
         # files fields ---!
+        self.__on_ram = on_ram
         self.model = str() 
         self.output, self.input = (str() for i in range(2))
         self.caldb = 'prod2'  # production name in calibration database ---!
@@ -92,7 +93,10 @@ class RTACtoolsAnalysis() :
         selection['debug'] = self.debug
         if self.if_log:
             selection.logFileOpen()
-        selection.execute()
+        if not self.__on_ram:
+            selection.execute()
+        else:
+            selection.run()
         return
 
     # ctskymap wrapper ---!
@@ -118,7 +122,10 @@ class RTACtoolsAnalysis() :
         skymap['debug'] = self.debug
         if self.if_log:
             skymap.logFileOpen()
-        skymap.execute()
+        if not self.__on_ram:
+            skymap.execute()
+        else:
+            skymap.run()
         return
 
     # cssrcdetect wrapper ---!
@@ -141,7 +148,10 @@ class RTACtoolsAnalysis() :
         # detection["nthreads"] = self.nthreads
         if self.if_log:
             detection.logFileOpen()
-        detection.execute()
+        if not self.__on_ram:
+            detection.execute()
+        else:
+            detection.run()
         return
 
     # csphagen wrapper ---!
@@ -188,7 +198,10 @@ class RTACtoolsAnalysis() :
         onoff['debug'] = self.debug
         if self.if_log:
             onoff.logFileOpen()
-        onoff.execute()
+        if not self.__on_ram:
+            onoff.execute()
+        else:
+            onoff.run()
         return
 
     # ctbin wrapper ---!
@@ -223,7 +236,10 @@ class RTACtoolsAnalysis() :
         bins['debug'] = self.debug
         if self.if_log:
             bins.logFileOpen()
-        bins.execute()
+        if not self.__on_ram:
+            bins.execute()
+        else:
+            bins.run()
         return
 
     # ctexpcube wrapper ---!
@@ -259,7 +275,10 @@ class RTACtoolsAnalysis() :
         exp['debug'] = self.debug
         if self.if_log:
             exp.logFileOpen()
-        exp.execute()
+        if not self.__on_ram:
+            exp.execute()
+        else: 
+            exp.run()
         return
     
     # ctpsfcube wrapper ---!
@@ -297,7 +316,10 @@ class RTACtoolsAnalysis() :
         psf['debug'] = self.debug
         if self.if_log:
             psf.logFileOpen()
-        psf.execute()
+        if not self.__on_ram:
+            psf.execute()
+        else:
+            psf.run()
         return
 
     # ctbkgcube wrapper ---!
@@ -317,7 +339,10 @@ class RTACtoolsAnalysis() :
         bkg['debug'] = self.debug
         if self.if_log:
             bkg.logFileOpen()
-        bkg.execute()       
+        if not self.__on_ram:
+            bkg.execute()       
+        else: 
+            bkg.run()
         return
 
     # ctlike wrapper ---!
@@ -344,7 +369,10 @@ class RTACtoolsAnalysis() :
         like['debug'] = self.debug
         if self.if_log:
             like.logFileOpen()
-        like.execute()
+        if not self.__on_ram: 
+            like.execute()
+        else:
+            like.run()
         return
 
     # cterror wrapper ---!
@@ -367,7 +395,10 @@ class RTACtoolsAnalysis() :
                 err['debug'] = self.debug
                 if self.if_log:
                     err.logFileOpen()
-                err.execute()
+                if not self.__on_ram:
+                    err.execute()
+                else:
+                    err.run()
         return self.output
 
     # ctulimit wrapper ---!
@@ -389,7 +420,10 @@ class RTACtoolsAnalysis() :
         uplim['debug'] = self.debug
         if self.if_log:
             uplim.logFileOpen()
-        uplim.execute()
+        if not self.__on_ram:
+            uplim.execute()
+        else:
+            uplim.run()
         return
 
     # ctulimit wrapper ---!
@@ -418,7 +452,10 @@ class RTACtoolsAnalysis() :
         lc['debug'] = self.debug
         if self.if_log:
             lc.logFileOpen()
-        lc.execute()
+        if not self.__on_ram:
+            lc.execute()
+        else:
+            ls.run()
         return
 
     # cssens wrapper ---!
@@ -447,6 +484,9 @@ class RTACtoolsAnalysis() :
         sens['debug'] = self.debug
         if self.if_log:
             sens.logFileOpen()
-        sens.execute()
+        if not self.__on_ram:
+            sens.execute()
+        else:
+            sens.run()
         return
 

@@ -1,4 +1,19 @@
+# *******************************************************************************
+# Copyright (C) 2020 INAF
+#
+# This software is distributed under the terms of the BSD-3-Clause license
+#
+# Authors:
+# Ambra Di Piano <ambra.dipiano@inaf.it>
+# *******************************************************************************
+
 import time
+import sys
+import os
+texp = sys.argv[1]
+first = sys.argv[2]
+
+# start timing
 t = time.time()
 clock0 = time.time()
 import astropy.units as u
@@ -14,7 +29,7 @@ from gammapy.modeling.models import PointSpatialModel, PowerLawSpectralModel, Sk
 print(f'Imports : {time.time() - t} s\n')
 
 t = time.time()
-rootpath = '/home/ambra/Desktop/CTA/projects/REMOTE/'
+rootpath = str(os.path.dirname(os.path.abspath(__file__))).replace('cta-sag-sci', '')
 caldb = f'{rootpath}/caldb/data/cta/prod3b-v2/bcf/South_z20_50h/irf_file.fits'
 irfs = load_cta_irfs(caldb)
 filename = f'{rootpath}/gammapy_integration/DATA/crab_on/crab_on_texp10s_n00.fits'

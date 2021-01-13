@@ -1,4 +1,19 @@
+# *******************************************************************************
+# Copyright (C) 2020 INAF
+#
+# This software is distributed under the terms of the BSD-3-Clause license
+#
+# Authors:
+# Ambra Di Piano <ambra.dipiano@inaf.it>
+# *******************************************************************************
+
 import time
+import sys
+import os
+texp = sys.argv[1]
+first = sys.argv[2]
+
+# start timing
 clock0 = time.time()
 t = time.time()
 #from astropy.coordinates import SkyCoord
@@ -9,7 +24,7 @@ from gammapy.irf import load_cta_irfs
 print(f'Imports : {time.time() - t} s')
 
 t = time.time()
-rootpath = '/home/ambra/Desktop/CTA/projects/'
+rootpath = str(os.path.dirname(os.path.abspath(__file__))).replace('cta-sag-sci', '')
 caldb = f'{rootpath}/caldb/data/cta/prod3b-v2/bcf/South_z20_0.5h/irf_file.fits'
 irfs = load_cta_irfs(caldb)
 filename = f'{rootpath}/DATA/obs/crab/crab_offax.fits'

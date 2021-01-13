@@ -9,6 +9,7 @@
 
 import time
 import sys
+import os
 texp = sys.argv[1]
 first = sys.argv[2]
 
@@ -23,8 +24,9 @@ timport = time.time() - t
 print(f'Imports : {timport} s\n')
 
 t = time.time()
-obspath = '/home/ambra/Desktop/CTA/projects/DATA/selections/crab/'
-rtapath = '/home/ambra/Desktop/CTA/projects/DATA/rta_products/crab/'
+rootpath = str(os.path.dirname(os.path.abspath(__file__))).replace('cta-sag-sci', '')
+obspath = f'{rootpath}/DATA/selections/crab/'
+rtapath = f'{rootpath}/DATA/rta_products/crab/'
 filename = f'{obspath}crab_offax_texp{texp}s_n01.fits'
 skyname = filename.replace(obspath,rtapath).replace('.fits', '_skymap.fits')
 detname = skyname.replace('_skymap.fits',f'_model.xml')
@@ -105,7 +107,7 @@ ttotal = time.time() - clock0
 print(f'Total time: {ttotal} s\n')
 print('\n\n-----------------------------------------------------\n\n')
 
-logname = f'/home/ambra/Desktop/CTA/projects/DATA/outputs/crab/ctools3d_blindfit.csv'
+logname = f'{rootpath}/DATA/outputs/crab/ctools3d_blindfit.csv'
 if first:
     hdr = 'texp sqrt_ts flux flux_err ra dec ttotal timport tsetup tsky tblind tmodel tfit tstat tflux\n'
     log = open(logname, 'w+')

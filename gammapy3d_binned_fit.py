@@ -9,6 +9,7 @@
 
 import time
 import sys
+import os
 texp = sys.argv[1]
 first = sys.argv[2]
 
@@ -29,7 +30,7 @@ timport = time.time() - t
 print(f'Imports : {timport} s\n')
 
 t = time.time()
-rootpath = '/home/ambra/Desktop/CTA/projects/'
+rootpath = str(os.path.dirname(os.path.abspath(__file__))).replace('cta-sag-sci', '')
 caldb = f'{rootpath}/caldb/data/cta/prod3b-v2/bcf/South_z20_0.5h/irf_file.fits'
 irfs = load_cta_irfs(caldb)
 filename = f'{rootpath}/DATA/selections/crab/crab_onax_texp{texp}s_n01.fits'
@@ -147,7 +148,7 @@ ttotal = time.time() - clock0
 print(f'Total time: {ttotal} s\n')
 print('\n\n-----------------------------------------------------\n\n')
 
-logname = f'/home/ambra/Desktop/CTA/projects/DATA/outputs/crab/gammapy3d_binned_fit.csv'
+logname = f'{rootpath}/DATA/outputs/crab/gammapy3d_binned_fit.csv'
 if first:
     hdr = 'texp sqrt_ts flux flux_err ttotal timport tsetup tobs tconf tred tstat tmodel tfit tflux\n'
     log = open(logname, 'w+')
