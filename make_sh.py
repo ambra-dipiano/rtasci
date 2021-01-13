@@ -10,7 +10,7 @@ shname = f'{path}/{script.replace(".py", ".sh")}'
 shrun = f'{path}/{script.replace(".py", "_runjobs.sh")}'
 sh = open(shname, 'w+')
 sh.write('#!/bin/bash\n')
-sh.write('\nconda activate ctools')
+sh.write('\nconda activate scitools')
 
 for i in range(N):
     if i == 0:
