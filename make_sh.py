@@ -40,6 +40,7 @@ for script in scripts:
 sh = open(shjob, 'w+')
 sh.write('#!/bin/bash\n')
 for script in scripts:
+    sh.write(f'echo {script.replace(".py", ".sh")}\n')
     sh.write(f'bash {path}/{script.replace(".py", ".sh")}\n')
 
 sh = open(shrun, 'w+')
