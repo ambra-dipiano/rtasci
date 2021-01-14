@@ -108,7 +108,7 @@ print(f'Total time: {ttotal} s\n')
 print('\n\n-----------------------------------------------------\n\n')
 
 logname = f'{rootpath}/DATA/outputs/crab/ctools3d_blindfit.csv'
-if first:
+if first == 'True':
     hdr = 'texp sqrt_ts flux flux_err ra dec ttotal timport tsetup tsky tblind tmodel tfit tstat tflux\n'
     log = open(logname, 'w+')
     log.write(hdr)

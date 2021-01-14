@@ -128,7 +128,7 @@ print(f'Total time: {ttotal} s\n')
 print('\n\n-----------------------------------------------------\n\n')
 
 logname = f'{rootpath}/DATA/outputs/crab/ctools3d_binned_fit.csv'
-if first:
+if first == 'True':
     hdr = 'texp sqrt_ts flux flux_err ttotal timport tsetup tobs tcube texpcube tpsfcube tbkgcube tmodel tfit tstat tflux\n'
     log = open(logname, 'w+')
     log.write(hdr)

@@ -138,9 +138,8 @@ print(f'\nFitting : {tfit} s\n')
 
 # flux
 t = time.time()
-phflux = spectral_model.integral(0.05 * u.TeV, 20 * u.TeV)
 phflux_err = spectral_model.integral_error(0.05 * u.TeV, 20 * u.TeV)
-print(f'\nPH-FLUX {phflux} +/- {phflux_err}')
+print(f'\nPH-FLUX {phflux_err.value[0]} +/- {phflux_err.value[1]}')
 tflux = time.time() - t
 print(f'\nFlux : {tflux} s\n')
 
@@ -153,9 +152,9 @@ if first:
     hdr = 'texp sqrt_ts flux flux_err ttotal timport tsetup tobs tconf tred tstat tmodel tfit tflux\n'
     log = open(logname, 'w+')
     log.write(hdr)
-    log.write(f'{texp} {stats["sqrt_ts"]} {phflux} {phflux_err} {ttotal} {timport} {tsetup} {tconf} {tred} {tstat} {tmodel} {tfit} {tflux}\n')
+    log.write(f'{texp} {stats["sqrt_ts"][0]} {phflux_err.value[0]} {phflux_err.value[1]} {ttotal} {timport} {tsetup} {tconf} {tred} {tstat} {tmodel} {tfit} {tflux}\n')
     log.close()
 else:
     log = open(logname, 'a')
-    log.write(f'{texp} {stats["sqrt_ts"]} {phflux} {phflux_err} {ttotal} {timport} {tsetup} {tconf} {tred} {tstat} {tmodel} {tfit} {tflux}\n')
+    log.write(f'{texp} {stats["sqrt_ts"][0]} {phflux_err.value[0]} {phflux_err.value[1]} {ttotal} {timport} {tsetup} {tconf} {tred} {tstat} {tmodel} {tfit} {tflux}\n')
     log.close()
