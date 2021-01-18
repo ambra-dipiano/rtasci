@@ -38,8 +38,8 @@ class RTACtoolsAnalysis() :
         self.caldb = 'prod2'  # production name in calibration database ---!
         self.irf = 'South_0.5h'  # irf ID name ---!
         # condition control ---!
-        self.debug = False  # set/unset debug mode for ctools ---!
-        self.if_log = True  # set/unset logfiles for ctools ---!
+        self.set_debug = False  # set/unset debug mode for ctools ---!
+        self.set_log = True  # set/unset logfiles for ctools ---!
         # data fields ---!
         self.t = [0, 1800]  # time range (s/MJD) ---!
         self.tmax = 1800  # maximum exposure time needed (s) ---!
@@ -90,8 +90,8 @@ class RTACtoolsAnalysis() :
         selection['emax'] = self.e[1]
         # selection["nthreads"] = self.nthreads
         selection['logfile'] = self.output.replace('.xml', '.log')
-        selection['debug'] = self.debug
-        if self.if_log:
+        selection['debug'] = self.set_debug
+        if self.set_log:
             selection.logFileOpen()
         if not self.__on_ram:
             selection.execute()
@@ -119,8 +119,8 @@ class RTACtoolsAnalysis() :
         skymap['inexclusion'] = self.inexclusion
         # skymap["nthreads"] = self.nthreads
         skymap['logfile'] = self.output.replace('.fits', '.log')
-        skymap['debug'] = self.debug
-        if self.if_log:
+        skymap['debug'] = self.set_debug
+        if self.set_log:
             skymap.logFileOpen()
         if not self.__on_ram:
             skymap.execute()
@@ -144,9 +144,9 @@ class RTACtoolsAnalysis() :
         detection['corr_rad'] = self.corr_rad
         detection['corr_kern'] = self.corr_kern.upper()
         detection['logfile'] = self.output.replace('.xml', '.log')
-        detection['debug'] = self.debug
+        detection['debug'] = self.set_debug
         # detection["nthreads"] = self.nthreads
-        if self.if_log:
+        if self.set_log:
             detection.logFileOpen()
         if not self.__on_ram:
             detection.execute()
@@ -195,8 +195,8 @@ class RTACtoolsAnalysis() :
         onoff['etruebins'] = round(ebins * 1.5) 
         onoff["nthreads"] = self.nthreads
         onoff['logfile'] = self.output.replace('.xml', '.log')
-        onoff['debug'] = self.debug
-        if self.if_log:
+        onoff['debug'] = self.set_debug
+        if self.set_log:
             onoff.logFileOpen()
         if not self.__on_ram:
             onoff.execute()
@@ -233,8 +233,8 @@ class RTACtoolsAnalysis() :
             bins['logfile'] = self.output.replace('.fits', '.log')
         elif '.xml' in self.output:
             bins['logfile'] = self.output.replace('.xml', '.log')
-        bins['debug'] = self.debug
-        if self.if_log:
+        bins['debug'] = self.set_debug
+        if self.set_log:
             bins.logFileOpen()
         if not self.__on_ram:
             bins.execute()
@@ -272,8 +272,8 @@ class RTACtoolsAnalysis() :
             exp['logfile'] = self.output.replace('.fits', '.log')
         elif '.xml' in self.output:
             exp['logfile'] = self.output.replace('.xml', '.log')
-        exp['debug'] = self.debug
-        if self.if_log:
+        exp['debug'] = self.set_debug
+        if self.set_log:
             exp.logFileOpen()
         if not self.__on_ram:
             exp.execute()
@@ -313,8 +313,8 @@ class RTACtoolsAnalysis() :
             psf['logfile'] = self.output.replace('.fits', '.log')
         elif '.xml' in self.output:
             psf['logfile'] = self.output.replace('.xml', '.log')
-        psf['debug'] = self.debug
-        if self.if_log:
+        psf['debug'] = self.set_debug
+        if self.set_log:
             psf.logFileOpen()
         if not self.__on_ram:
             psf.execute()
@@ -336,8 +336,8 @@ class RTACtoolsAnalysis() :
             bkg['logfile'] = self.output.replace('.fits', '.log')
         elif '.xml' in self.output:
             bkg['logfile'] = self.output.replace('.xml', '.log')
-        bkg['debug'] = self.debug
-        if self.if_log:
+        bkg['debug'] = self.set_debug
+        if self.set_log:
             bkg.logFileOpen()
         if not self.__on_ram:
             bkg.execute()       
@@ -366,8 +366,8 @@ class RTACtoolsAnalysis() :
         like['statistic'] = self.stats
         like["nthreads"] = self.nthreads
         like['logfile'] = self.output.replace('.xml', '.log')
-        like['debug'] = self.debug
-        if self.if_log:
+        like['debug'] = self.set_debug
+        if self.set_log:
             like.logFileOpen()
         if not self.__on_ram: 
             like.execute()
@@ -392,8 +392,8 @@ class RTACtoolsAnalysis() :
                 err['confidence'] = self.confidence_level[i]
                 err["nthreads"] = self.nthreads
                 err['logfile'] = self.output[i].replace('.xml', '.log')
-                err['debug'] = self.debug
-                if self.if_log:
+                err['debug'] = self.set_debug
+                if self.set_log:
                     err.logFileOpen()
                 if not self.__on_ram:
                     err.execute()
@@ -417,8 +417,8 @@ class RTACtoolsAnalysis() :
         uplim['emax'] = self.e[1]  # default maximum energy for integral flux limit (in TeV)
         uplim["nthreads"] = self.nthreads
         uplim['logfile'] = self.model.replace('results.xml', 'flux.log')
-        uplim['debug'] = self.debug
-        if self.if_log:
+        uplim['debug'] = self.set_debug
+        if self.set_log:
             uplim.logFileOpen()
         if not self.__on_ram:
             uplim.execute()
@@ -449,8 +449,8 @@ class RTACtoolsAnalysis() :
         lc['yref'] = self.pointing[1]
         lc["nthreads"] = self.nthreads
         lc['logfile'] = self.output.replace('.xml', '.log')
-        lc['debug'] = self.debug
-        if self.if_log:
+        lc['debug'] = self.set_debug
+        if self.set_log:
             lc.logFileOpen()
         if not self.__on_ram:
             lc.execute()
@@ -481,8 +481,8 @@ class RTACtoolsAnalysis() :
         sens['type'] = self.sens_type.capitalize()
         sens["nthreads"] = self.nthreads
         sens['logfile'] = self.output.replace('.csv', '.log')
-        sens['debug'] = self.debug
-        if self.if_log:
+        sens['debug'] = self.set_debug
+        if self.set_log:
             sens.logFileOpen()
         if not self.__on_ram:
             sens.execute()
