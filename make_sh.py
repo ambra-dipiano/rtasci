@@ -26,13 +26,13 @@ for script in scripts:
 
     for i in range(N):
         if i == 0:
-            sh.write(f'\n\tpython3 {rootpath}/{script} 1000 {True}')
-            sh.write(f'\n\tpython3 {rootpath}/{script} 100 {False}')
-            sh.write(f'\n\tpython3 {rootpath}/{script} 10 {False}')
+            sh.write(f'\n\tpython3 {rootpath}/timing/{script} 1000 {True}')
+            sh.write(f'\n\tpython3 {rootpath}/timing/{script} 100 {False}')
+            sh.write(f'\n\tpython3 {rootpath}/timing/{script} 10 {False}')
         else:
-            sh.write(f'\n\tpython3 {rootpath}/{script} 1000 {False}')
-            sh.write(f'\n\tpython3 {rootpath}/{script} 100 {False}')
-            sh.write(f'\n\tpython3 {rootpath}/{script} 10 {False}')
+            sh.write(f'\n\tpython3 {rootpath}/timing/{script} 1000 {False}')
+            sh.write(f'\n\tpython3 {rootpath}/timing/{script} 100 {False}')
+            sh.write(f'\n\tpython3 {rootpath}/timing/{script} 10 {False}')
 
     sh.write('\n')
     sh.close()
