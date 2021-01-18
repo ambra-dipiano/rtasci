@@ -11,8 +11,6 @@ import astropy.units as u
 from astropy.io import fits
 import healpy as hp
 import numpy as np
-import pandas as pd
-import collections
 
 # center of fov from FITS ---!
 def get_pointing(fits_file):
@@ -84,3 +82,10 @@ def enflux_powerlaw(gamma, k0, e0=1, erange=(0.03, 150.0), unit='TeV'):
     factor = k0 / (e0**gamma * delta)
     flux = factor * (e2**delta - e1**delta)
     return flux
+
+# returns a random total delay time (slew time + gw latency) within given ranges ---!
+def totalDelay(slew=(0,50), gw_latency=(0,36000)):
+    tslew = np.random.uniform(slew[0], slew[1], 1)
+    tgw = np.random.uniform(gw_latency[0], gw_latency[1])
+    delay = tslew + tgw
+    return delay
