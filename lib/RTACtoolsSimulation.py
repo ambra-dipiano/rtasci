@@ -9,17 +9,17 @@
 
 import gammalib
 import ctools
-import cscripts
+import os.path
+import csv
+import re
+import numpy as np
+import pandas as pd
 from astropy.io import fits
 from astropy import table
-import healpy as hp
-import numpy as np
-import os.path
-import pandas as pd
 from scipy.interpolate import interp1d
-import csv
 
-class RTACtoolsSimulation() :
+
+class RTACtoolsSimulation():
     '''
     WRITE DOCS
     '''
@@ -43,8 +43,8 @@ class RTACtoolsSimulation() :
         self.roi = 5  # region of indeterest (deg) ---!
         self.pointing = [83.63, 22.01]  # RA/DEC or GLON/GLAT (deg) ---!
         # ctools miscellaneous ---!
+        self.edisp = False  # set/unset edisp
         self.seed = 1  # MC seed ---!
-        self.coord_sys = 'CEL'  # coordinate system <CEL|GAL> ---!
         self.nthreads = 1
         # ebl specifics ---!
         self.z = 0.1  # redshift value ---!
@@ -186,7 +186,7 @@ class RTACtoolsSimulation() :
         # time slices table ---!
         if data_path is None:
             raise ValueError('please specify a valid path')
-        table = data_path + time_slice_name
+        table = os.path.join(data_path, time_slice_name)
         if os.path.isfile(table):
             os.remove(table)
         with open(table, 'w+') as tab:
@@ -194,46 +194,28 @@ class RTACtoolsSimulation() :
 
         # spectra and models ---!
         for i in range(self.__Nt):
-            if self.set_ebl:
-                filename = data_path + 'spec_ebl_tbin%02d.out' % i
-            else:
-                filename = data_path + 'spec_tbin%02d.out' % i
+            filename = os.path.join(data_path, f'spec_tbin{i:02d}.out')
             if os.path.isfile(filename):
                 os.remove(filename)
 
             # time slices table ---!
             with open(table, 'a') as tab:
                 tab.write('\n' + str(i) + ', ' + str(self.__time[i][0]))
-
-            # ebl ---!
-            if self.set_ebl:
-                with open(filename, 'a+') as f:
-                    for j in range(self.__Ne):
-                        # write spectral data in E [MeV] and I [ph/cm2/s/MeV] ---!
-                        if self.__ebl is not None:
-                            f.write(str(self.__energy[j][0] * 1000) + ' ' + str(self.__ebl[i][j] / 1000) + "\n")
-                # write bin models ---!
-                os.system('cp ' + str(self.model) + ' ' + str(data_path) + '%s_ebl_tbin%02d.xml' % (source_name, i))
-                s = open(data_path + '%s_ebl_tbin%02d.xml' % (source_name, i)).read()
-                s = s.replace('data/spec', 'spec_ebl_tbin%02d' % i)
-                with open(data_path + '%s_ebl_tbin%02d.xml' % (source_name, i), 'w') as f:
-                    f.write(s)
-            # no ebl ---!
-            else:
-                with open(filename, 'a+') as f:
-                    for j in range(self.__Ne):
-                        # write spectral data in E [MeV] and I [ph/cm2/s/MeV] ---!
-                        f.write(str(self.__energy[j][0] * 1000.0) + ' ' + str(self.__spectra[i][j] / 1000.0) + "\n")
-                # write bin models ---!
-                os.system('cp ' + str(self.model) + ' ' + str(data_path) + '%s_tbin%02d.xml' %(source_name, i))
-                s = open(data_path + '%s_tbin%02d.xml' %(source_name, i)).read()
-                s = s.replace('data/spec', 'spec_tbin%02d' % i)
-                with open(data_path + '%s_tbin%02d.xml' %(source_name, i), 'w') as f:
-                    f.write(s)
+        
+            with open(filename, 'a+') as f:
+                for j in range(self.__Ne):
+                    # write spectral data in E [MeV] and I [ph/cm2/s/MeV] ---!
+                    f.write(str(self.__energy[j][0] * 1000.0) + ' ' + str(self.__spectra[i][j] / 1000.0) + "\n")
+            # write bin models ---!
+            os.system('cp ' + str(self.model) + ' ' + str(os.path.join(data_path, f'{source_name}_tbin{i:02d}.xml')))
+            s = open(os.path.join(data_path, f'{source_name}_tbin{i:02d}.xml')).read()
+            s = s.replace('data/spec', f'spec_tbin{i:02d}')
+            with open(os.path.join(data_path, f'{source_name}_tbin{i:02d}.xml'), 'w') as f:
+                f.write(s)
         return
 
     # read template and return tbin_stop containing necessary exposure time coverage ---!
-    def loadTemplate(self, source_name, return_bin=False, data_path=None) :
+    def loadTemplate(self, source_name, return_bin=False, data_path=None):
         self.__getFitsData()
         self.__Nt = len(self.__time)
         self.__Ne = len(self.__energy)
@@ -246,14 +228,14 @@ class RTACtoolsSimulation() :
         t[self.__Nt] = self.__time[self.__Nt - 1][0] + (self.__time[self.__Nt - 1][0] - t[self.__Nt - 1])
 
         # stop the second after higher tmax ---!
-        if self.tmax != None :
+        if self.tmax != None:
             tbin_stop = 1
-            for bin in range(len(t)) :
-                if t[bin] <= self.tmax :
+            for bin in range(len(t)):
+                if t[bin] <= self.tmax:
                     tbin_stop += 1
-                else :
+                else:
                     continue
-        else :
+        else:
             raise ValueError('Total exposure time longer than template''s temporal evolution.')
 
         # energy grid ---!
@@ -272,7 +254,7 @@ class RTACtoolsSimulation() :
             return
 
     # get tbin_stop without loading the template ---!
-    def getTimeBinStop(self) :
+    def getTimeBinStop(self):
         self.__getFitsData()
         self.__Nt = len(self.__time)
         self.__Ne = len(self.__energy)
@@ -285,14 +267,14 @@ class RTACtoolsSimulation() :
         t[self.__Nt] = self.__time[self.__Nt - 1][0] + (self.__time[self.__Nt - 1][0] - t[self.__Nt - 1])
 
         # stop the second after higher tmax ---!
-        if self.tmax != None :
+        if self.tmax != None:
             tbin_stop = 1
-            for bin in range(len(t)) :
-                if t[bin] <= self.tmax :
+            for bin in range(len(t)):
+                if t[bin] <= self.tmax:
                     tbin_stop += 1
-                else :
+                else:
                     continue
-        else :
+        else:
             raise ValueError('Maximum exposure time (tmax) is larger than the template temporal evolution.')
         return tbin_stop
 
@@ -318,12 +300,21 @@ class RTACtoolsSimulation() :
         return tbins
 
     # ctobssim wrapper ---!
-    def run_simulation(self) :
+    def run_simulation(self, inobs=None, prefix=None, startindex=None):
+        self.input = inobs
         sim = ctools.ctobssim()
+        if self.input != None: 
+            sim["inobs"] = self.input 
         sim["inmodel"] = self.model
         sim["outevents"] = self.output
         sim["caldb"] = self.caldb
         sim["irf"] = self.irf
+        if self.edisp:
+            sim["edisp"] = self.edisp
+        if prefix != None:
+            sim["prefix"] = prefix
+        if startindex != None:
+            sim["startindex"] = startindex
         sim["ra"] = self.pointing[0]
         sim["dec"] = self.pointing[1]
         sim["rad"] = self.roi
@@ -512,10 +503,10 @@ class RTACtoolsSimulation() :
             for file in f:
                 if self.set_ebl:
                     if '.out' in file and 'ebl' in file and 'flux' not in file:
-                        spec_files.append(os.path.join(r, file))
+                        spec_files.append(os.path.os.path.join(r, file))
                 else:
                     if '.out' in file and 'ebl' not in file and 'flux' not in file:
-                        spec_files.append(os.path.join(r, file))
+                        spec_files.append(os.path.os.path.join(r, file))
 
         spec_files.sort()
         # new files with relative suffix ---!
@@ -543,10 +534,10 @@ class RTACtoolsSimulation() :
             for file in f:
                 if self.set_ebl:
                     if '.xml' in file and 'ebl' in file and 'flux' not in file:
-                        xml_files.append(os.path.join(r, file))
+                        xml_files.append(os.path.os.path.join(r, file))
                 else:
                     if '.xml' in file and 'ebl' not in file and 'flux' not in file:
-                        xml_files.append(os.path.join(r, file))
+                        xml_files.append(os.path.os.path.join(r, file))
 
         xml_files.sort()
         # replace ---!
