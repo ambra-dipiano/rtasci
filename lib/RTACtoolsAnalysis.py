@@ -13,16 +13,18 @@ import cscripts
 import numpy as np
 
 # create observation list with gammalib ---!
-def make_obslist(obslist, items, names):
+def make_obslist(obslist, items, names, instruments='CTA'):
     if type(items) != type(list()):
         items = [items]
     if type(names) != type(list()):
-        names = [names]
+        names = [names for i in range(len(items))]
+    if type(instruments) != type(list()):
+        names = [instruments for i in range(len(items))]
     xml = gammalib.GXml()
     obslib = xml.append('observation_list title="observation library"')
     for i, item in enumerate(items):
-        obs = obslib.append(f'observation name="{names[i]}" run="{i+1:02d}" instrument="CTA"')
-        obs.append('parameter name="EventList" file="%s"' % item)
+        obs = obslib.append(f'observation name="{names[i]}" run="{i+1:02d}" instrument="{instruments[i]}"')
+        obs.append(f'parameter name="EventList" file="{item}"')
     xml.save(obslist)
     return 
 
