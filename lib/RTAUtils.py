@@ -89,3 +89,14 @@ def totalDelay(slew=(0,50), gw_latency=(0,36000)):
     tgw = np.random.uniform(gw_latency[0], gw_latency[1])
     delay = tslew + tgw
     return delay
+
+# get wobble pointing for given target
+def wobble_pointing(target, nrun, clockwise=True, offset=0.5):
+    if clockwise:
+        wobble = [(0., offset), (-offset, 0.), (0., -offset), (offset, 0.)]
+    else:
+        wobble = [(0., offset), (offset, 0.), (0., -offset), (-offset, 0.)] 
+    wobble_index = nrun % 4
+    print(wobble[wobble_index])
+    pointing = (target[0] + wobble[wobble_index][0], target[1] + wobble[wobble_index][1])
+    return pointing
