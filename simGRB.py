@@ -16,7 +16,7 @@ from lib.RTAUtils import get_pointing
 # GRB ---!
 runid = 'run0406_ID000126'
 # general ---!
-simtype = 'bkg'  # 'grb' -> src+bkg; 'bkg' -> empty fields
+simtype = 'grb'  # 'grb' -> src+bkg; 'bkg' -> empty fields
 trials = 2  # trials
 count = 0  # starting count
 nthreads = 2
@@ -33,7 +33,6 @@ roi = 2.5  # region of interest radius (deg)
 set_ebl = True  # uses the EBL absorbed template
 add_ebl = False  # add ebl to template, required only once per template
 extract_spectrum = False  # extract template data, required only once per template
-add_src = True  # add src to bkg 
 # paths ---!
 pypath = str(os.path.dirname(os.path.abspath(__file__)))  
 datapath = pypath.replace('cta-sag-sci', 'DATA')  # all data should be under this folder
@@ -61,7 +60,7 @@ if not os.path.isfile(model_pl):
     template_pl = os.path.join(datapath, 'models/grb_file_model.xml')
     os.system('cp %s %s' % (template_pl, model_pl))
     model_xml = ManageXml(xml=model_pl)
-    model_xml.setModelParameters(source=source_name, parameters=('RA', 'DEC'), values=true_coord)
+    model_xml.setModelParameters(source=runid, parameters=('RA', 'DEC'), values=true_coord)
     del model_xml
 
 # ---------------------------------------------------- trials --- !!!
@@ -77,14 +76,14 @@ while count < trials:
     sim.roi = roi
     sim.e = [emin, emax]
     sim.tmax = tmax
-    sim.model = model_pl
     sim.caldb = caldb
     sim.irf = irf
 
     # -------------------------------------------------------- GRB ---!!!
     if simtype.lower() == 'grb':
-        print('Simulate GRB + BKG with onset = {onset} s')
+        print(f'Simulate GRB + BKG with onset = {onset} s')
         sim.template = template
+        sim.model = model_pl
         # add EBL to template ---!
         if add_ebl:
             print('Computing EBL absorption')
@@ -135,9 +134,8 @@ while count < trials:
         print('os.remove template bins')
         os.system('rm ' + os.path.join(grbpath, f'{name}*tbin*'))
 
-# -------------------------------------------------------- BKG ---!!!
-if simtype.lower() == 'bkg':
-    while count <= trials:
+    # -------------------------------------------------------- BKG ---!!!
+    if simtype.lower() == 'bkg':
         print('Simulate empty fields')
         count += 1
         sim.seed = count
