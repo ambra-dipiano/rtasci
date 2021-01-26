@@ -42,7 +42,7 @@ class RTACtoolsAnalysis() :
         # condition control ---!
         self.set_debug = False  # set/unset debug mode for ctools ---!
         self.set_log = True  # set/unset logfiles for ctools ---!
-        # data fields ---!
+        # data ---!
         self.t = [0, 1800]  # time range (s/MJD) ---!
         self.tmax = 1800  # maximum exposure time needed (s) ---!
         self.e = [0.03, 150.0]  # energy range (TeV) ---!
