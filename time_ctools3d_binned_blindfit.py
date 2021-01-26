@@ -43,7 +43,7 @@ print(f'Setup : {tsetup} s\n')
 
 # observaition
 t = time.time()
-make_obslist(obslist, filename, 'Crab')
+make_obslist(obslist, items=filename, names='Crab', instruments='CTA')
 tobs = time.time() - t
 print(f'Observation: {tobs} s\n')
 
@@ -75,6 +75,7 @@ t = time.time()
 detection = ManageXml(detname)
 detection.modXml(overwrite=True)
 detection.setTsTrue() 
+detection.setInstrument()
 detection.parametersFreeFixed(src_free=['Prefactor'])
 try:
     coords = detection.getRaDec()
