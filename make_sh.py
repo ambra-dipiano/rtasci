@@ -41,7 +41,7 @@ for script in scripts:
     sh = open(shrun, 'w+')
     sh.write('#!/bin/bash\n')
     sh.write(f'\n#SBATCH --job-name=ambra')
-    sh.write(f'\n#SBATCH --output=slurm-{shrun}.out')
+    sh.write(f'\n#SBATCH --output=slurm-{script.replace(".py", ".out")}')
     sh.write(f'\n#SBATCH --account=ambra')
     sh.write(f'\n#SBATCH --nodes=1')
     sh.write(f'\n#SBATCH --cpus-per-task=1\n\n')
