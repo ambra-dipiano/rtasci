@@ -12,11 +12,12 @@ import os
 from lib.RTACtoolsSimulation import RTACtoolsSimulation
 from lib.RTAManageXml import ManageXml
 from lib.RTAUtils import get_pointing
+from lib.RTACtoolsAnalysis import RTACtoolsAnalysis
 
 # GRB ---!
 runid = 'run0406_ID000126'
 # general ---!
-simtype = 'grb'  # 'grb' -> src+bkg; 'bkg' -> empty fields
+simtype = 'bkg'  # 'grb' -> src+bkg; 'bkg' -> empty fields
 trials = 2  # trials
 count = 0  # starting count
 nthreads = 2
@@ -137,12 +138,19 @@ while count < trials:
     # -------------------------------------------------------- BKG ---!!!
     if simtype.lower() == 'bkg':
         print('Simulate empty fields')
-        count += 1
         sim.seed = count
         sim.t = [0, tobs]
         name = f'bkg{count:06d}'
+        print(name)
         #
         bkg = os.path.join(bkgpath, f'{name}.fits')
         sim.model = bkg_model
         sim.output = bkg
         sim.run_simulation()
+
+    analysis = RTACtoolsAnalysis()
+    analysis.input = sim.output
+    analysis.usepnt = True
+    analysis.sky_subtraction = 'NONE'
+    analysis.output = sim.output.replace('.fits', '_sky.fits')
+    analysis.run_skymap()
