@@ -195,6 +195,13 @@ class ManageXml():
         self.__saveXml()
         return
 
+    def setInstrument(self, instrument='CTA'):
+        for src in self.root.findall('source'):
+            if src.attrib['name'] != 'Background' and src.attrib['name'] != 'CTABackgroundModel':
+                src.set('instrument', instrument)
+        self.__saveXml()
+        return
+
     # modeify the spectral component of candidate list ---!
     def modXml(self, overwrite=True):
         self.__setModel()
