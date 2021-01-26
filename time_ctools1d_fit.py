@@ -106,5 +106,5 @@ if first == 'True':
     log.close()
 else:
     log = open(logname, 'a')
-    log.write(f'{texp} {np.sqrt(ts)} {phflux} {phlux_err} {ttotal} {timport} {tsetup} {tmodel} {tonoff} {tfit} {tstat} {tflux}\n')
+    log.write(f'{texp} {np.sqrt(ts)} {phflux} {phflux_err} {ttotal} {timport} {tsetup} {tmodel} {tonoff} {tfit} {tstat} {tflux}\n')
     log.close()
