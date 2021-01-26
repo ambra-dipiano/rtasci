@@ -11,16 +11,16 @@ else:
     N = 10
 
 rootpath = str(os.path.dirname(os.path.abspath(__file__)))
-pypath = f'{rootpath}/timing'
+pypath = f'{rootpath}'
 jobpath = f'{rootpath}/jobs'
-shjob = f'{jobpath}/jobs_all.sh'
-shrun = f'{jobpath}/runjobs_all.sh'
-scripts = [f for f in listdir(pypath) if isfile(join(pypath, f)) and ('ctools' in f or 'gammapy' in f) and ('cumulative' not in f and 'lima' not in f)]
+scripts = [f for f in listdir(pypath) if isfile(join(pypath, f)) and 'time_' in f]
 
 print(scripts)
 
 for script in scripts:
     shname = f'{jobpath}/{script.replace(".py", ".sh")}'
+    shrun = f'{jobpath}/job_{script.replace(".py", ".sh")}'
+
     sh = open(shname, 'w+')
     sh.write('#!/bin/bash\n')
     sh.write('\nsource activate scitools')
@@ -38,18 +38,12 @@ for script in scripts:
     sh.write('\n')
     sh.close()
 
-sh = open(shjob, 'w+')
-sh.write('#!/bin/bash\n')
-for script in scripts:
-    sh.write(f'echo {script.replace(".py", ".sh")}\n')
-    sh.write(f'bash {jobpath}/{script.replace(".py", ".sh")}\n')
-
-sh = open(shrun, 'w+')
-sh.write('#!/bin/bash\n')
-sh.write(f'\n#SBATCH --job-name=ambra')
-#sh.write(f'\n#SBATCH --output=slurm-allscripts.out')
-sh.write(f'\n#SBATCH --account=ambra')
-sh.write(f'\n#SBATCH --nodes=1')
-sh.write(f'\n#SBATCH --cpus-per-task=1\n\n')
-sh.write(f'exec sh {shjob}\n')
-sh.close()
+    sh = open(shrun, 'w+')
+    sh.write('#!/bin/bash\n')
+    sh.write(f'\n#SBATCH --job-name=ambra')
+    sh.write(f'\n#SBATCH --output=slurm-{shrun}.out')
+    sh.write(f'\n#SBATCH --account=ambra')
+    sh.write(f'\n#SBATCH --nodes=1')
+    sh.write(f'\n#SBATCH --cpus-per-task=1\n\n')
+    sh.write(f'exec sh {shname}\n')
+    sh.close()
