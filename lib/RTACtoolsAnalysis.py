@@ -19,7 +19,7 @@ def make_obslist(obslist, items, names, instruments='CTA'):
     if type(names) != type(list()):
         names = [names for i in range(len(items))]
     if type(instruments) != type(list()):
-        names = [instruments for i in range(len(items))]
+        instruments = [instruments for i in range(len(items))]
     xml = gammalib.GXml()
     obslib = xml.append('observation_list title="observation library"')
     for i, item in enumerate(items):
