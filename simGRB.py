@@ -18,14 +18,14 @@ from lib.RTACtoolsAnalysis import RTACtoolsAnalysis
 runid = 'run0406_ID000126'
 # general ---!
 simtype = 'grb'  # 'grb' -> src+bkg; 'bkg' -> empty fields
-trials = 1  # trials
+trials = 2  # trials
 count = 0  # starting count
 nthreads = 2
 # sim parameters ---!
 caldb = 'prod3b'  # calibration database
 irf = 'South_z40_average_100s'  # istrument response function
-tobs = 1e2  # total obs time (s)
-onset = 0  # time of bkg only a.k.a. delayed onset of burst (s)
+tobs = 10  # total obs time (s)
+onset = 5  # time of bkg only a.k.a. delayed onset of burst (s)
 tmax = tobs-onset  # total src exposure time (s)
 emin = 3e-2  # simulation minimum energy (TeV)
 emax = 1.  # simulation maximum energy (TeV)
@@ -54,12 +54,13 @@ tcsv = os.path.join(datapath, f'extracted_data/{runid}/time_slices.csv')  # temp
 bkg_model = os.path.join(datapath, 'models/CTAIrfBackground.xml')  # XML background model
 
 # check source xml model template and create if not existing ---!
+true_coords = get_pointing(template)
 if not os.path.isfile(model_pl):
     print('Creating XML template model')
     template_pl = os.path.join(datapath, 'models/grb_file_model.xml')
     os.system('cp %s %s' % (template_pl, model_pl))
     model_xml = ManageXml(xml=model_pl)
-    model_xml.setModelParameters(source=runid, parameters=('RA', 'DEC'), values=true_coord)
+    model_xml.setModelParameters(source=runid, parameters=('RA', 'DEC'), values=true_coords)
     del model_xml
 
 # ---------------------------------------------------- trials --- !!!
