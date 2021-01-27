@@ -7,3 +7,4 @@ jobs/
 lib/old*
 lib/__pycache__/*
 *.sh
+__pycache__

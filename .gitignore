@@ -10,3 +10,4 @@ slurm*
 !jobs/
 lib/old*
 lib/__pycache__/*
+__pycache__
