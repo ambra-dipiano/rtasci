@@ -14,6 +14,10 @@ from lib.RTAManageXml import ManageXml
 from lib.RTAUtils import get_pointing
 from lib.RTACtoolsAnalysis import RTACtoolsAnalysis
 
+datapath = "/data01/home/baroncelli/phd/cta-sag-sci-data/DATA"
+if not os.path.isdir(datapath):
+    raise ValueError("datapath is empty. Please, set the datapath!")
+
 # GRB ---!
 runid = 'run0406_ID000126'
 # general ---!
@@ -33,8 +37,7 @@ roi = 2.5  # region of interest radius (deg)
 # conditions control ---!
 set_ebl = True  # uses the EBL absorbed template
 # paths ---!
-pypath = str(os.path.dirname(os.path.abspath(__file__)))  
-datapath = pypath.replace('cta-sag-sci', 'DATA')  # all data should be under this folder
+
 grbpath = os.path.join(datapath, 'obs', runid)  # folder that will host the phlist src+bkg phlists
 bkgpath = os.path.join(datapath, 'obs', 'backgrounds')  # folter that will host the bkgs only
 # check folders and create missing ones ---!
