@@ -17,14 +17,14 @@ from lib.RTACtoolsAnalysis import RTACtoolsAnalysis
 # GRB ---!
 runid = 'run0406_ID000126'
 # general ---!
-simtype = 'bkg'  # 'grb' -> src+bkg; 'bkg' -> empty fields
-trials = 2  # trials
+simtype = 'grb'  # 'grb' -> src+bkg; 'bkg' -> empty fields
+trials = 1  # trials
 count = 0  # starting count
 nthreads = 2
 # sim parameters ---!
 caldb = 'prod3b'  # calibration database
-irf = 'South_z40_average_LST_30m'  # istrument response function
-tobs = 12e2  # total obs time (s)
+irf = 'South_z40_average_100s'  # istrument response function
+tobs = 1e2  # total obs time (s)
 onset = 0  # time of bkg only a.k.a. delayed onset of burst (s)
 tmax = tobs-onset  # total src exposure time (s)
 emin = 3e-2  # simulation minimum energy (TeV)
@@ -32,8 +32,6 @@ emax = 1.  # simulation maximum energy (TeV)
 roi = 2.5  # region of interest radius (deg)
 # conditions control ---!
 set_ebl = True  # uses the EBL absorbed template
-add_ebl = False  # add ebl to template, required only once per template
-extract_spectrum = False  # extract template data, required only once per template
 # paths ---!
 pypath = str(os.path.dirname(os.path.abspath(__file__)))  
 datapath = pypath.replace('cta-sag-sci', 'DATA')  # all data should be under this folder
@@ -86,16 +84,18 @@ while count < trials:
         sim.template = template
         sim.model = model_pl
         # add EBL to template ---!
-        if add_ebl:
+        if set_ebl:
             print('Computing EBL absorption')
             sim.table = ebl_table  
             sim.zfetch = True
             sim.set_ebl = False
-            sim.addEBLtoFITS(template.replace('.fits', '_ebl.fits'), ext_name='EBL-ABS. SPECTRA')
+            if not os.path.isfile(template.replace('.fits', '_ebl.fits')):
+                sim.addEBLtoFITS(template.replace('.fits', '_ebl.fits'), ext_name='EBL-ABS. SPECTRA')
             sim.set_ebl = set_ebl
             sim.template = template.replace('.fits', '_ebl.fits')
         # load template ---!
-        sim.extract_spectrum = extract_spectrum
+        if not os.path.isfile(tcsv):
+            sim.extract_spectrum = True
         tbin_stop = sim.loadTemplate(source_name=runid, return_bin=True, data_path=os.path.join(datapath, f'extracted_data/{runid}'))
 
         event_bins = []
@@ -132,7 +132,7 @@ while count < trials:
         sim.appendEventsSinglePhList(GTI=[0, tobs])
 
         del sim
-        print('os.remove template bins')
+        print('remove template bins')
         os.system('rm ' + os.path.join(grbpath, f'{name}*tbin*'))
 
     # -------------------------------------------------------- BKG ---!!!
@@ -148,9 +148,3 @@ while count < trials:
         sim.output = bkg
         sim.run_simulation()
 
-    analysis = RTACtoolsAnalysis()
-    analysis.input = sim.output
-    analysis.usepnt = True
-    analysis.sky_subtraction = 'NONE'
-    analysis.output = sim.output.replace('.fits', '_sky.fits')
-    analysis.run_skymap()
