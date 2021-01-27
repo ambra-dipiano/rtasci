@@ -24,11 +24,11 @@ nthreads = 2
 # sim parameters ---!
 caldb = 'prod3b'  # calibration database
 irf = 'South_z40_average_100s'  # istrument response function
-tobs = 10  # total obs time (s)
-onset = 5  # time of bkg only a.k.a. delayed onset of burst (s)
+tobs = 12e2  # total obs time (s)
+onset = 6e2  # time of bkg only a.k.a. delayed onset of burst (s)
 tmax = tobs-onset  # total src exposure time (s)
 emin = 3e-2  # simulation minimum energy (TeV)
-emax = 1.  # simulation maximum energy (TeV)
+emax = 15e-2  # simulation maximum energy (TeV)
 roi = 2.5  # region of interest radius (deg)
 # conditions control ---!
 set_ebl = True  # uses the EBL absorbed template
