@@ -1,27 +1,29 @@
 setup:
-  simtype: grb  # grb -> src+bkg; bkg -> empty fields
-  runid: 
-    - run0406_ID000126  # can be all or any template (list or str) in catalog
+  simtype: grb                      # grb -> src+bkg; bkg -> empty fields
+  runid:                            # can be all or any template (list or str) in catalog
+    - run0406_ID000126  
     - run0852_ID000211
     - run0347_ID000198
-  trials: 1  # realisations per runid
-  start_count: 0  # starting count for seed
+    - run0153_ID000120
+  trials: 1                         # realisations per runid
+  start_count: 0                    # starting count for seed
 
 simulation:
-  caldb: prod3b  # calibration database
-  irf: South_z40_average_100s  # istrument response function
-  tobs: 100  # total obs time (s)
-  emin: 0.03  # simulation minimum energy (TeV)
-  emax: 150  # simulation maximum energy (TeV)
-  roi: 2.5  # region of interest radius (deg)
+  caldb: prod3b                     # calibration database
+  irf: South_z40_average_100s       # istrument response function
+  tobs: 100                         # total obs time (s)
+  emin: 0.03                        # simulation minimum energy (TeV)
+  emax: 150                         # simulation maximum energy (TeV)
+  roi: 2.5                          # region of interest radius (deg)
 
 options:
-  set_ebl: True  # uses the EBL absorbed template
-  extract_data: True  # if True extracts lightcurves and spectra 
+  set_ebl: True                     # uses the EBL absorbed template
+  extract_data: True                # if True extracts lightcurves and spectra 
 
 path: 
-  data: $DATA  # all data should be under this folder
-  ebl: $DATA/ebl_table/gilmore_tau_fiducial.csv
+  data: $DATA                       # all data should be under this folder
+  ebl: $DATA/ebl_tables/gilmore_tau_fiducial.csv
+  model: $DATA/models
   catalog: $DATA/templates/grb_afterglow/GammaCatalogV1.0
 
 

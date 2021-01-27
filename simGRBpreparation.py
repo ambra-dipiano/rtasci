@@ -29,15 +29,17 @@ else:
     runids = cfg['setup']['runid']
 
 # conditions control ---!
-set_ebl = True  # uses the EBL absorbed template
+set_ebl = cfg['options']['set_ebl']  # uses the EBL absorbed template
 # paths ---!
 if '$' in cfg['path']['data']:
     datapath = os.path.expandvars(cfg['path']['data'])
 else:
     datapath = cfg['path']['data']  
+
+
 # global files ---!
-ebl_table = os.path.join(datapath, 'ebl_tables/gilmore_tau_fiducial.csv') 
-pl_template = os.path.join(datapath, 'models/grb_file_model.xml')
+ebl_table = cfg['path']['ebl'].replace(cfg['path']['data'], datapath) 
+pl_template = os.path.join(cfg['path']['model'].replace(cfg['path']['data'], datapath), 'grb_file_model.xml' )
 if not os.path.isfile(pl_template):
     raise ValueError(f'PL template {pl_template} not found')
 if not os.path.isfile(ebl_table):
@@ -57,20 +59,19 @@ for runid in runids:
             os.mkdir(os.path.join(datapath, 'obs'))
         os.mkdir(grbpath)
     # grb files ---!
-    template =  os.path.join(datapath, f'templates/grb_afterglow/GammaCatalogV1.0/{runid}.fits')  # grb FITS template data
-    model_pl = os.path.join(datapath, f'models/{runid}.xml')  # grb XML template model
+    template =  os.path.join(cfg['path']['catalog'].replace(cfg['path']['data'], datapath), f'{runid}.fits')  # grb FITS template data
+    model_pl = pl_template.replace('grb_file_model.xml', f'{runid}.xml')  # grb XML template model
     tcsv = os.path.join(datapath, f'extracted_data/{runid}/time_slices.csv')  # grb template time grid
     if not os.path.isfile(template):
         raise ValueError(f'Template {runid} FITS not found')
     if not os.path.isdir(os.path.join(datapath, f'extracted_data/{runid}')):
         os.mkdir(os.path.join(datapath, f'extracted_data/{runid}'))
-    true_coords = get_pointing(template)
     if not os.path.isfile(model_pl):
         print(f'Creating {runid} XML model')
         os.system(f'cp {pl_template} {model_pl}')
         os.system(f'chmod +wr {model_pl}')
         model_xml = ManageXml(xml=model_pl)
-        model_xml.setModelParameters(source=runid, parameters=('RA', 'DEC'), values=true_coords)
+        model_xml.setModelParameters(source=runid, parameters=('RA', 'DEC'), values=get_pointing(template))
         del model_xml
 
     sim = RTACtoolsSimulation()
@@ -80,14 +81,14 @@ for runid in runids:
     if set_ebl:
         sim.table = ebl_table  
         sim.zfetch = True
-        sim.set_ebl = False
         if not os.path.isfile(template.replace('.fits', '_ebl.fits')):
             print('Computing EBL absorption')
+            sim.set_ebl = False
             sim.addEBLtoFITS(template.replace('.fits', '_ebl.fits'), ext_name='EBL-ABS. SPECTRA')
-        sim.set_ebl = set_ebl
         sim.template = template.replace('.fits', '_ebl.fits')
+    sim.set_ebl = set_ebl
     # load template ---!
     if not os.path.isfile(tcsv):
         sim.extract_spectrum = True
         print('Creating lightcurves and spectra')
-    tbin_stop = sim.loadTemplate(source_name=runid, return_bin=True, data_path=os.path.join(datapath, f'extracted_data/{runid}'))
+    sim.loadTemplate(source_name=runid, return_bin=False, data_path=os.path.join(datapath, f'extracted_data/{runid}'))
