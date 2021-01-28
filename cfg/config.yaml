@@ -2,9 +2,7 @@ setup:
   simtype: grb                      # grb -> src+bkg; bkg -> empty fields
   runid:                            # can be all or any template (list or str) in catalog
     - run0406_ID000126  
-    - run0852_ID000211
-    - run0347_ID000198
-    - run0153_ID000120
+    - run0586_ID000240
   trials: 1                         # realisations per runid
   start_count: 0                    # starting count for seed
 
