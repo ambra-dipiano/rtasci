@@ -81,11 +81,11 @@ for runid in runids:
     if set_ebl:
         sim.table = ebl_table  
         sim.zfetch = True
-        if not os.path.isfile(template.replace('.fits', '_ebl.fits')):
+        if not sim.checkEBLinFITS():
             print('Computing EBL absorption')
             sim.set_ebl = False
-            sim.addEBLtoFITS(template.replace('.fits', '_ebl.fits'), ext_name='EBL-ABS. SPECTRA')
-        sim.template = template.replace('.fits', '_ebl.fits')
+            sim.addEBLtoFITS(template, ext_name='EBL-ABS. SPECTRA')
+        sim.template = template
     sim.set_ebl = set_ebl
     # load template ---!
     if not os.path.isfile(tcsv):
