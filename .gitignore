@@ -3,6 +3,7 @@ slurm*
 test_*
 testing/*
 tmp/*
+adptests/*
 
 # folders
 .*/
