@@ -12,7 +12,9 @@ cfg = yaml.load(configuration, Loader=yaml.FullLoader)
 if cfg['options']['extract_data'] and cfg['setup']['simtype'].lower() == 'grb':
     print('Preparing GRB catalog...\n')
     os.system(f'python3 simGRBpreparation.py {cfgfile}')
-else:
+elif:
     print('Computing BKG-ONLY simulations')
+else:
+    raise ValueError('Ivalid "simtype" value')
 
 print('\n\nExit\n\n')
