@@ -1,6 +1,7 @@
 # files
 slurm*
 test_*
+testing/*
 
 # folders
 .*/
