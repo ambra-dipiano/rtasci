@@ -2,6 +2,7 @@
 slurm*
 test_*
 testing/*
+tmp/*
 
 # folders
 .*/
