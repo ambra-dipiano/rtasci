@@ -14,7 +14,7 @@ from lib.RTAManageXml import ManageXml
 from lib.RTAUtils import get_pointing
 
 # GRB ---!
-runid = 'run0406_ID000126'
+runid = ['run0406_ID000126', 'run0852_ID000211']
 # general ---!
 trials = 2  # trials
 count = 0  # starting count
@@ -28,28 +28,23 @@ emax = 1.  # simulation maximum energy (TeV)
 roi = 2.5  # region of interest radius (deg)
 # conditions control ---!
 set_ebl = True  # uses the EBL absorbed template
-add_ebl = False  # add ebl to template, required only once per template
-extract_spectrum = False  # extract template data, required only once per template
 # paths ---!
 pypath = str(os.path.dirname(os.path.abspath(__file__)))  
 datapath = pypath.replace('cta-sag-sci', 'DATA')  # all data should be under this folder
-grbpath = os.path.join(datapath, 'obs', runid)  # folder that will host the phlist src+bkg phlists
-bkgpath = os.path.join(datapath, 'obs', 'backgrounds')  # folter that will host the bkgs only
+grbpath = os.path.join(datapath, 'obs', runid)  # folder that will host the phlist 
+# files ---!
+ebl_table = os.path.join(datapath, 'ebl_tables/gilmore_tau_fiducial.csv')  # CSV table with EBL data
+template =  os.path.join(datapath, f'templates/{runid}.fits')  # grb FITS template data
+model_pl = os.path.join(datapath, f'models/{runid}.xml')  # grb XML template model
+tcsv = os.path.join(datapath, f'extracted_data/{runid}/time_slices.csv')  # times table 
+bkg_model = os.path.join(datapath, 'models/CTAIrfBackground.xml')  # XML background model
 # check folders and create missing ones ---!
 if not os.path.isdir(grbpath):
     if not os.path.isdir(grbpath.replace(runid, '')):
         os.mkdir(grbpath.replace(runid, ''))
     os.mkdir(grbpath)
-if not os.path.isdir(bkgpath):
-    os.mkdir(bkgpath)
 if not os.path.isdir(os.path.join(datapath, f'extracted_data/{runid}')):
     os.mkdir(os.path.join(datapath, f'extracted_data/{runid}'))
-# files ---!
-ebl_table = os.path.join(datapath, 'ebl_tables/gilmore_tau_fiducial.csv')  # CSV table with EBL data
-template =  os.path.join(datapath, f'templates/{runid}.fits')  # grb FITS template data
-model_pl = os.path.join(datapath, f'models/{runid}.xml')  # grb XML template model
-tcsv = os.path.join(datapath, f'extracted_data/{runid}/time_slices.csv')  # template time bin table (to produce)
-bkg_model = os.path.join(datapath, 'models/CTAIrfBackground.xml')  # XML background model
 
 # check source xml model template and create if not existing ---!
 if not os.path.isfile(model_pl):
@@ -80,16 +75,18 @@ while count < trials:
     sim.template = template
     sim.model = model_pl
     # add EBL to template ---!
-    if add_ebl:
+    if set_ebl:
         print('Computing EBL absorption')
         sim.table = ebl_table  
         sim.zfetch = True
         sim.set_ebl = False
-        sim.addEBLtoFITS(template.replace('.fits', '_ebl.fits'), ext_name='EBL-ABS. SPECTRA')
+        if not os.path.isfile(template.replace('.fits', '_ebl.fits')):
+            sim.addEBLtoFITS(template.replace('.fits', '_ebl.fits'), ext_name='EBL-ABS. SPECTRA')
         sim.set_ebl = set_ebl
         sim.template = template.replace('.fits', '_ebl.fits')
     # load template ---!
-    sim.extract_spectrum = extract_spectrum
+    if not os.path.isfile(tcsv):
+        sim.extract_spectrum = True
     tbin_stop = sim.loadTemplate(source_name=runid, return_bin=True, data_path=os.path.join(datapath, f'extracted_data/{runid}'))
 
     event_bins = []

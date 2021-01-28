@@ -8,3 +8,4 @@ lib/old*
 lib/__pycache__/*
 *.sh
 __pycache__
+test_*

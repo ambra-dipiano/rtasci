@@ -181,6 +181,15 @@ class RTACtoolsSimulation():
         else:
             return
 
+    def checkEBLinFITS(self, ext_name='EBL ABS. SPECTRA'):
+        hdul = self.__openFITS()
+        try:
+            self.__ebl = np.array(hdul[4].data)
+            existing = True
+        except:
+            existing = False
+        return existing
+
     # extract template spectra, create xml model files and time slices csv file ---!
     def __extractSpectrumAndModelXML(self, source_name, time_slice_name='time_slices.csv', data_path=None):
         # time slices table ---!
