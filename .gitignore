@@ -12,3 +12,5 @@ test_*
 lib/old*
 lib/__pycache__/*
 __pycache__
+*.egg-info
+.vscode

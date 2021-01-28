@@ -10,6 +10,7 @@
 import time
 import sys
 import os
+import RTAscience.lib.RTACtoolsAnalysis
 texp = sys.argv[1]
 first = sys.argv[2]
 

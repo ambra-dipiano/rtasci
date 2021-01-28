@@ -23,9 +23,9 @@ count = 0  # starting count
 nthreads = 2
 # sim parameters ---!
 caldb = 'prod3b'  # calibration database
-irf = 'South_z40_average_100s'  # istrument response function
-tobs = 12e2  # total obs time (s)
-onset = 6e2  # time of bkg only a.k.a. delayed onset of burst (s)
+irf = 'South_z40_average_LST_30m'  # istrument response function
+tobs = 10  # total obs time (s)
+onset = 5  # time of bkg only a.k.a. delayed onset of burst (s)
 tmax = tobs-onset  # total src exposure time (s)
 emin = 3e-2  # simulation minimum energy (TeV)
 emax = 15e-2  # simulation maximum energy (TeV)
@@ -34,7 +34,7 @@ roi = 2.5  # region of interest radius (deg)
 set_ebl = True  # uses the EBL absorbed template
 # paths ---!
 pypath = str(os.path.dirname(os.path.abspath(__file__)))  
-datapath = pypath.replace('cta-sag-sci', 'DATA')  # all data should be under this folder
+datapath = pypath.replace('cta-sag-sci/RTAscience', 'DATA')  # all data should be under this folder
 grbpath = os.path.join(datapath, 'obs', runid)  # folder that will host the phlist src+bkg phlists
 bkgpath = os.path.join(datapath, 'obs', 'backgrounds')  # folter that will host the bkgs only
 # check folders and create missing ones ---!
