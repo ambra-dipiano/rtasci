@@ -7,7 +7,7 @@
 # Ambra Di Piano <ambra.dipiano@inaf.it>
 # Leonardo Baroncelli <leonardo.baroncelli@inaf.it>
 # *******************************************************************************
-
+import os
 import yaml
 
 class ConfigException(Exception):
@@ -29,7 +29,7 @@ class Config:
         self.cfgDesc = {
             'sections' : ['setup', 'simulation', 'options', 'path'],
             'setup' : ['simtype', 'runid', 'trials', 'start_count'],
-            'simulation' : ['caldb', 'irf', 'tobs', 'emin', 'emax', 'roi'],
+            'simulation' : ['caldb', 'irf', 'tobs', 'onset', 'emin', 'emax', 'roi'],
             'options' : ['set_ebl', 'extract_data'],
             'path' : ['data', 'ebl', 'model', 'catalog']
         }
@@ -115,6 +115,14 @@ class Config:
             raise BadConfiguration(f'Configuration file params of "path" section are missing: {paramsMissing}')
 
         sectionDict = self.cfg['path']
+
+        if not sectionDict['data']:
+            raise BadConfiguration(f'data={sectionDict["data"]} is empty!')
+
+        self.cfg['path']['data'] = os.path.expandvars(self.cfg['path']['data'])
+        
+        if not os.path.isdir(sectionDict['data']):
+            raise BadConfiguration(f'data={sectionDict["data"]} is not a folder!')
 
         # Add other validations here....
         
