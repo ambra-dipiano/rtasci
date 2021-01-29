@@ -11,13 +11,16 @@ import sys
 import os
 import yaml
 import numpy as np
+import argparse
 from lib.RTACtoolsSimulation import RTACtoolsSimulation
 from lib.RTAUtils import get_pointing
 from lib.RTAManageXml import ManageXml
 
-cfgfile = sys.argv[1]
-pypath = str(os.path.dirname(os.path.abspath(__file__)))  
-configuration = open(os.path.join(pypath, cfgfile) )
+parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
+parser.add_argument('--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
+args = parser.parse_args()
+
+configuration = open(args.cfgfile)
 cfg = yaml.load(configuration, Loader=yaml.FullLoader)
 
 # GRB ---!
