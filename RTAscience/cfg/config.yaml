@@ -10,6 +10,7 @@ simulation:
   caldb: prod3b                     # calibration database
   irf: South_z40_average_100s       # istrument response function
   tobs: 100                         # total obs time (s)
+  tonset: 5                         # time of source emission onset (s)
   emin: 0.03                        # simulation minimum energy (TeV)
   emax: 150                         # simulation maximum energy (TeV)
   roi: 2.5                          # region of interest radius (deg)
@@ -22,6 +23,7 @@ path:
   data: $DATA                       # all data should be under this folder
   ebl: $DATA/ebl_tables/gilmore_tau_fiducial.csv
   model: $DATA/models
+  bkg: $DATA/models/CTAIrfBackground.xml
   catalog: $DATA/templates/grb_afterglow/GammaCatalogV1.0
 
 
