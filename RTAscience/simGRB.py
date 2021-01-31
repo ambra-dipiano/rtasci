@@ -8,8 +8,8 @@
 # *******************************************************************************
 
 import numpy as np
-import os
-import argparse
+import os, datetime, argparse
+from shutil import copy
 from RTAscience.lib.RTACtoolsSimulation import RTACtoolsSimulation
 from RTAscience.lib.RTAManageXml import ManageXml
 from RTAscience.lib.RTAUtils import get_pointing
@@ -44,8 +44,9 @@ datapath = cfg.get('data')
 # conditions control ---!
 set_ebl = cfg.get('set_ebl')  # uses the EBL absorbed template
 # paths ---!
-grbpath = os.path.join(datapath, 'obs', runid)  # folder that will host the phlist src+bkg phlists
-bkgpath = os.path.join(datapath, 'obs', 'backgrounds')  # folter that will host the bkgs only
+timestamp_folder = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+grbpath = os.path.join(datapath, 'obs', timestamp_folder, runid)  # folder that will host the phlist src+bkg phlists
+bkgpath = os.path.join(datapath, 'obs', timestamp_folder, 'backgrounds')  # folter that will host the bkgs only
 # check folders and create missing ones ---!
 if not os.path.isdir(grbpath):
     if not os.path.isdir(grbpath.replace(runid, '')):
@@ -61,6 +62,9 @@ template =  os.path.join(datapath, f'templates/{runid}.fits')  # grb FITS templa
 model_pl = os.path.join(datapath, f'models/{runid}.xml')  # grb XML template model
 tcsv = os.path.join(datapath, f'extracted_data/{runid}/time_slices.csv')  # template time bin table (to produce)
 bkg_model = os.path.join(datapath, 'models/CTAIrfBackground.xml')  # XML background model
+
+# Dumping the Conf object to txt file
+copy(args.cfgfile, os.path.join(datapath, 'obs', timestamp_folder))
 
 # check source xml model template and create if not existing ---!
 true_coords = get_pointing(template)
@@ -146,7 +150,7 @@ while count < trials:
         os.system('rm ' + os.path.join(grbpath, f'{name}*tbin*'))
 
     # -------------------------------------------------------- BKG ---!!!
-    if simtype.lower() == 'bkg':
+    elif simtype.lower() == 'bkg':
         print('Simulate empty fields')
         sim.seed = count
         sim.t = [0, tobs]
