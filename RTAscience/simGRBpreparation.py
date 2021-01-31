@@ -18,7 +18,7 @@ from lib.RTAUtils import get_pointing
 from lib.RTAManageXml import ManageXml
 
 parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
-parser.add_argument('--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
+parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
 args = parser.parse_args()
 
 configuration = open(args.cfgfile)
