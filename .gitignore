@@ -1,6 +1,8 @@
 # files
 slurm*
 test_*
+testing/*
+config.yaml
 adptests/*
 RTAscience/cfg/myconfig.yaml
 
