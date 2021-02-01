@@ -461,7 +461,6 @@ class RTACtoolsSimulation():
         if phlist is str():
             phlist = list(phlist)
         for file in phlist:
-            print(file)
             with fits.open(file, mode='update') as hdul:
                 hdul[2].data[0][0] += time_shift
                 hdul[2].data[0][1] += time_shift
