@@ -119,7 +119,7 @@ while count < trials:
 
             # ------------------------------------ add background --- !!!
             print('Simulate bkg to add before the burst')
-            bkg = os.path.join(bkgpath, f'{name}.fits')
+            bkg = os.path.join(grbpath, f'{name}.fits')
             event_bins.insert(0, bkg)
             sim.t = [0, onset]
             sim.model = bkg_model
@@ -135,6 +135,7 @@ while count < trials:
         del sim
         print('remove template bins')
         os.system('rm ' + os.path.join(grbpath, f'{name}*tbin*'))
+        os.system('rm ' + bkg)
 
     # -------------------------------------------------------- BKG ---!!!
     if simtype.lower() == 'bkg':
