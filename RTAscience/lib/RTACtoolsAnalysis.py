@@ -11,6 +11,7 @@ import gammalib
 import ctools
 import cscripts
 import numpy as np
+from RTAscience.lib.RTACtoolsBase import RTACtoolsBase
 
 # create observation list with gammalib ---!
 def make_obslist(obslist, items, names, instruments='CTA'):
@@ -28,7 +29,7 @@ def make_obslist(obslist, items, names, instruments='CTA'):
     xml.save(obslist)
     return 
 
-class RTACtoolsAnalysis() :
+class RTACtoolsAnalysis(RTACtoolsBase) :
     '''
     WRITE DOCS
     '''
@@ -37,16 +38,11 @@ class RTACtoolsAnalysis() :
         self.__on_ram = on_ram
         self.model = str() 
         self.output, self.input = (str() for i in range(2))
-        self.caldb = 'prod2'  # production name in calibration database ---!
-        self.irf = 'South_0.5h'  # irf ID name ---!
         # condition control ---!
         self.set_debug = False  # set/unset debug mode for ctools ---!
         self.set_log = True  # set/unset logfiles for ctools ---!
         # data ---!
         self.t = [0, 1800]  # time range (s/MJD) ---!
-        self.tmax = 1800  # maximum exposure time needed (s) ---!
-        self.e = [0.03, 150.0]  # energy range (TeV) ---!
-        self.roi = 5  # region of indeterest (deg) ---!
         self.pointing = [83.63, 22.01]  # RA/DEC or GLON/GLAT (deg) ---!
         self.target = [83.63, 22.51]  # RA/DEC or GLON/GLAT (deg) ---!
         self.sigma = 5  # Gaussian significance (sigmas) ---!

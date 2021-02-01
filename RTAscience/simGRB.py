@@ -30,14 +30,9 @@ trials = cfg.get('trials')  # trials
 count = 0  # starting count
 nthreads = 2
 # sim parameters ---!
-caldb = cfg.get('caldb')  # calibration database
-irf = cfg.get('irf')   # istrument response function
-tobs = cfg.get('trials')  # total obs time (s)
+tobs = cfg.get('tobs')  # total obs time (s)
 onset = cfg.get('onset') # time of bkg only a.k.a. delayed onset of burst (s)
 tmax = tobs-onset  # total src exposure time (s)
-emin = cfg.get('emin')  # simulation minimum energy (TeV)
-emax = cfg.get('emax')  # simulation maximum energy (TeV)
-roi = cfg.get('roi')  # region of interest radius (deg)
 
 datapath = cfg.get('data')
 
@@ -84,14 +79,10 @@ while count < trials:
     name = f'ebl{count:06d}'
     # setup ---!
     sim = RTACtoolsSimulation()
+    sim.configure(cfg)
     sim.seed = count
     sim.nthreads = nthreads
     sim.pointing = pointing
-    sim.roi = roi
-    sim.e = [emin, emax]
-    sim.tmax = tmax
-    sim.caldb = caldb
-    sim.irf = irf
 
     # -------------------------------------------------------- GRB ---!!!
     if simtype.lower() == 'grb':
