@@ -1,0 +1,26 @@
+setup:
+  simtype:                      # grb -> src+bkg; bkg -> empty fields (str)
+  runid:                        # can be all or any template (list or str) in catalog
+  trials:                       # realisations per runid (int)
+  start_count:                  # starting count for seed (int)
+
+simulation:
+  caldb:                        # calibration database (str)
+  irf:                          # istrument response function (str)
+  tobs:                         # total obs time (s) (float)
+  onset:                        # time of bkg only a.k.a. delayed onset of burst (s) (float)
+  emin:                         # simulation minimum energy (TeV) (float)
+  emax:                         # simulation maximum energy (TeV) (float)
+  roi:                          # region of interest radius (deg) (float)
+
+options:
+  set_ebl:                      # uses the EBL absorbed template (bool)
+  extract_data:                 # if True extracts lightcurves and spectra (bool) 
+
+path: 
+  data:                         # all data should be under this folder (str)
+  ebl:                          # (str)
+  model:                        # (str)
+  catalog:                      # (str)
+
+
