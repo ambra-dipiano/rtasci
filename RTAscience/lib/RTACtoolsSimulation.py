@@ -17,9 +17,9 @@ import pandas as pd
 from astropy.io import fits
 from astropy import table
 from scipy.interpolate import interp1d
+from RTAscience.lib.RTACtoolsBase import RTACtoolsBase
 
-
-class RTACtoolsSimulation():
+class RTACtoolsSimulation(RTACtoolsBase):
     '''
     WRITE DOCS
     '''
@@ -27,8 +27,7 @@ class RTACtoolsSimulation():
         # files fields ---!
         self.model, self.template, self.table = (str() for i in range(3))
         self.output, self.input = (str() for i in range(2))
-        self.caldb = 'prod2'  # production name in calibration database ---!
-        self.irf = 'South_0.5h'  # irf ID name ---!
+
         # condition control ---!
         self.set_ebl = True  # set/unset EBL absorption feature ---!
         self.extract_spectrum = False  # set/unset spectra extraction feature ---!
@@ -38,9 +37,6 @@ class RTACtoolsSimulation():
         self.set_log = True  # set/unset logfiles for ctools ---!
         # data ---!
         self.t = [0, 1800]  # time range (s/MJD) ---!
-        self.tmax = 1800  # maximum exposure time needed (s) ---!
-        self.e = [0.03, 150.0]  # energy range (TeV) ---!
-        self.roi = 5  # region of indeterest (deg) ---!
         self.pointing = [83.63, 22.01]  # RA/DEC or GLON/GLAT (deg) ---!
         # ctools miscellaneous ---!
         self.edisp = False  # set/unset edisp
