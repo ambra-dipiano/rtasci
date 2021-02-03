@@ -36,6 +36,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
         self.set_debug = False  # set/unset debug mode for ctools ---!
         self.set_log = True  # set/unset logfiles for ctools ---!
         # data ---!
+        self.tmax = 1800  # maximum exposure time needed (s) ---!
         self.t = [0, 1800]  # time range (s/MJD) ---!
         self.pointing = [83.63, 22.01]  # RA/DEC or GLON/GLAT (deg) ---!
         # ctools miscellaneous ---!
