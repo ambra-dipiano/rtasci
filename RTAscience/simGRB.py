@@ -24,6 +24,8 @@ cfg = Config(args.cfgfile)
 
 # GRB ---!
 runid = cfg.get('runid')
+if type(runid) == list:
+    raise ValueError('This script allows to compile only one template at a time.')
 # general ---!
 simtype = cfg.get('simtype')  # 'grb' -> src+bkg; 'bkg' -> empty fields
 trials = cfg.get('trials')  # trials
