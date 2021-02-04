@@ -82,6 +82,7 @@ while count < trials:
     # setup ---!
     sim = RTACtoolsSimulation()
     sim.configure(cfg)
+    sim.tmax = tmax
     sim.seed = count
     sim.nthreads = nthreads
     sim.pointing = pointing
@@ -142,7 +143,8 @@ while count < trials:
         del sim
         print('remove template bins')
         os.system('rm ' + os.path.join(grbpath, f'{name}*tbin*'))
-        os.system('rm ' + bkg)
+        if onset != 0:
+            os.system('rm ' + bkg)
 
     # -------------------------------------------------------- BKG ---!!!
     elif simtype.lower() == 'bkg':
