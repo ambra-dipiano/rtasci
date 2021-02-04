@@ -35,6 +35,19 @@ class Config:
         }
         self.validateCfg()
 
+    def prettyd(self, d, indent=0):
+        s = ''
+        for key, value in d.items():
+            s += '\t' * indent + str(key)
+            if isinstance(value, dict):
+                s += '\n' + self.prettyd(value, indent+1)
+            else:
+                s += '\t' * (indent+1) + str(value) + '\n'
+        return s
+
+    def __str__(self):
+        return self.prettyd(self.cfg)
+        
     def get(self, paramName):
         for sectionName in self.cfgDesc['sections']:
             if paramName in self.cfg[sectionName]:
