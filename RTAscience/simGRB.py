@@ -24,6 +24,8 @@ cfg = Config(args.cfgfile)
 
 # GRB ---!
 runid = cfg.get('runid')
+if type(runid) == list:
+    raise ValueError('This script allows to compile only one template at a time.')
 # general ---!
 simtype = cfg.get('simtype')  # 'grb' -> src+bkg; 'bkg' -> empty fields
 trials = cfg.get('trials')  # trials
@@ -124,7 +126,7 @@ while count < trials:
 
             # ------------------------------------ add background --- !!!
             print('Simulate bkg to add before the burst')
-            bkg = os.path.join(bkgpath, f'{name}.fits')
+            bkg = os.path.join(grbpath, f'{name}.fits')
             event_bins.insert(0, bkg)
             sim.t = [0, onset]
             sim.model = bkg_model
@@ -140,6 +142,7 @@ while count < trials:
         del sim
         print('remove template bins')
         os.system('rm ' + os.path.join(grbpath, f'{name}*tbin*'))
+        os.system('rm ' + bkg)
 
     # -------------------------------------------------------- BKG ---!!!
     elif simtype.lower() == 'bkg':
