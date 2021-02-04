@@ -42,7 +42,7 @@ datapath = cfg.get('data')
 set_ebl = cfg.get('set_ebl')  # uses the EBL absorbed template
 # paths ---!
 timestamp_folder = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-timestamp_folder += f"_st_{simtype}_tr_{trials}_os_{onset}" 
+timestamp_folder += f"_st_{simtype}_tr_{trials}_os_{onset}_emin_{cfg.get('emin')}_emax_{cfg.get('emax')}_roi_{cfg.get('roi')}" 
 grbpath = os.path.join(datapath, 'obs', timestamp_folder, runid)  # folder that will host the phlist src+bkg phlists
 bkgpath = os.path.join(datapath, 'obs', timestamp_folder, 'backgrounds')  # folter that will host the bkgs only
 # check folders and create missing ones ---!
