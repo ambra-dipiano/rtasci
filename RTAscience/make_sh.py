@@ -11,7 +11,7 @@ else:
     N = 10
 
 rootpath = str(os.path.dirname(os.path.abspath(__file__)))
-pypath = f'{rootpath}'
+pypath = f'{rootpath}/timing'
 jobpath = f'{rootpath}/jobs'
 scripts = [f for f in listdir(pypath) if isfile(join(pypath, f)) and 'time_' in f]
 

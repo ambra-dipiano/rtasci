@@ -71,6 +71,14 @@ class RTACtoolsSimulation(RTACtoolsBase):
         self.__closeFITS(hdul)
         return
 
+    def checkEBLinFITS(self, ext_name):
+        hdul = self.__openFITS()
+        try:
+            ext = hdul[ext_name]
+            return True
+        except KeyError:
+            return False
+
     # load csv tabl in pandas DataFrame and drop NaN values---!
     def __openCSV(self):
         df = pd.read_csv(self.table)
