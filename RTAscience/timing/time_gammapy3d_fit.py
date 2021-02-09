@@ -148,7 +148,7 @@ print(f'Total time: {ttotal} s\n')
 print('\n\n-----------------------------------------------------\n\n')
 
 logname = f'{rootpath}/DATA/outputs/crab/gammapy3d_fit.csv'
-if first:
+if first == 'True':
     hdr = 'texp sqrt_ts flux flux_err ttotal timport tsetup tobs tconf tred tstat tmodel tfit tflux\n'
     log = open(logname, 'w+')
     log.write(hdr)

@@ -148,7 +148,7 @@ print(f'Total time: {ttotal} s\n')
 print('\n\n-----------------------------------------------------\n\n')
 
 logname = f'{rootpath}/DATA/outputs/crab/gammapy3d_binned_fit.csv'
-if first:
+if first == 'True':
     hdr = 'texp sqrt_ts flux flux_err ttotal timport tsetup tobs tconf tred tstat tmodel tfit tflux\n'
     log = open(logname, 'w+')
     log.write(hdr)
@@ -156,5 +156,5 @@ if first:
     log.close()
 else:
     log = open(logname, 'a')
-    log.write(f'{texp} {stats["sqrt_ts"]} {phflux} {phflux_err} {ttotal} {timport} {tsetup} {tconf} {tred} {tstat} {tmodel} {tfit} {tflux}\n')
+    log.write(f'{texp} {stats["sqrt_ts"][0]} {phflux_err.value[0]} {phflux_err.value[1]} {ttotal} {timport} {tsetup} {tconf} {tred} {tstat} {tmodel} {tfit} {tflux}\n')
     log.close()
