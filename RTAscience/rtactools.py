@@ -13,7 +13,7 @@ if cfg['options']['extract_data'] and cfg['setup']['simtype'].lower() == 'grb':
     print('Preparing GRB catalog...\n')
     os.system(f'python3 simGRBpreparation.py -f {cfgfile}')
 elif cfg['setup']['simtype'].lower() == 'bkg':
-    print('Computing BKG-ONLY simulations')
+    print('Computing BKG-ONLY simulations is work in progress')
 else:
     raise ValueError('Ivalid "simtype" value')
 
