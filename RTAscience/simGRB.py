@@ -126,7 +126,7 @@ while count < trials:
 
             # ------------------------------------ add background --- !!!
             print('Simulate bkg to add before the burst')
-            bkg = os.path.join(grbpath, f'{name}.fits')
+            bkg = os.path.join(grbpath, f'bkg{count:06d}.fits')
             event_bins.insert(0, bkg)
             sim.t = [0, onset]
             sim.model = bkg_model
