@@ -4,8 +4,7 @@ test_*
 testing/*
 config.yaml
 adptests/*
-RTAscience/cfg/myconfig.yaml
-RTAscience/cfg/singleconfig.yml
+RTAscience/cfg/*.yml
 
 # folders
 .*/
