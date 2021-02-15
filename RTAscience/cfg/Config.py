@@ -27,9 +27,10 @@ class Config:
         configuration = open(cfgfile)
         self.cfg = yaml.load(configuration, Loader=yaml.FullLoader)
         self.cfgDesc = {
-            'sections' : ['setup', 'simulation', 'options', 'path'],
+            'sections' : ['setup', 'simulation', 'analysis', 'options', 'path'],
             'setup' : ['simtype', 'runid', 'trials', 'start_count'],
-            'simulation' : ['caldb', 'irf', 'tobs', 'onset', 'emin', 'emax', 'roi'],
+            'simulation' : ['caldb', 'irf', 'tobs', 'onset', 'emin', 'emax', 'roi', 'delay'],
+            'analysis' : ['maxsrc', 'skypix', 'skyroifrac', 'smooth'],
             'options' : ['set_ebl', 'extract_data'],
             'path' : ['data', 'ebl', 'model', 'catalog']
         }
@@ -46,6 +47,7 @@ class Config:
         self.checkSetupSectionParams(     self.cfgDesc['setup'])
         self.checkSimulationSectionParams(self.cfgDesc['simulation'])
         self.checkOptionsSectionParams(   self.cfgDesc['options'])
+        self.checkAnalysisSectionParams(  self.cfgDesc['analysis'])
         self.checkPathSectionParams(      self.cfgDesc['path'])           
     
     def checkSections(self, sections):
@@ -84,10 +86,8 @@ class Config:
 
         sectionDict = self.cfg['simulation'] 
         
-
         # Add other validations here....
-        # ....        
-
+        # ....      
 
     ###################
     # Options section #
@@ -96,14 +96,26 @@ class Config:
     def checkOptionsSectionParams(self, params):
         paramsMissing = set(params) - set(self.cfg['options'])
         if len(paramsMissing) > 0:
-            raise BadConfiguration(f'Configuration file params of "simulation" section are missing: {paramsMissing}')
+            raise BadConfiguration(f'Configuration file params of "options" section are missing: {paramsMissing}')
 
         sectionDict = self.cfg['options']
 
         # Add other validations here....
         # ....        
 
+    ####################
+    # Analysis section #
+    ####################
 
+    def checkAnalysisSectionParams(self, params):
+        paramsMissing = set(params) - set(self.cfg['analysis'])
+        if len(paramsMissing) > 0:
+            raise BadConfiguration(f'Configuration file params of "analysis" section are missing: {paramsMissing}')
+
+        sectionDict = self.cfg['analysis']
+
+        # Add other validations here....
+        # ....        
 
     ################
     # Path section #
