@@ -13,40 +13,41 @@ import yaml
 import numpy as np
 import argparse
 from os.path import isdir, join
-from lib.RTACtoolsSimulation import RTACtoolsSimulation
-from lib.RTAUtils import get_pointing
-from lib.RTAManageXml import ManageXml
+from RTAscience.lib.RTACtoolsSimulation import RTACtoolsSimulation
+from RTAscience.lib.RTAUtils import get_pointing
+from RTAscience.lib.RTAManageXml import ManageXml
+from RTAscience.cfg.Config import Config
 
 parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
 parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
 args = parser.parse_args()
 
-configuration = open(args.cfgfile)
-cfg = yaml.load(configuration, Loader=yaml.FullLoader)
+cfg = Config(args.cfgfile)
 
 # GRB ---!
-if cfg['setup']['runid'] == 'all':
-    runids = [f.replace('.fits', '') for f in os.listdir(cfg['path']['catalog']) if '_ebl' not in f and os.path.isfile(join(cfg['path']['catalog'], f))]
-elif type(cfg['setup']['runid']) == str:
-    runids = [cfg['setup']['runid']]
+if cfg.get('runid') == 'all':
+    runids = [f.replace('.fits', '') for f in os.listdir(cfg.get('catalog')) if '_ebl' not in f and os.path.isfile(join(cfg.get('catalog'), f))]
+elif type(cfg.get('runid')) == str:
+    runids = [cfg.get('runid')]
 else:
-    runids = cfg['setup']['runid']
+    runids = cfg.get('runid')
 
 # conditions control ---!
-set_ebl = cfg['options']['set_ebl']  # uses the EBL absorbed template
+set_ebl = cfg.get('set_ebl')  # uses the EBL absorbed template
 # paths ---!
-if '$' in cfg['path']['data']:
-    datapath = os.path.expandvars(cfg['path']['data'])
+print(cfg.get('data'), type(cfg.get('data')))
+if '$' in cfg.get('data'):
+    datapath = os.path.expandvars(cfg.get('data'))
 else:
-    datapath = cfg['path']['data']  
+    datapath = cfg.get('data')  
 if not isdir(datapath):
     raise ValueError('Please specify a valid path')
 if not isdir(join(datapath, 'obs')):
     os.mkdir(join(datapath, 'obs'))
 
 # global files ---!
-ebl_table = cfg['path']['ebl'].replace(cfg['path']['data'], datapath) 
-pl_template = join(cfg['path']['model'].replace(cfg['path']['data'], datapath), 'grb_file_model.xml' )
+ebl_table = os.path.expandvars(cfg.get('ebl')) 
+pl_template = join(os.path.expandvars(cfg.get('model')), 'grb_file_model.xml' )
 if not os.path.isfile(pl_template):
     raise ValueError(f'PL template {pl_template} not found')
 if not os.path.isfile(ebl_table):
@@ -62,7 +63,7 @@ for runid in runids:
     if not isdir(grbpath):
         os.mkdir(grbpath)
     # grb files ---!
-    template =  join(cfg['path']['catalog'].replace(cfg['path']['data'], datapath), f'{runid}.fits')  # grb FITS template data
+    template =  join(os.path.expandvars(cfg.get('catalog')), f'{runid}.fits')  # grb FITS template data
     model_pl = pl_template.replace('grb_file_model.xml', f'{runid}.xml')  # grb XML template model
     tcsv = join(datapath, f'extracted_data/{runid}/time_slices.csv')  # grb template time grid
     if not os.path.isfile(template):
@@ -95,3 +96,4 @@ for runid in runids:
         sim.extract_spectrum = True
         print('Creating lightcurves and spectra')
     sim.loadTemplate(source_name=runid, return_bin=False, data_path=join(datapath, f'extracted_data/{runid}'))
+
