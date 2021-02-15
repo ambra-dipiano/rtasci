@@ -1,20 +1,26 @@
 import yaml
 import sys
 import os
+import argparse
 from os.path import join
+from RTAscience.cfg.Config import Config
 
 # configure
-cfgfile = sys.argv[1]
-pypath = str(os.path.dirname(os.path.abspath(__file__)))  
-configuration = open(os.path.join(pypath, cfgfile))
-cfg = yaml.load(configuration, Loader=yaml.FullLoader)
+parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
+parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
+args = parser.parse_args()
 
-if cfg['options']['extract_data'] and cfg['setup']['simtype'].lower() == 'grb':
-    print('Preparing GRB catalog...\n')
-    os.system(f'python3 simGRBpreparation.py -f {cfgfile}')
-elif cfg['setup']['simtype'].lower() == 'bkg':
-    print('Computing BKG-ONLY simulations is work in progress')
+cfg = Config(args.cfgfile)
+
+if cfg.get('simtype').lower() == 'grb':
+    if cfg.get('extract_data'):
+        print('\nPreparing GRB catalog...\n')
+        os.system(f'python3 simGRBpreparation.py -f {args.cfgfile}')
+    print('\nRun simulations...\n')
+    os.system(f'python3 simGRBcat.py -f {args.cfgfile}')
+elif cfg.get('simtype').lower() == 'bkg':
+    print('\nComputing BKG-ONLY simulations is work in progress\n')
 else:
-    raise ValueError('Ivalid "simtype" value')
+    raise ValueError('Invalid "simtype" value')
 
 print('\n\nExit\n\n')
