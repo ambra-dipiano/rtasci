@@ -7,10 +7,11 @@
 # Ambra Di Piano <ambra.dipiano@inaf.it>
 # *******************************************************************************
 
+import os
 import astropy.units as u
-from astropy.io import fits
 import healpy as hp
 import numpy as np
+from astropy.io import fits
 
 # center of fov from FITS ---!
 def get_pointing(fits_file):
@@ -20,9 +21,10 @@ def get_pointing(fits_file):
     return (ra, dec)
 
 # retrieve telescope pointing coordinates from alert probability map ---!
-def get_alert_pointing(merger_map=None):
+def get_alert_pointing(merger_map):
     # load map ---!
-    os.system('gunzip %s.gz' %merger_map)
+    merger_map = merger_map.replace('.gz','')
+    os.system(f'gunzip {merger_map}.gz')
     map = hp.read_map(merger_map, dtype=None)
     pixels = len(map)
     axis = hp.npix2nside(pixels)
@@ -30,7 +32,7 @@ def get_alert_pointing(merger_map=None):
     pmax = np.argmax(map)
     theta, phi = hp.pix2ang(axis, pmax)
     pointing = (np.rad2deg(phi), np.rad2deg(0.5 * np.pi - theta))
-    os.system('gzip %s' %merger_map)
+    os.system(f'gzip {merger_map}')
     return pointing
 
 def increase_exposure(x, function='double'):
@@ -100,3 +102,12 @@ def wobble_pointing(target, nrun, clockwise=True, offset=0.5):
     print(wobble[wobble_index])
     pointing = (target[0] + wobble[wobble_index][0], target[1] + wobble[wobble_index][1])
     return pointing
+
+# get mergermap file
+def get_mergermap(run, path):
+    runid = run.split('_')
+    merger = f'{runid[0]}_Merger{runid[1]}_skymap.fits.gz'
+    if merger in os.listdir(path):
+        return os.path.join(path, merger)
+    else:
+        raise FileExistsError(f'Merger map {merger} for not found in path: {path}')
