@@ -75,11 +75,7 @@ for runid in runids:
         sim.seed = count
         sim.set_ebl = cfg.get('set_ebl')
         sim.pointing = pointing
-        sim.roi = cfg.get('roi')
-        #sim.e = [cfg.get('emin'), cfg.get('emax')]
         sim.tmax = tmax
-        sim.cadb = cfg.get('caldb')
-        sim.irf = cfg.get('irf')
 
         # get time grid ---!
         sim.template = join(os.path.expandvars(cfg.get('catalog')).replace(cfg.get('data'), datapath), f'{runid}.fits')
@@ -98,12 +94,13 @@ for runid in runids:
             sim.run_simulation()
 
         # ---------------------------------------- merge in single photon list ---!!!
+        print('Merge bins in photon-list')
         phlist = join(grbpath, f'{name}.fits')
         sim.input = event_bins
         sim.output = phlist
         sim.appendEventsSinglePhList(GTI=[0, cfg.get('tobs')])
 
         del sim
-        print('remove bins')
+        print('Remove bins')
         os.system('rm ' + join(grbpath, f'{name}*tbin*'))
 
