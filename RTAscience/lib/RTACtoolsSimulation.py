@@ -117,10 +117,12 @@ class RTACtoolsSimulation(RTACtoolsBase):
             time_slice = slice(bin_start, bin_stop)
         if not time_slice:
             raise ValueError('Invalid GTI: cannot extract time slices')
+        tgrid = self.__time[time_slice]
+        tgrid[0] = GTI[0]
         if not return_bins:
-            return self.__time[time_slice]
+            return tgrid
         else:
-            return self.__time[time_slice], bin_start, bin_stop
+            return tgrid, bin_start, bin_stop
 
     # compute the EBL absorption ---!
     def __addEBL(self, unit='MeV'):
