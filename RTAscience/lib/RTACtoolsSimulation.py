@@ -42,7 +42,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
         # ctools miscellaneous ---!
         self.edisp = False  # set/unset edisp
         self.seed = 1  # MC seed ---!
-        self.nthreads = 1
+        self.nthreads = 1  # run in parallel 
         # ebl specifics ---!
         self.z = 0.1  # redshift value ---!
         self.z_ind = 1  # redshift value index ---!
@@ -62,6 +62,8 @@ class RTACtoolsSimulation(RTACtoolsBase):
         hdul = self.__openFITS()
         self.__energy = np.array(hdul[1].data)
         self.__time = np.array(hdul[2].data)
+        self.__Nt = len(self.__time)
+        self.__Ne = len(self.__energy)
         self.__spectra = np.array(hdul[3].data)
         if self.set_ebl:
             try:
@@ -95,6 +97,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
 
     # retrive csv temporal bin grid of the template in use and return the necessary slice ---!
     def getTimeSlices(self, GTI, return_bins=False):
+        self.__getFitsData()
         df = self.__openCSV()
         cols = list(df.columns)
         self.__time = np.append(0, np.array(df[cols[1]]))
@@ -133,8 +136,8 @@ class RTACtoolsSimulation(RTACtoolsBase):
         tau = np.array(interp(self.__energy))
         self.__ebl = np.empty_like(self.__spectra)
         # compute absorption ---!
-        for i in range(len(self.__time)):
-            for j in range(len(self.__energy)):
+        for i in range(self.__Nt):
+            for j in range(self.__Ne):
                 self.__ebl[i][j] = self.__spectra[i][j] * np.exp(-tau[j])
 
         if self.plot:
@@ -196,7 +199,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
         return existing
 
     # extract template spectra, create xml model files and time slices csv file ---!
-    def __extractSpectrumAndModelXML(self, source_name, time_slice_name='time_slices.csv', data_path=None):
+    def __extractSpectrumAndModelXML(self, source_name, time_slice_name='time_slices.csv', data_path=None, scalefluxfactor=1):
         # time slices table ---!
         if data_path is None:
             raise ValueError('please specify a valid path')
@@ -219,7 +222,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
             with open(filename, 'a+') as f:
                 for j in range(self.__Ne):
                     # write spectral data in E [MeV] and I [ph/cm2/s/MeV] ---!
-                    f.write(str(self.__energy[j][0] * 1000.0) + ' ' + str(self.__spectra[i][j] / 1000.0) + "\n")
+                    f.write(str(self.__energy[j][0] * 1000.0) + ' ' + str(self.__spectra[i][j] / 1000.0 / scalefluxfactor) + "\n")
             # write bin models ---!
             os.system('cp ' + str(self.model) + ' ' + str(os.path.join(data_path, f'{source_name}_tbin{i:02d}.xml')))
             s = open(os.path.join(data_path, f'{source_name}_tbin{i:02d}.xml')).read()
@@ -229,10 +232,8 @@ class RTACtoolsSimulation(RTACtoolsBase):
         return
 
     # read template and return tbin_stop containing necessary exposure time coverage ---!
-    def loadTemplate(self, source_name, return_bin=False, data_path=None):
+    def loadTemplate(self, source_name, return_bin=False, data_path=None, scalefluxfactor=1):
         self.__getFitsData()
-        self.__Nt = len(self.__time)
-        self.__Ne = len(self.__energy)
 
         # time grid ---!
         t = [0.0 for x in range(self.__Nt + 1)]
@@ -261,7 +262,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
 
         # extract spectrum if required ---!
         if self.extract_spectrum:
-            self.__extractSpectrumAndModelXML(source_name=source_name, data_path=data_path)
+            self.__extractSpectrumAndModelXML(source_name=source_name, data_path=data_path, scalefluxfactor=scalefluxfactor)
         if return_bin:
             return tbin_stop
         else:
@@ -270,8 +271,6 @@ class RTACtoolsSimulation(RTACtoolsBase):
     # get tbin_stop without loading the template ---!
     def getTimeBinStop(self):
         self.__getFitsData()
-        self.__Nt = len(self.__time)
-        self.__Ne = len(self.__energy)
 
         # time grid ---!
         t = [0.0 for x in range(self.__Nt + 1)]
@@ -506,73 +505,3 @@ class RTACtoolsSimulation(RTACtoolsBase):
             return n, singlefile
         else:
             return
-
-    # reduce flux of template by given factor ---!
-    def __reduceSpectrumNorm(self, data_path=None):
-        spec_files = []
-        if data_path is None:
-            raise ValueError('please specify a valid path')
-        # r: root, d: directories, f: files ---!
-        for r, d, f in os.walk(data_path):
-            for file in f:
-                if self.set_ebl:
-                    if '.out' in file and 'ebl' in file and 'flux' not in file:
-                        spec_files.append(os.path.os.path.join(r, file))
-                else:
-                    if '.out' in file and 'ebl' not in file and 'flux' not in file:
-                        spec_files.append(os.path.os.path.join(r, file))
-
-        spec_files.sort()
-        # new files with relative suffix ---!
-        for i in range(len(spec_files)):
-            if self.set_ebl:
-                new_file = spec_files[i].replace('spec_ebl_tbin', 'spec_ebl_flux%d_tbin' %self.factor)
-            else:
-                new_file = spec_files[i].replace('spec_tbin', 'spec_flux%d_tbin' %self.factor)
-            if os.path.isfile(new_file):
-                os.remove(new_file)
-            # modify by a given factor ---!
-            with open(spec_files[i], 'r') as input, open(new_file, 'w+') as output:
-                df = pd.read_csv(input, sep=' ', header=None)
-                df.iloc[:,1] = df.iloc[:,1].apply(lambda x: float(x)/self.factor)
-                df.to_csv(path_or_buf=output, sep=' ', index=False, header=None)
-        return
-
-    # replace path/to/spectrum/file.out in the xml model file ---!
-    def __replaceSpectrumFile(self, data_path=None):
-        xml_files = []
-        if data_path is None:
-            raise ValueError('please specify a valid path')
-        # r: root, d: directories, f: files ---!
-        for r, d, f in os.walk(data_path):
-            for file in f:
-                if self.set_ebl:
-                    if '.xml' in file and 'ebl' in file and 'flux' not in file:
-                        xml_files.append(os.path.os.path.join(r, file))
-                else:
-                    if '.xml' in file and 'ebl' not in file and 'flux' not in file:
-                        xml_files.append(os.path.os.path.join(r, file))
-
-        xml_files.sort()
-        # replace ---!
-        for i in range(len(xml_files)):
-            if self.set_ebl:
-                new_file = xml_files[i].replace('ID000126_ebl_tbin', 'ID000126_ebl_flux%d_tbin' %self.factor)
-            else:
-                new_file = xml_files[i].replace('ID000126_tbin', 'ID000126_flux%d_tbin' %self.factor)
-            if os.path.isfile(new_file):
-                os.remove(new_file)
-            with open(xml_files[i], 'r') as input, open(new_file, 'w+') as output:
-                content = input.read()
-                if self.set_ebl:
-                    content = content.replace('spec_ebl_tbin', 'spec_ebl_flux%d_tbin' %self.factor)
-                else:
-                    content = content.replace('spec_tbin', 'spec_flux%d_tbin' %self.factor)
-                output.write(content)
-        return
-
-    # execute the flux reduction and consequent substitution of files ---!
-    def makeFainter(self, data_path=None):
-        self.__reduceSpectrumNorm(data_path=data_path)
-        self.__replaceSpectrumFile(data_path=data_path)
-        return
