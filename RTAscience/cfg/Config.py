@@ -30,7 +30,7 @@ class Config:
             'sections' : ['setup', 'simulation', 'analysis', 'options', 'path'],
             'setup' : ['simtype', 'runid', 'trials', 'start_count', 'scalefluxfactor'],
             'simulation' : ['caldb', 'irf', 'tobs', 'onset', 'emin', 'emax', 'roi', 'delay', 'offset'],
-            'analysis' : ['maxsrc', 'skypix', 'skyroifrac', 'smooth', 'tool', 'type', 'blind', 'binned'],
+            'analysis' : ['maxsrc', 'skypix', 'skyroifrac', 'smooth', 'tool', 'type', 'blind', 'binned', 'exposure', 'usepnt', 'sgmthresh'],
             'options' : ['set_ebl', 'extract_data'],
             'path' : ['data', 'ebl', 'model', 'catalog']
         }

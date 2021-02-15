@@ -1,5 +1,5 @@
 setup:
-  simtype:                      # grb -> src+bkg; bkg -> empty fields (str)
+  simtype:                      # grb -> src+bkg; bkg -> empty fields (str); skip -> only analysis
   runid:                        # can be all or any template (list or str) in catalog
   trials:                       # realisations per runid (int)
   start_count:                  # starting count for seed (int)
@@ -14,10 +14,17 @@ simulation:
   roi:                          # region of interest radius (deg) (float)
 
 analysis:
-  skypix:                       # pixel size in skymap (deg)
-  skyroifrac:                   # ratio between skymap axis and roi
-  smooth:                       # Gaussian corr. kernel rad. (deg)
-  maxsrc:                       # number of hotspot to search for
+  skypix:                       # pixel size in skymap in deg (float)
+  skyroifrac:                   # ratio between skymap axis and roi (float)
+  smooth:                       # Gaussian corr. kernel rad. in deg (float)
+  maxsrc:                       # number of hotspot to search for (float)
+  sgmthresh: 3                  # blind-search acc. thresh. in Gaussian sigma (float)
+  usepnt: yes                   # use pointing for RA/DEC (bool)
+  exposure:                     # exposure times for the analysis in seconds (float)
+  binned: no                    # perform binned or unbinned analysis (bool)
+  blind: yes                    # requires blind-search (bool)
+  tool: ctools                  # which science tool (str) 
+  type: 3d                      # 1d on/off or 3d full-fov (str)
 
 options:
   set_ebl:                      # uses the EBL absorbed template (bool)
@@ -25,8 +32,8 @@ options:
 
 path: 
   data:                         # all data should be under this folder (str)
-  ebl:                          # (str)
-  model:                        # (str)
-  catalog:                      # (str)
+  ebl:                          # ebl table if necessary (str)
+  model:                        # spectral and spatial model (str)
+  catalog:                      # templates catalog (str)
 
 
