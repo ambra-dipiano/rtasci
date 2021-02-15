@@ -28,9 +28,9 @@ class Config:
         self.cfg = yaml.load(configuration, Loader=yaml.FullLoader)
         self.cfgDesc = {
             'sections' : ['setup', 'simulation', 'analysis', 'options', 'path'],
-            'setup' : ['simtype', 'runid', 'trials', 'start_count'],
-            'simulation' : ['caldb', 'irf', 'tobs', 'onset', 'emin', 'emax', 'roi', 'delay'],
-            'analysis' : ['maxsrc', 'skypix', 'skyroifrac', 'smooth'],
+            'setup' : ['simtype', 'runid', 'trials', 'start_count', 'scalefluxfactor'],
+            'simulation' : ['caldb', 'irf', 'tobs', 'onset', 'emin', 'emax', 'roi', 'delay', 'offset'],
+            'analysis' : ['maxsrc', 'skypix', 'skyroifrac', 'smooth', 'tool', 'type', 'blind', 'binned'],
             'options' : ['set_ebl', 'extract_data'],
             'path' : ['data', 'ebl', 'model', 'catalog']
         }
@@ -68,7 +68,7 @@ class Config:
         
         # Add validations here
         
-        simTypeValues = ['grb', 'bkg']
+        simTypeValues = ['grb', 'bkg', 'skip']
         if sectionDict['simtype'] not in simTypeValues:
             raise BadConfiguration(f'simtype={sectionDict["simtype"]} is not supported. Available values: {simTypeValues}')
 
@@ -116,6 +116,12 @@ class Config:
 
         # Add other validations here....
         # ....        
+        toolTypeValues = ['ctools', 'gammapy', 'rtatool']
+        if sectionDict['tool'] not in toolTypeValues:
+            raise BadConfiguration(f'tool={sectionDict["tool"]} is not supported. Available values: {toolTypeValues}')
+        typeValues = ['1d', '3d']
+        if sectionDict['type'] not in typeValues:
+            raise BadConfiguration(f'type={sectionDict["type"]} is not supported. Available values: {typeValues}')
 
     ################
     # Path section #

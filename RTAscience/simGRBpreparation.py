@@ -92,8 +92,8 @@ for runid in runids:
         sim.template = template
     sim.set_ebl = set_ebl
     # load template ---!
-    if not os.path.isfile(tcsv):
+    if cfg.get('extract_data'):
         sim.extract_spectrum = True
         print('Creating lightcurves and spectra')
-    sim.loadTemplate(source_name=runid, return_bin=False, data_path=join(datapath, f'extracted_data/{runid}'))
+    sim.loadTemplate(source_name=runid, return_bin=False, data_path=join(datapath, f'extracted_data/{runid}'), scalefluxfactor=cfg.get('scalefluxfactor'))
 
