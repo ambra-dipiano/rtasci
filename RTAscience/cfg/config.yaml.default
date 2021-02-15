@@ -13,6 +13,12 @@ simulation:
   emax:                         # simulation maximum energy (TeV) (float)
   roi:                          # region of interest radius (deg) (float)
 
+analysis:
+  skypix:                       # pixel size in skymap (deg)
+  skyroifrac:                   # ratio between skymap axis and roi
+  smooth:                       # Gaussian corr. kernel rad. (deg)
+  maxsrc:                       # number of hotspot to search for
+
 options:
   set_ebl:                      # uses the EBL absorbed template (bool)
   extract_data:                 # if True extracts lightcurves and spectra (bool) 
