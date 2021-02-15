@@ -71,7 +71,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
         self.__closeFITS(hdul)
         return
 
-    def checkEBLinFITS(self, ext_name):
+    def checkEBLinFITS(self, ext_name='EBL-ABS. SPECTRA'):
         hdul = self.__openFITS()
         try:
             ext = hdul[ext_name]
@@ -104,7 +104,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
             if self.__time[i] < GTI[0]:
                 bin_start += 1
                 continue
-            elif self.__time[i] > GTI[1] or self.__time[i] == GTI[1]:
+            elif self.__time[i] >= GTI[1]:
                 self.__time[i] = GTI[1]
                 bin_stop += i
                 break
