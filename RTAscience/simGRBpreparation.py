@@ -35,7 +35,6 @@ else:
 # conditions control ---!
 set_ebl = cfg.get('set_ebl')  # uses the EBL absorbed template
 # paths ---!
-print(cfg.get('data'), type(cfg.get('data')))
 if '$' in cfg.get('data'):
     datapath = os.path.expandvars(cfg.get('data'))
 else:
