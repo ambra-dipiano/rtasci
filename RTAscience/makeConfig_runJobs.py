@@ -36,7 +36,7 @@ if args.off == 'gw':
 else:
     config['simulation']['offset'] == float(args.off)
 config['simulation']['delay'] = float(args.delay)
-config['simulation']['delay'] = float(args.off)
+config['simulation']['offset'] = float(args.off)
 config['setup']['trials'] = int(args.tn)
 
 for i in range(int(args.tt/args.tn)):
@@ -51,12 +51,6 @@ for i in range(int(args.tt/args.tn)):
     sh = outname.replace('cfg/', 'jobs/') + '.sh'
     with open(sh, 'w+') as f:
         f. write('#!/bin/bash\n')
-        f.write('\n#SBATCH --job-name=' + outname)
-        f.write('\n#SBATCH --output=slurm-' + outname+ '.out')
-        f.write('\n#SBATCH --account=rt')
-        f.write('\n#SBATCH --ntasks=1')
-        f.write('\n#SBATCH --nodes=1')
-        f.write('\n#SBATCH --cpus-per-task=1\n')
         f.write('\nsource activate scitools')
         f.write('\n\texport DATA=/data01/homes/cta/gammapy_integration/DATA/')
         f.write(f'\n\tpython rtactools.py -f {yml}\n')
