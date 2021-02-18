@@ -7,7 +7,8 @@ dependencies:
   - astropy
   - healpy
   - pandas
-  - lxml
+  - xml
   - pyaml
   - scipy
   - pyregion
+  - seaborn
