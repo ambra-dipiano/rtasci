@@ -34,7 +34,7 @@ else:
 
 # general ---!
 start_count = cfg.get('start_count')
-trials = cfg.get('trials') + start_count
+trials = cfg.get('trials') 
 if cfg.get('offset') == 'str':
     offset = 2
 else:
