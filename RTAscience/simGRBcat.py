@@ -62,8 +62,14 @@ for runid in runids:
     # get alert pointing
     if type(cfg.get('offset')) == str and cfg.get('offset').lower() == 'gw':
         pointing = get_alert_pointing(mergermap)
-    elif type(cfg.get('offset')) == float:
-        pointing = get
+    else:
+        pointing = list(get_pointing(f"{os.path.expandvars(cfg.get('catalog'))}/{runid}.fits"))
+        if pointing[1] < 0:
+            pointing[0] += 0.0
+            pointing[1] += -cfg.get('offset')
+        else:
+            pointing[0] += 0.0
+            pointing[1] += cfg.get('offset')
 
     # ---------------------------------------------------- loop trials ---!!!
     for i in range(trials):
