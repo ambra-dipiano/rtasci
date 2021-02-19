@@ -32,7 +32,7 @@ def handleReg(reg, col='black'):
   return r
 
 # plot sky map ---!
-def plotSkymap(file, reg='none', col='green', suffix='none', title='skymap', xlabel='R.A. (deg)', ylabel='Dec (deg)', fontsize=15, figsize=(10, 8), rotation=0, show=False, sns_style=False, usetex=False, png=None):
+def plotSkymap(file, reg='none', col='green', suffix='none', title='skymap', xlabel='R.A. (deg)', ylabel='Dec (deg)', fontsize=20, figsize=(10, 8), rotation=0, show=False, sns_style=False, usetex=False, png=None):
   with fits.open(file) as hdul:
     wcs = WCS(hdul[0].header)
     data = hdul[0].data
