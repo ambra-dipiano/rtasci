@@ -56,7 +56,7 @@ if not isdir(f"{datapath}/skymaps"):
 for runid in runids:
     print(f'Processing runid: {runid}')
     # outputs
-    logname = f"{datapath}/outputs/{runid}/{cfg.get('caldb')}-{cfg.get('irf')}_seed{start_count+1}-{trials}_flux1-{cfg.get('scalefluxfactor')}_offset{offset}_delay{cfg.get('delay')}.txt"
+    logname = f"{datapath}/outputs/{runid}/{cfg.get('caldb')}-{cfg.get('irf')}_seed{start_count+1:06d}-{start_count+1+trials:06d}_flux{cfg.get('scalefluxfactor')}_offset{offset}_delay{cfg.get('delay')}.txt"
     if not isdir(f"{datapath}/outputs/{runid}"):
         os.mkdir(f"{datapath}/outputs/{runid}")
     if not isdir(f"{datapath}/rta_products/{runid}"):
@@ -151,3 +151,4 @@ for runid in runids:
             del grb
         os.system(f"rm {datapath}/obs/{runid}/*{name}*")
         os.system(f"rm {datapath}/rta_products/{runid}/*{name}*")
+print('...done.\n')

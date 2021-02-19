@@ -16,7 +16,7 @@ parser.add_argument('--infile', type=str, default='cfg/myconfig.yml', help='yaml
 parser.add_argument('--tt', type=float, default=10000, help='total trials')
 parser.add_argument('--tn', type=float, default=500, help='trials per node')
 parser.add_argument('--delay', type=float, default=50, help='delay')
-parser.add_argument('--off', type=str, default=3, help='offset')
+parser.add_argument('--off', type=str, default='gw', help='offset')
 parser.add_argument('--flux', type=float, default=1, help='flux scaling factor')
 args = parser.parse_args()
 
@@ -38,6 +38,7 @@ else:
 config['simulation']['delay'] = float(args.delay)
 config['simulation']['offset'] = float(args.off)
 config['setup']['trials'] = int(args.tn)
+config['options']['plotsky'] = False
 
 for i in range(int(args.tt/args.tn)):
     # save new gonfig
