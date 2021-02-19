@@ -78,7 +78,7 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
         selection = ctools.ctselect()
         selection['inobs'] = self.input
         selection['outobs'] = self.output
-        selection['usepnt'] = True
+        selection['usepnt'] = self.usepnt
         if prefix != None:
             selection['prefix'] = prefix
         selection['rad'] = self.roi

@@ -7,20 +7,22 @@
 # Ambra Di Piano <ambra.dipiano@inaf.it>
 # *******************************************************************************
 
-import matplotlib.pyplot as plt
+import os
 import pyregion
+import numpy as np
 import seaborn as sns
+import matplotlib.pyplot as plt
+import astropy.visualization as avis
+from os.path import join
 from astropy.io import fits
 from matplotlib.colors import SymLogNorm
 from matplotlib import rc
-import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.patches import Rectangle
 from astropy import units as u
 from astropy.wcs import WCS
 from astropy.io import fits
 from astropy.utils.data import get_pkg_data_filename
-import astropy.visualization as avis
 
 
 # handle DS9 regiond (wip) ---!
@@ -30,17 +32,22 @@ def handleReg(reg, col='black'):
   return r
 
 # plot sky map ---!
-def showSkymap(file, reg='none', col='black', suffix='none', title='skymap',
-               xlabel='R.A. (deg)', ylabel='Dec (deg)', fontsize=12, show=True, tex=False):
+def plotSkymap(file, reg='none', col='green', suffix='none', title='skymap', xlabel='R.A. (deg)', ylabel='Dec (deg)', fontsize=15, figsize=(10, 8), rotation=0, show=False, sns_style=False, usetex=False, png=None):
   with fits.open(file) as hdul:
     wcs = WCS(hdul[0].header)
     data = hdul[0].data
     hdr = hdul[0].header
 
-  plt.rc('text', usetex=False) if tex else None
-  ax = plt.subplot(111)
+    fig = plt.figure(figsize=figsize)
+    if usetex:
+        plt.rc('text', usetex=usetex)
+    sns.set() if sns_style else None
+    # plot with projection ---!
+    ax = plt.subplot(projection=wcs)
+    plt.xticks(fontsize=fontsize, rotation=rotation)
+    plt.yticks(fontsize=fontsize, rotation=rotation)
   # load region ---!
-  if reg != 'none' :
+  if reg != 'none':
     r = pyregion.open(reg).as_imagecoord(hdr)
     for i in range(len(r)):
       r[i].attr[1]['color'] = col
@@ -49,26 +56,27 @@ def showSkymap(file, reg='none', col='black', suffix='none', title='skymap',
         ax.add_patch(p)
       for t in text_list:
         ax.add_artist(t)
-  # plot with projection ---!
-  plt.subplot(projection=wcs)
-  plt.imshow(data, cmap='jet', norm=SymLogNorm(1), interpolation='gaussian')
+  plt.imshow(data, cmap='jet', norm=SymLogNorm(1), interpolation='gaussian', zorder=0)
+  ax.coords[0].set_format_unit(u.deg)
+  ax.coords[1].set_format_unit(u.deg)
   plt.grid(color='white', ls='solid')
   plt.xlabel(xlabel, fontsize=fontsize)
   plt.ylabel(ylabel, fontsize=fontsize)
   plt.title(title, fontsize=fontsize)
-  plt.colorbar().set_label('cts')
+  plt.colorbar().set_label('cts', fontsize=fontsize)
   # save fig ---!
-  if suffix != 'none' :
-    plt.savefig(file.replace('.fits', '_%s.png' % suffix))
-  else :
-    plt.savefig(file.replace('.fits', '.png'))
+  head, tail = os.path.split(file)
+  if suffix != 'none':
+    plt.savefig(join(png, tail.replace('.fits', '_%s.png' % suffix)))
+  else:
+    plt.savefig(join(png, tail.replace('.fits', '.png')))
   # show fig ---!
   plt.show() if show else None
   plt.close()
   return
 
 # plot residual count map ---!
-def showResmap(file, reg='none', col='black', suffix='none', title='map redisuals',
+def plotResmap(file, reg='none', col='black', suffix='none', title='map redisuals',
                xlabel='R.A. (deg)', ylabel='Dec (deg)', fontsize=12, show=True, tex=False):
   with fits.open(file) as hdul:
     data = hdul[0].data
@@ -103,7 +111,7 @@ def showResmap(file, reg='none', col='black', suffix='none', title='map redisual
   return
 
 # show spectral residuals ---!
-def showResiduals(file, yscale='log', title='spectral residuals', figsize=(10,8),
+def plotResiduals(file, yscale='log', title='spectral residuals', figsize=(10,8),
                   xlabel='energy (TeV)', ylabel=('counts', 'residuals'), fontsize=12, show=True, tex=False):
   with fits.open(file) as hdul:
     data = hdul[1].data
@@ -118,9 +126,9 @@ def showResiduals(file, yscale='log', title='spectral residuals', figsize=(10,8)
 
   plt.figure(figsize=figsize)
   plt.rc('text', usetex=False) if tex else None
-  if yscale.lower() == 'lin' :
+  if yscale.lower() == 'lin':
     ax1 = plt.subplot(211, xscale='log')
-  else :
+  else:
     ax1 = plt.subplot(211, yscale='log', xscale='log')
   # plot ---!
   plt.plot(en_bins, cts, 'ro')
@@ -148,7 +156,7 @@ def showResiduals(file, yscale='log', title='spectral residuals', figsize=(10,8)
   return
 
 # flux butterfly diagram ----!
-def showButterfly(file, flux_pnts=0.0, fluxEn_pnts=0.0, suffix='none', title='flux', fontsize=12,
+def plotButterfly(file, flux_pnts=0.0, fluxEn_pnts=0.0, suffix='none', title='flux', fontsize=12,
                   xlabel='Energy (TeV)', ylabel='E $\cdot \\frac{dN}{dE}$ (erg/$cm^2$/s)', show=True, tex=False):
   data = np.loadtxt(file, delimiter=' ')
   energy = data[:, 0]
@@ -186,7 +194,7 @@ def showButterfly(file, flux_pnts=0.0, fluxEn_pnts=0.0, suffix='none', title='fl
   return
 
 # plot spectrum ---!
-def showSpectrum(file, figsize=(8,15), fontsize=12, title=('spectrum with errors', 'spectrum with errors', 'log spectrum'),
+def plotSpectrum(file, figsize=(8,15), fontsize=12, title=('spectrum with errors', 'spectrum with errors', 'log spectrum'),
                  xlabel='Energy (TeV)', ylabel='Flux (erg/$cm^2$/s)', show=True, tex=False):
   with fits.open(file) as hdul:
     data = hdul[1].data
@@ -243,7 +251,7 @@ def showSpectrum(file, figsize=(8,15), fontsize=12, title=('spectrum with errors
   return
 
 # plot cslightcrv output ---!
-def showLightCurve(file, figsize=(15,15), axisLim ='auto', title='lightcurve', yscale=('lin','log'), xscale=('lin','log'),
+def plotLightCurve(file, figsize=(15,15), axisLim ='auto', title='lightcurve', yscale=('lin','log'), xscale=('lin','log'),
                    show = True, tex=False):
 
   fig = plt.figure(figsize=figsize)
@@ -275,12 +283,12 @@ def showLightCurve(file, figsize=(15,15), axisLim ='auto', title='lightcurve', y
     etul_pnts = []
     # list flux point or upper limit ---!
     for el in range(len(data)):
-      if TS[el] > 9 and 2.0*e_prefact[el] < prefact[el] :
+      if TS[el] > 9 and 2.0*e_prefact[el] < prefact[el]:
         pnts.append(prefact[el])
         e_pnts.append(e_prefact[el])
         t_pnts.append(t_mjd[el])
         et_pnts.append(et_mjd[el])
-      else :
+      else:
         ul_pnts.append(diff_uplim[el])
         eul_pnts.append(0.5*diff_uplim[el])
         tul_pnts.append(t_mjd[el])
@@ -317,7 +325,7 @@ def showLightCurve(file, figsize=(15,15), axisLim ='auto', title='lightcurve', y
   return
 
 # show TS map ---!
-def showTSmap(file, reg='none', col='black', suffix='none', title='TS map', cbar='Significance TSV',
+def plotTSmap(file, reg='none', col='black', suffix='none', title='TS map', cbar='Significance TSV',
               xlabel='RA (deg)', ylabel='DEC (deg)', fontsize=12, show=True, tex=False):
   with fits.open(file) as hdul:
     data = hdul[0].data
@@ -352,7 +360,7 @@ def showTSmap(file, reg='none', col='black', suffix='none', title='TS map', cbar
   return
 
 # butterfly flux + spectrum ---!
-def showButterflySpectrum(file, spectrum, axisLim='auto', suffix='none', title='butterfly diagram', fontsize=12,
+def plotButterflySpectrum(file, spectrum, axisLim='auto', suffix='none', title='butterfly diagram', fontsize=12,
                           xlabel='Energy (TeV)', ylabel='Flux (erg/$cm^2$/s)', show=True, tex=False):
   data = np.loadtxt(file, delimiter=' ')
   energy = data[:, 0]
@@ -442,7 +450,7 @@ def interp_ebl(x, y, savefig, type='linear', xlabel='x', ylabel='y', title='titl
   return
 
 # SENSITIVITY ---!
-def showSensitivity(x, y, savefig, xlabel='energy (GeV)', ylabel='sensitivity', label=('nominal', 'nominal/2'), xscale='log', yscale='log', title='', fontsize=12, marker=('.'), ratio=True, show=True, tex=False, sns_style=False):
+def plotSensitivity(x, y, savefig, xlabel='energy (GeV)', ylabel='sensitivity', label=('nominal', 'nominal/2'), xscale='log', yscale='log', title='', fontsize=12, marker=('.'), ratio=True, show=True, tex=False, sns_style=False):
 
   fig = plt.figure()
   plt.rc('text', usetex=tex) if tex else None

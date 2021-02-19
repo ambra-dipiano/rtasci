@@ -31,7 +31,7 @@ else:
     runids = cfg.get('runid')
 
 # general ---!
-trials = cfg.get('trials') + cfg.get('start_count')
+trials = cfg.get('trials') 
 tmax = cfg.get('tobs')-cfg.get('onset')+cfg.get('delay')
 
 # paths ---!
@@ -62,8 +62,14 @@ for runid in runids:
     # get alert pointing
     if type(cfg.get('offset')) == str and cfg.get('offset').lower() == 'gw':
         pointing = get_alert_pointing(mergermap)
-    elif type(cfg.get('offset')) == float:
-        pointing = get
+    else:
+        pointing = list(get_pointing(f"{os.path.expandvars(cfg.get('catalog'))}/{runid}.fits"))
+        if pointing[1] < 0:
+            pointing[0] += 0.0
+            pointing[1] += -cfg.get('offset')
+        else:
+            pointing[0] += 0.0
+            pointing[1] += cfg.get('offset')
 
     # ---------------------------------------------------- loop trials ---!!!
     for i in range(trials):
@@ -84,11 +90,11 @@ for runid in runids:
         tgrid, tbin_start, tbin_stop = sim.getTimeSlices(GTI=(cfg.get('delay'), tmax), return_bins=True) 
 
         # -------------------------------------------------------- simulate ---!!!
-        for i in range(tbin_stop-tbin_start-1):
-            sim.t = [tgrid[i], tgrid[i + 1]]
+        for j in range(tbin_stop-tbin_start-1):
+            sim.t = [tgrid[j], tgrid[join() + 1]]
             print(f'GTI (bin) = {sim.t}')
-            sim.model = join(datapath, f'extracted_data/{runid}/{runid}_tbin{tbin_start+i:02d}.xml')
-            event = join(grbpath, f'{name}_tbin{tbin_start+i:02d}.fits')
+            sim.model = join(datapath, f'extracted_data/{runid}/{runid}_tbin{tbin_start+j:02d}.xml')
+            event = join(grbpath, f'{name}_tbin{tbin_start+j:02d}.fits')
             event_bins.append(event)
             sim.output = event
             sim.run_simulation()

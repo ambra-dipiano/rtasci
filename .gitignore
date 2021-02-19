@@ -6,6 +6,9 @@ config.yaml
 adptests/*
 RTAscience/cfg/*.yml
 RTAscience/paper/*
+RTAscience/cfg/*.sh
+RTAscience/jobs/*myconfig*
+RTAscience/jobs
 
 # folders
 .*/
@@ -13,7 +16,7 @@ RTAscience/paper/*
 /.
 !cfg/
 !log/
-!jobs/
+!jobs/*time*
 lib/old*
 lib/__pycache__/*
 __pycache__

@@ -16,6 +16,7 @@ from RTAscience.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
 from RTAscience.lib.RTAManageXml import ManageXml
 from RTAscience.lib.RTAUtils import phflux_powerlaw
 from RTAscience.cfg.Config import Config
+from RTAscience.lib.RTAVisualise import plotSkymap
 
 parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
 parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
@@ -33,8 +34,11 @@ else:
 
 # general ---!
 start_count = cfg.get('start_count')
-trials = cfg.get('trials') + start_count
-
+trials = cfg.get('trials') 
+if cfg.get('offset') == 'str':
+    offset = 2
+else:
+    offset = cfg.get('offset')
 # paths ---!
 datapath = cfg.get('data')
 if not isdir(datapath):  # main data folder
@@ -45,16 +49,21 @@ if not isdir(f"{datapath}/outputs"):
     os.mkdir(f"{datapath}/outputs")
 if not isdir(f"{datapath}/rta_products"):
     os.mkdir(f"{datapath}/rta_products")
+if not isdir(f"{datapath}/skymaps"):
+    os.mkdir(f"{datapath}/skymaps")
 
 # ------------------------------------------------------ loop runid --- !!!
 for runid in runids:
     print(f'Processing runid: {runid}')
     # outputs
-    logname = f"{datapath}/outputs/{runid}/{cfg.get('caldb')}:{cfg.get('irf')}_seed{start_count}:{trials}_flux1:{cfg.get('scalefluxfactor')}.txt"
+    logname = f"{datapath}/outputs/{runid}/{cfg.get('caldb')}-{cfg.get('irf')}_seed{start_count+1}-{trials}_flux1-{cfg.get('scalefluxfactor')}_offset{offset}_delay{cfg.get('delay')}.txt"
     if not isdir(f"{datapath}/outputs/{runid}"):
         os.mkdir(f"{datapath}/outputs/{runid}")
     if not isdir(f"{datapath}/rta_products/{runid}"):
         os.mkdir(f"{datapath}/rta_products/{runid}")
+    png = f"{datapath}/skymaps/{runid}"
+    if not isdir(png):
+        os.mkdir(png)
     if isfile(logname):
         os.remove(logname)
     # grb path ---!
@@ -75,19 +84,27 @@ for runid in runids:
         # ---------------------------------------------------------- loop exposure times ---!!!
 
         for texp in cfg.get('exposure'):
-            # skymap ---!
+            # selection ---!
+            selphlist = phlist.replace('.fits', f'_{texp}s.fits')
             grb = RTACtoolsAnalysis()
             grb.configure(cfg)
-            grb.t = [cfg.get('delay'), cfg.get('delay')+cfg.get('tobs')]
+            grb.t = [cfg.get('delay'), cfg.get('delay')+texp]
             grb.input = phlist
+            grb.output = selphlist
+            grb.run_selection()
+            # skymap ---!
+            grb.input = selphlist
             grb.output = sky
-            grb.run_skymap()
+            grb.run_skymap(wbin=cfg.get('skypix'), roi_factor=cfg.get('skyroifrac'))
             # blind-search ---!
             grb.sigma = cfg.get('sgmthresh')
+            grb.corr_rad = cfg.get('smooth')
             grb.max_src = cfg.get('maxsrc')
             grb.input = sky
             grb.output = candidates
             grb.run_blindsearch()
+            if cfg.get('plotsky'):
+                plotSkymap(sky, reg=candidates.replace('.xml', '.reg'), suffix=f'{texp}s', png=png)
             # modify model
             detection = ManageXml(candidates)
             detection.modXml(overwrite=True)
@@ -95,7 +112,7 @@ for runid in runids:
             detection.parametersFreeFixed(src_free=['Prefactor'])
             detection.closeXml()
             # fit ---!
-            grb.input = phlist
+            grb.input = selphlist
             grb.model = candidates
             grb.output = fit
             grb.run_maxlikelihood()
@@ -108,14 +125,17 @@ for runid in runids:
                 ts = results.getTs()[0]
                 sqrt_ts = np.sqrt(ts)
             except IndexError:
-                ra, dec, ts, sqrt_ts = np.nan, np.nan, np.nan, np.nan
-                raise Warning('No candidates found.')
-            # flux ---!
-            spectra = results.getSpectral()
-            index, pref, pivot = spectra[0][0], spectra[1][0], spectra[2][0]
-            err = results.getPrefError()[0]
-            flux = phflux_powerlaw(index, pref, pivot, grb.e, unit='TeV')
-            flux_err = phflux_powerlaw(index, err, pivot, grb.e, unit='TeV')
+                ra, dec, ts, sqrt_ts, flux, flux_err = np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
+                continue
+            if sqrt_ts < 5:
+                ra, dec, ts, sqrt_ts, flux, flux_err = np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
+            else:
+                # flux ---!
+                spectra = results.getSpectral()
+                index, pref, pivot = spectra[0][0], spectra[1][0], spectra[2][0]
+                err = results.getPrefError()[0]
+                flux = phflux_powerlaw(index, pref, pivot, grb.e, unit='TeV')
+                flux_err = phflux_powerlaw(index, err, pivot, grb.e, unit='TeV')
 
             if not isfile(logname):
                 hdr = 'runid seed texp sqrt_ts flux flux_err ra dec offset delay scaleflux caldb irf\n'
@@ -129,3 +149,5 @@ for runid in runids:
                 log.close()
 
             del grb
+        os.system(f"rm {datapath}/obs/{runid}/*{name}*")
+        os.system(f"rm {datapath}/rta_products/{runid}/*{name}*")
