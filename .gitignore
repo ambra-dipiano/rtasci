@@ -5,6 +5,7 @@ testing/*
 config.yaml
 adptests/*
 RTAscience/cfg/*.yml
+RTAscience/paper/*
 RTAscience/cfg/*.sh
 RTAscience/jobs/*myconfig*
 RTAscience/jobs/

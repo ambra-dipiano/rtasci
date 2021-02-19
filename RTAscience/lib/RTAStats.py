@@ -209,7 +209,7 @@ def rayleigh_pdf(x, loc=0, scale=1, if_CI=True, probs=(0.6827, 0.9545, 0.9973, 0
 
 
 # 2D HISTOGRAM WITH RAYLEIGH CONFIDENCE INTERVAL ---!
-def hist2d_rayleigh_CI(x, y, nbin=None, width=None, rayleigh_prms={'loc':0, 'scale':1}, xcentre=0, ycentre=0, interp=None, threshold=1, probs=(0.6827, 0.9545, 0.9973, 0.99994), colors=('k', 'r', 'orange', 'm'), ls=('-','--','-.',':'), cmap='gist_heat', lw=4, ms=2e2, ax_thresh=0.2, xlabel='x', ylabel='y', title='confidence intervals from theoretical distribution', fontsize=15 , figsize=(10,8), rotation=0, filename='hist2d_CIrayleigh.png', usetex=False, sns_style=False, show=False):
+def hist2d_rayleigh_CI(x, y, nbin=None, width=None, rayleigh_prms={'loc':0, 'scale':1}, xcentre=0, ycentre=0, interp=None, threshold=1, probs=(0.6827, 0.9545, 0.9973, 0.99994), colors=('k', 'r', 'orange', 'm'), ls=('-','--','-.',':'), cmap='gist_heat', lw=4, ms=2e2, ax_thresh=0.2, xlabel='x', ylabel='y', title='confidence intervals from theoretical distribution', fontsize=20 , figsize=(12,10), rotation=0, filename='hist2d_CIrayleigh.png', usetex=False, sns_style=False, show=False):
 
 	xmean = np.mean(x)
 	ymean = np.mean(y)
@@ -254,6 +254,7 @@ def hist2d_rayleigh_CI(x, y, nbin=None, width=None, rayleigh_prms={'loc':0, 'sca
 	plt.title(title, fontsize=fontsize)
 	plt.legend(ncol=3, fontsize=fontsize)
 
+	plt.grid()
 	plt.tight_layout()
 	fig.savefig(filename)
 	# show fig ---!
@@ -271,7 +272,7 @@ def eigsorted(cov):
 
 
 # 2D HISTOGRAM WITH GAUSSIAN COVARIANCE CONFIDENCE INTERVAL ---!
-def hist2d_gauss_CI(x, y, nbin=None, width=None, xcentre=0, ycentre=0, threshold=1, nstd=(1, 2, 3, 5), lw=4, ls=('-','--','-.',':'), cmap='gist_heat', colors=('k', 'r', 'orange', 'm'), ax_thresh=0.2, xlabel='x', ylabel='y', interp=None, ms=2e2, title='confidence intervals from theoretical distribution', fontsize=15, figsize=(10,8), rotation=0, filename='hist2d_CIgauss.png', usetex=False, sns_style=False, show=False):
+def hist2d_gauss_CI(x, y, nbin=None, width=None, xcentre=0, ycentre=0, threshold=1, nstd=(1, 2, 3, 5), lw=4, ls=('-','--','-.',':'), cmap='gist_heat', colors=('k', 'r', 'orange', 'm'), ax_thresh=0.2, xlabel='x', ylabel='y', interp=None, ms=2e2, title='confidence intervals from theoretical distribution', fontsize=20, figsize=(12,10), rotation=0, filename='hist2d_CIgauss.png', usetex=False, sns_style=False, show=False):
 
 	xmean = np.mean(x)
 	ymean = np.mean(y)
@@ -317,6 +318,7 @@ def hist2d_gauss_CI(x, y, nbin=None, width=None, xcentre=0, ycentre=0, threshold
 	plt.title(title, fontsize=fontsize)
 	plt.legend(ncol=3, fontsize=fontsize)
 
+	plt.grid()
 	plt.tight_layout()
 	fig.savefig(filename)
 	# show fig ---!
@@ -325,7 +327,7 @@ def hist2d_gauss_CI(x, y, nbin=None, width=None, xcentre=0, ycentre=0, threshold
 	return fig, ax
 
 # 2D HISTOGRAM WITH GAUSSIAN COVARIANCE CONFIDENCE INTERVAL ---!
-def contour_gauss_CI(x, y, nbin=None, width=None, xcentre=0, ycentre=0, threshold=1, nstd=(1, 2, 3, 5), colors=('k', 'r', 'orange', 'm'), ax_thresh=0.2, xlabel='x', ylabel='y', interp=None, title='confidence intervals from theoretical distribution', fontsize=15, figsize=(10, 8), rotation=0, filename='hist2d_CIgauss.png', usetex=False, sns_style=False, show=False):
+def contour_gauss_CI(x, y, nbin=None, width=None, xcentre=0, ycentre=0, threshold=1, nstd=(1, 2, 3, 5), colors=('k', 'r', 'orange', 'm'), ax_thresh=0.2, xlabel='x', ylabel='y', interp=None, title='confidence intervals from theoretical distribution', fontsize=20, figsize=(10, 8), rotation=0, filename='hist2d_CIgauss.png', usetex=False, sns_style=False, show=False):
 
 	xmean = np.mean(x)
 	ymean = np.mean(y)
@@ -374,7 +376,7 @@ def contour_gauss_CI(x, y, nbin=None, width=None, xcentre=0, ycentre=0, threshol
 	return fig, ax
 
 # 2D HISTOGRAM MAP ---!
-def hist2d_map(x, y, trials, nbin=None, width=None, xcentre=0, ycentre=0, threshold=1, ax_thresh=0.2, xlabel='x', ylabel='y', title='probability map', fontsize=15, figsize=(10,8), rotation=0, filename='hist2d_map.png', if_CI=None, rayleigh={'loc':0, 'scale':1}, nstd=(1, 2, 3, 5), colors=('k', 'r', 'orange', 'm'), probs=(0.6827, 0.9545, 0.9973, 0.99994), smooth=True, usetex=False, sns_style=False, show=False):
+def hist2d_map(x, y, trials, nbin=None, width=None, xcentre=0, ycentre=0, threshold=1, ax_thresh=0.2, xlabel='x', ylabel='y', title='probability map', fontsize=20, figsize=(12,10), rotation=0, filename='hist2d_map.png', if_CI=None, rayleigh={'loc':0, 'scale':1}, nstd=(1, 2, 3, 5), colors=('k', 'r', 'orange', 'm'), probs=(0.6827, 0.9545, 0.9973, 0.99994), smooth=True, usetex=False, sns_style=False, show=False):
 
 	if width is None:
 		width = threshold/nbin
