@@ -31,7 +31,7 @@ else:
     runids = cfg.get('runid')
 
 # general ---!
-trials = cfg.get('trials') 
+trials = cfg.get('trials')
 tmax = cfg.get('tobs')-cfg.get('onset')+cfg.get('delay')
 
 # paths ---!
@@ -91,7 +91,7 @@ for runid in runids:
 
         # -------------------------------------------------------- simulate ---!!!
         for j in range(tbin_stop-tbin_start-1):
-            sim.t = [tgrid[j], tgrid[join() + 1]]
+            sim.t = [tgrid[j], tgrid[j + 1]]
             print(f'GTI (bin) = {sim.t}')
             sim.model = join(datapath, f'extracted_data/{runid}/{runid}_tbin{tbin_start+j:02d}.xml')
             event = join(grbpath, f'{name}_tbin{tbin_start+j:02d}.fits')
@@ -109,4 +109,5 @@ for runid in runids:
         del sim
         print('Remove bins')
         os.system('rm ' + join(grbpath, f'{name}*tbin*'))
+print('... done.\n')
 
