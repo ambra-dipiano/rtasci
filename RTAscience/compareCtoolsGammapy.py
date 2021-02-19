@@ -1,35 +1,53 @@
 import os
 import pandas as pd
 import numpy as np
+import seaborn as sns
 from lib.RTAVisualise import *
 from os.path import join, isdir, isfile
 from os import listdir
 
 pypath = str(os.path.dirname(os.path.abspath(__file__)))  
-datapath = pypath.replace('cta-sag-sci', 'DATA/outputs/crab')
+datapath = pypath.replace('cta-sag-sci/RTAscience', 'DATA/outputs/crab/timing')
+datapath = join(os.path.expandvars('$DATA'), 'outputs/crab/timing')
+try:
+    isdir(datapath)
+except ValueError:
+    raise ValueError('Export $DATA envar please.')
+
 pngpath = join(datapath, 'png')
 if not isdir(pngpath):
     print('Creating png folder...')
     os.mkdir(pngpath)
 
-tables = [f for f in listdir(datapath) if 'ctools1d_binned' in f]
+tables = [f for f in listdir(datapath) if isfile(join(datapath, f))]
 print(f'Tables: {len(tables)}\n')
 
 for i, table in enumerate(tables):
     print(f'Collecting data from {table}')
     data = pd.read_csv(join(datapath, table), sep=' ')
-    print(data[:5])
+    data['tools'] = [table.replace('.csv', '') for n in range(len(data))]
+    #print(f'5 rows {data[:5]}')
+    if i == 0:
+        print('start')
+        total = data
+    else:
+        print('add')
+        total = total.append(data, sort=False)
+    print(f'data: {len(data)} and keys {len(data.keys())}')
+    print(f'total: {len(total)} and keys {len(total.keys())}')
 
-    d1000 = data[data['texp'] == 1000]
-    d100 = data[data['texp'] == 100]
-    d10 = data[data['texp'] == 10]
 
-    m1000 = d1000.mean()
-    print(m1000.keys())
-    print(m1000[m1000.keys()[0]])
+tools = total['tools'].drop_duplicates()
+print(f'\n-----------\nanalysis: {len(tools)}')
 
-    sci = ['texp', 'sqrt_ts', 'flux', 'flux_err']
-    time = ['ttotal', 'timport', 'tsetup', 'tobs', 'tconf', 'tred', 'tblind', 'tcube', 'texpcube', 'tpsfcube', 'bkgcube', 'tmodel', 'tonoff', 'tfit', 'tstat', 'tflux']
+for tool in tools:
+    d1000 = total[total['texp'] == 1000]
+    d1000 = d1000[d1000['tools'] == tool]
+    d100 = total[total['texp'] == 100]
+    d100 = d100[d100['tools'] == tool]
+    d10 = total[total['texp'] == 10]
+    d10 = d10[d10['tools'] == tool]
 
-    hdr_sci = ''
-    hdr_t = ''
+
+g = sns.FacetGrid(total, row="tools", col="ttotal", height=4, aspect=.5)
+g.map(sns.barplot, "texp", "sqrt_ts")
