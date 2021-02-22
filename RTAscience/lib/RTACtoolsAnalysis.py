@@ -45,7 +45,7 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
         self.t = [0, 1800]  # time range (s/MJD) ---!
         self.pointing = [83.63, 22.01]  # RA/DEC or GLON/GLAT (deg) ---!
         self.target = [83.63, 22.51]  # RA/DEC or GLON/GLAT (deg) ---!
-        self.sigma = 5  # Gaussian significance (sigmas) ---!
+        self.sigma = 3  # Gaussian significance (sigmas) ---!
         self.max_src = 10  # Max number of candidates to list during blind-detection ---!
         # ctools miscellaneous ---!
         self.seed = 1  # MC seed ---!
