@@ -36,7 +36,7 @@ else:
 start_count = cfg.get('start_count')
 trials = cfg.get('trials') 
 if cfg.get('offset') == 'str':
-    offset = 2
+    offset = cfg.get('offset').upper()
 else:
     offset = cfg.get('offset')
 # paths ---!
@@ -75,6 +75,7 @@ for runid in runids:
     # ------------------------------------------------------ loop trials ---!!!
     for i in range(trials):
         count = start_count + i + 1
+        print(f'seed = {count:06d}')
         name = f'ebl{count:06d}'
         phlist = join(grbpath, name+'.fits')
         sky = phlist.replace('.fits', '_sky.fits').replace('/obs/', '/rta_products/')
@@ -125,27 +126,27 @@ for runid in runids:
                 ts = results.getTs()[0]
                 sqrt_ts = np.sqrt(ts)
             except IndexError:
-                ra, dec, ts, sqrt_ts, flux, flux_err = np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
-                continue
-            if sqrt_ts < 5:
-                ra, dec, ts, sqrt_ts, flux, flux_err = np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
-            else:
+                sqrt_ts = np.nan
+                print('Candidate not found.')
+            if sqrt_ts >= 0:
                 # flux ---!
                 spectra = results.getSpectral()
                 index, pref, pivot = spectra[0][0], spectra[1][0], spectra[2][0]
                 err = results.getPrefError()[0]
                 flux = phflux_powerlaw(index, pref, pivot, grb.e, unit='TeV')
                 flux_err = phflux_powerlaw(index, err, pivot, grb.e, unit='TeV')
+            else:
+                ra, dec, ts, sqrt_ts, flux, flux_err = np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
 
             if not isfile(logname):
                 hdr = 'runid seed texp sqrt_ts flux flux_err ra dec offset delay scaleflux caldb irf\n'
                 log = open(logname, 'w+')
                 log.write(hdr)
-                log.write(f"{runid} {count} {texp} {sqrt_ts} {flux} {flux_err} {ra} {dec} {cfg.get('offset')} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {cfg.get('caldb')} {cfg.get('irf')}\n")
+                log.write(f"{runid} {count} {texp} {sqrt_ts} {flux} {flux_err} {ra} {dec} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {cfg.get('caldb')} {cfg.get('irf')}\n")
                 log.close()
             else:
                 log = open(logname, 'a')
-                log.write(f"{runid} {count} {texp} {sqrt_ts} {flux} {flux_err} {ra} {dec} {cfg.get('offset')} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {cfg.get('caldb')} {cfg.get('irf')}\n")
+                log.write(f"{runid} {count} {texp} {sqrt_ts} {flux} {flux_err} {ra} {dec} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {cfg.get('caldb')} {cfg.get('irf')}\n")
                 log.close()
 
             del grb
