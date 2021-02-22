@@ -65,7 +65,6 @@ def plotSkymap(file, reg='none', col='green', suffix='none', title='skymap', xla
   plt.title(title, fontsize=fontsize)
   plt.tick_params(axis='both', labelsize=fontsize)
   cbar = plt.colorbar().set_label('cts', fontsize=fontsize)
-  cbar.ax.tick_params(labelsize=fontsize) 
   # save fig ---!
   head, tail = os.path.split(file)
   if suffix != 'none':
