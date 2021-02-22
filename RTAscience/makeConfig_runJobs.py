@@ -32,11 +32,10 @@ with open(filename) as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 
 if args.off == 'gw':
-    config['simulation']['offset'] == str(args.off)
+    config['simulation']['offset'] = args.off
 else:
-    config['simulation']['offset'] == float(args.off)
-config['simulation']['delay'] = float(args.delay)
-config['simulation']['offset'] = float(args.off)
+    config['simulation']['offset'] = float(args.off)
+config['simulation']['delay'] = args.delay
 config['setup']['trials'] = int(args.tn)
 config['options']['plotsky'] = False
 
@@ -45,6 +44,8 @@ for i in range(int(args.tt/args.tn)):
     config['setup']['start_count'] = int(i*args.tn)
     outname = args.infile.replace('.yml',f'_trials{i*args.tn+1}-{(i+1)*args.tn}')
     yml = outname + '.yml' 
+    if os.path.isfile(yml):
+        os.remove(yml)
     with open(yml, 'w+') as f:
         new_config = yaml.dump(config, f, default_flow_style=False)
 
