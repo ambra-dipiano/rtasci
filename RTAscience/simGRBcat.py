@@ -14,7 +14,7 @@ import argparse
 from os.path import isdir, join, isfile
 from RTAscience.lib.RTACtoolsSimulation import RTACtoolsSimulation
 from RTAscience.lib.RTAManageXml import ManageXml
-from RTAscience.lib.RTAUtils import get_alert_pointing, get_mergermap, get_pointing
+from RTAscience.lib.RTAUtils import get_alert_pointing_gw, get_mergermap, get_pointing
 from RTAscience.cfg.Config import Config
 
 parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
@@ -61,7 +61,7 @@ for runid in runids:
 
     # get alert pointing
     if type(cfg.get('offset')) == str and cfg.get('offset').lower() == 'gw':
-        pointing = get_alert_pointing(mergermap)
+        pointing = get_alert_pointing_gw(mergermap)
     else:
         pointing = list(get_pointing(f"{os.path.expandvars(cfg.get('catalog'))}/{runid}.fits"))
         if pointing[1] < 0:
