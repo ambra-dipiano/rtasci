@@ -104,7 +104,7 @@ for runid in runids:
         phlist = join(grbpath, f'{name}.fits')
         sim.input = event_bins
         sim.output = phlist
-        sim.appendEventsSinglePhList(GTI=[0, cfg.get('tobs')])
+        sim.appendEventsSinglePhList(GTI=[cfg.get('delay'), cfg.get('delay')+cfg.get('tobs')])
 
         del sim
         print('Remove bins')
