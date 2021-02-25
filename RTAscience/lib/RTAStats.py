@@ -100,7 +100,7 @@ def hist1d_gauss(x, mean, true=None, loc=0, threshold=1, nbin=20, width=None, hi
 
 
 # HIST 1D RAYLEIGH DISTRIBUTION ---!
-def hist1d_rayleigh(x, mean, rayleigh_prms={'loc':0, 'scale':[1]}, threshold=1, nbin=None, width=None, hist=True, fontsize=20, figsize=(15,12), rotation=0, color='b', alpha=0.5, lw=3, ls=('-', '--', '-.', ':'),title='rayleigh fit', ax_thresh=0.2, xlabel='x', ylabel='y', leglabel='data', filename='hist1d_rayleigh.png', usetex=False, sns_style=False, show=True):
+def hist1d_rayleigh(x, mean, rayleigh_prms={'loc':0, 'scale':[1]}, threshold=1, nbin=None, width=None, hist=True, fontsize=15, figsize=(15,12), rotation=0, color='b', alpha=0.5, lw=3, ls=('-', '--', '-.', ':'),title='rayleigh fit', ax_thresh=0.2, xlabel='x', ylabel='y', leglabel='data', filename='hist1d_rayleigh.png', usetex=False, sns_style=False, show=True):
 
 	if width == None:
 		width = threshold/nbin
@@ -141,7 +141,7 @@ def hist1d_rayleigh(x, mean, rayleigh_prms={'loc':0, 'scale':[1]}, threshold=1, 
 
 
 # RAYLEIGH CDF WITH CONFIDENCE INTERVAL ---!
-def rayleigh_cdf(x, loc=0, scale=1, if_CI=True, probs=(0.6827, 0.9545, 0.9973, 0.99994), xlabel='x', title='x ~ RA(gamma) CDF', colors=('k', 'r', 'orange', 'm'), fontsize=20, figsize=(15,12), rotation=0, filename='theo_rayleigh_cdf.png', usetex=False, sns_style=False, show=False):
+def rayleigh_cdf(x, loc=0, scale=1, if_CI=True, probs=(0.6827, 0.9545, 0.9973, 0.99994), xlabel='x', title='x ~ RA(gamma) CDF', colors=('k', 'r', 'orange', 'm'), fontsize=15, figsize=(15,12), rotation=0, filename='theo_rayleigh_cdf.png', usetex=False, sns_style=False, show=False):
 
 	fig = plt.figure(figsize=figsize)
 	if usetex:
@@ -177,7 +177,7 @@ def rayleigh_cdf(x, loc=0, scale=1, if_CI=True, probs=(0.6827, 0.9545, 0.9973, 0
 
 
 # RAYLEIGH PDF WITH CONFIDENCE INTERVAL ---!
-def rayleigh_pdf(x, loc=0, scale=1, if_CI=True, probs=(0.6827, 0.9545, 0.9973, 0.99994), xlabel='x', title='x ~ RA(gamma) CDF', colors=('k', 'r', 'orange', 'm'), fontsize=20, figsize=(15,12), rotation=0, filename='theo_rayleigh_cdf.png', usetex=False, sns_style=False, show=False):
+def rayleigh_pdf(x, loc=0, scale=1, if_CI=True, probs=(0.6827, 0.9545, 0.9973, 0.99994), xlabel='x', title='x ~ RA(gamma) CDF', colors=('k', 'r', 'orange', 'm'), fontsize=15, figsize=(15,12), rotation=0, filename='theo_rayleigh_cdf.png', usetex=False, sns_style=False, show=False):
 
 	fig = plt.figure(figsize=figsize)
 	if usetex:
@@ -459,7 +459,7 @@ def hist2d_map(x, y, trials, nbin=None, width=None, xcentre=0, ycentre=0, thresh
 
 
 # WILKS THEOREM DIST FOR EMPTY FIELDS ---!
-def ts_wilks(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, fontsize=20, figsize=(15,12), rotation=0, xlabel='TS', ylabel='normalised counts', title='TS distribution (empty fields)', filename='wilks_preTrials.png', usetex=False, sns_style=False):
+def ts_wilks(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='TS', ylabel='normalised counts', title='TS distribution (empty fields)', filename='wilks_preTrials.png', usetex=False, sns_style=False):
 
 	if width is None:
 		width = (max(x)-min(x))/nbin
@@ -506,7 +506,7 @@ def ts_wilks(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=
 	return fig, ax
 
 # WILKS THEOREM P-VALUES FOR EMPTY FIELDS ---!
-def p_values(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, fontsize=20, figsize=(15,12), rotation=0, xlabel='h', ylabel='p-values', title='p-value (empty fields)', filename='pvalue_preTrials.png', usetex=False, sns_style=False):
+def p_values(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='h', ylabel='p-values', title='p-value (empty fields)', filename='pvalue_preTrials.png', usetex=False, sns_style=False):
 
 	if width is None:
 		width = (max(x)-min(x))/nbin
@@ -563,7 +563,7 @@ def p_values(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=
 	return fig, ax
 
 # WILKS THEOREM P-VALUES FOR EMPTY FIELDS ---!
-def ts_wilks_cumulative(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, fontsize=20, figsize=(15,12), rotation=0, xlabel='h', ylabel='cumulative probability', title='p-value (empty fields)', filename='cumulative_preTrials.png', usetex=False, sns_style=False):
+def ts_wilks_cumulative(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='h', ylabel='cumulative probability', title='p-value (empty fields)', filename='cumulative_preTrials.png', usetex=False, sns_style=False):
 
 	if width is None:
 		width = (max(x)-min(x))/nbin
@@ -651,7 +651,7 @@ def chi2_reduced(x, trials, df=1, nbin=None, width=None, var=True):
 
 
 # MANUAL NORMALISED HISTOGRAM ---!
-def normedHist(x, trials=None, step=None, nbin=None, ylim=None, xlim=None, show=False, normed=True, xscale='linear', yscale='log', fontsize=20, figsize=(15,12), rotation=0, xlabel='x', ylabel='normalised counts', leglabel='legend', title='normed histogram', usetex=False, sns_style=False, usesns=False, filename='normed_histogram.png'):
+def normedHist(x, trials=None, step=None, nbin=None, ylim=None, xlim=None, show=False, normed=True, xscale='linear', yscale='log', fontsize=15, figsize=(15,12), rotation=0, xlabel='x', ylabel='normalised counts', leglabel='legend', title='normed histogram', usetex=False, sns_style=False, usesns=False, filename='normed_histogram.png'):
 
 	x = np.sort(x)
 	if step is None:

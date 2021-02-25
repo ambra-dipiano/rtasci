@@ -48,14 +48,17 @@ def plotSkymap(file, reg='none', col='green', suffix='none', title='skymap', xla
     plt.yticks(fontsize=fontsize, rotation=rotation)
   # load region ---!
   if reg != 'none':
-    r = pyregion.open(reg).as_imagecoord(hdr)
-    for i in range(len(r)):
-      r[i].attr[1]['color'] = col
-      patch_list, text_list = r.get_mpl_patches_texts()
-      for p in patch_list:
-        ax.add_patch(p)
-      for t in text_list:
-        ax.add_artist(t)
+    try:
+      r = pyregion.open(reg).as_imagecoord(hdr)
+      for i in range(len(r)):
+        r[i].attr[1]['color'] = col
+        patch_list, text_list = r.get_mpl_patches_texts()
+        for p in patch_list:
+          ax.add_patch(p)
+        for t in text_list:
+          ax.add_artist(t)
+    except ValueError:
+      pass
   plt.imshow(data, cmap='jet', norm=SymLogNorm(1), interpolation='gaussian', zorder=0)
   ax.coords[0].set_format_unit(u.deg)
   ax.coords[1].set_format_unit(u.deg)

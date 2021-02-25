@@ -41,6 +41,18 @@ def get_alert_pointing(merger_map):
     os.system(f'gzip {merger_map}')
     return pointing
 
+# retrieve telescope pointing coordinates from alert probability map ---!
+def get_alert_pointing_gw(merger_map):
+    # load map ---!
+    map = hp.read_map(merger_map, dtype=None)
+    pixels = len(map)
+    axis = hp.npix2nside(pixels)
+    # search max prob coords ---!
+    pmax = np.argmax(map)
+    theta, phi = hp.pix2ang(axis, pmax)
+    pointing = (np.rad2deg(phi), np.rad2deg(0.5 * np.pi - theta))
+    return pointing
+
 def increase_exposure(x, function='double'):
     y = None
     if function.lower() == 'double':
@@ -112,7 +124,7 @@ def wobble_pointing(target, nrun, clockwise=True, offset=0.5):
 # get mergermap file
 def get_mergermap(run, path):
     runid = run.split('_')
-    merger = f'{runid[0]}_Merger{runid[1]}_skymap.fits.gz'
+    merger = f'{runid[0]}_Merger{runid[1]}_skymap.fits'
     if merger in os.listdir(path):
         return os.path.join(path, merger)
     else:
