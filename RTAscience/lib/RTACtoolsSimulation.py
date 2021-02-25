@@ -389,6 +389,14 @@ class RTACtoolsSimulation(RTACtoolsBase):
         hdul.flush()
         return
 
+    # check GTI and raise error if bad values are passed
+    def __checkGTI(self, hdul):
+        GTI = hdul[2].data[0]
+        trange = hdul[1].data.field('TIME')
+        if GTI[0] > trange.min() or GTI[1] < trange.max():
+            raise ValueError ('Bad GTI values passed to photon list append.')
+        return
+
     # create single photon list from obs list ---!
     def __singlePhotonList(self, sample, filename, GTI, new_GTI=False):
         sample = sorted(sample)
@@ -435,6 +443,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
                 hdul[2].data[0][0] = GTI[0]
                 hdul[2].data[0][1] = GTI[1]
             hdul.flush()
+            self.__checkGTI(hdul=hdul)
         return
 
     # created one FITS table containing all events and GTIs ---!
