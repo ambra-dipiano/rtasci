@@ -20,6 +20,7 @@ from RTAscience.lib.RTAVisualise import plotSkymap
 
 parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
 parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
+parser.add_argument('--remove', type=str, default='true', help='Keep only outputs')
 args = parser.parse_args()
 
 cfg = Config(args.cfgfile)
@@ -150,6 +151,7 @@ for runid in runids:
                 log.close()
 
             del grb
-        os.system(f"rm {datapath}/obs/{runid}/*{name}*")
-        os.system(f"rm {datapath}/rta_products/{runid}/*{name}*")
+        if args.remove.lower() == 'true':
+            os.system(f"rm {datapath}/obs/{runid}/*{name}*")
+            os.system(f"rm {datapath}/rta_products/{runid}/*{name}*")
 print('...done.\n')
