@@ -20,6 +20,12 @@ def get_pointing(fits_file):
         dec = hdul[0].header['DEC']
     return (ra, dec)
 
+# center of fov from FITS ---!
+def get_offset(fits_file, merger_map):
+    true = get_pointing(fits_file)
+    alert = get_alert_pointing(merger_map)
+    return (true[0]-alert[0], true[1]-alert[1])
+
 # retrieve telescope pointing coordinates from alert probability map ---!
 def get_alert_pointing(merger_map):
     # load map ---!
