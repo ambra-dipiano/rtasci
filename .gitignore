@@ -12,13 +12,16 @@ RTAscience/jobs/
 env.sh
 RTAscience/cancel_jobs.py
 RTAscience/deljobs.py
+
 # folders
 .*/
 ./
 /.
-!cfg/
-lib/old*
-lib/__pycache__/*
+!RTAscience/cfg/
+RTAscience/lib/old*
+RTAscience/lib/__pycache__/*
+RTAscience/notebooks
+
 __pycache__
 *.egg-info
 .vscode
