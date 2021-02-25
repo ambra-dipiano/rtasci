@@ -11,6 +11,7 @@ RTAscience/jobs/*myconfig*
 RTAscience/jobs/
 env.sh
 RTAscience/cancel_jobs.py
+RTAscience/deljobs.py
 # folders
 .*/
 ./
