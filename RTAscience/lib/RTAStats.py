@@ -27,7 +27,7 @@ from scipy.ndimage.filters import gaussian_filter
 extra = Rectangle((0, 0), 1, 1, fc="w", fill=False, edgecolor='none', linewidth=0)
 extra2 = Line2D([0], [0], ls='-.', color='k', lw='1')
 
-def hist1d(x, mean, nbin=20, hist=True, fontsize=20, color='b', xscale='linear', figsize=(15,12), rotation=0, alpha=0.5, lw=3, ls=('-', '--', '-.', ':'), title='gaussian fit', ax_thresh=None, xlabel='x', ylabel='y', leglabel='data', filename='hist1d_gauss.png', usetex=False, sns_style=False, show=True):
+def hist1d(x, mean, true=None, nbin=20, hist=True, fontsize=20, color='b', xscale='linear', figsize=(15,12), rotation=0, alpha=0.5, lw=3, ls=('--', '-.', ':'), title='gaussian fit', ax_thresh=None, xlabel='x', ylabel='y', leglabel='data', filename='hist1d_gauss.png', usetex=False, sns_style=False, show=True):
 
 	fig = plt.figure(figsize=figsize)
 	if usetex:
@@ -41,8 +41,10 @@ def hist1d(x, mean, nbin=20, hist=True, fontsize=20, color='b', xscale='linear',
 	for index, el in enumerate(x):
 		if el[0] is list():
 			el=el[0]
-		sns.distplot(el, bins=nbin, kde=False, hist=hist, fit=norm, norm_hist=True, fit_kws={"color": color[index]}, color=color[index], hist_kws={'alpha':alpha}, label=leglabel[index])
+		sns.distplot(el, bins=nbin, kde=False, hist=hist, fit=norm, norm_hist=True, fit_kws={"color": color[index], "ls": ls[index]}, color=color[index], hist_kws={'alpha':alpha}, label=leglabel[index])
 		plt.axvline(mean[index], c=color[index], ls=ls[index], lw=lw, label='mean ~ %.1E' %mean[index]) if mean != None else None
+	if true != None:
+		plt.axvline(true, c='k', ls='-', lw=lw, label='true ~ %.1E' %true)
 	plt.title(title, fontsize=fontsize)
 	plt.xlabel(xlabel, fontsize=fontsize)
 	plt.ylabel(ylabel, fontsize=fontsize)
@@ -58,7 +60,7 @@ def hist1d(x, mean, nbin=20, hist=True, fontsize=20, color='b', xscale='linear',
 
 
 # HIST 1D GAUSSIAN DISTRIBUTION ---!
-def hist1d_gauss(x, mean, loc=0, threshold=1, nbin=20, width=None, hist=True, fontsize=20, figsize=(15,12), color='b', alpha=0.5, lw=3, ls=('-', '--', '-.', ':'), title='gaussian fit', ax_thresh=0.2, xlabel='x', ylabel='y', leglabel='data', rotation=0, filename='hist1d_gauss.png', usetex=False, sns_style=False, show=True):
+def hist1d_gauss(x, mean, true=None, loc=0, threshold=1, nbin=20, width=None, hist=True, fontsize=20, figsize=(15,12), color='b', alpha=0.5, lw=3, ls=('--', '-.', ':'), title='gaussian fit', ax_thresh=0.2, xlabel='x', ylabel='y', leglabel='data', rotation=0, filename='hist1d_gauss.png', usetex=False, sns_style=False, show=True):
 
 	if nbin == None:
 		if width == None:
@@ -77,8 +79,10 @@ def hist1d_gauss(x, mean, loc=0, threshold=1, nbin=20, width=None, hist=True, fo
 	for index, el in enumerate(x):
 		if el[0] is list():
 			el=el[0]
-		sns.distplot(el, bins=nbin, kde=False, hist=hist, fit=norm, norm_hist=True, fit_kws={"color": color[index]}, color=color[index], hist_kws={'alpha':alpha, 'range':[loc-threshold, loc+threshold]}, label=leglabel[index])
-		plt.axvline(mean[index], c=color[index], ls=ls[index], lw=lw, label='mean ~ %.3fdeg' %mean[index]) if mean != None else None
+		sns.distplot(el, bins=nbin, kde=False, hist=hist, fit=norm, norm_hist=True, fit_kws={"color": color[index], "ls": ls[index], "lw:": lw}, color=color[index], hist_kws={'alpha':alpha, 'range':[loc-threshold, loc+threshold]}, label=leglabel[index])
+		plt.axvline(mean[index], c=color[index], ls=ls[index], lw=lw) if mean != None else None
+	if true != None:
+		plt.axvline(true, c='k', ls='-', lw=lw, label='true')
 	plt.axvline(loc, c='k', ls='-', lw=lw, label='true ~ %.3fdeg' %loc) if loc != None else None
 	plt.title(title, fontsize=fontsize)
 	plt.xlabel(xlabel, fontsize=fontsize)
@@ -229,10 +233,12 @@ def hist2d_rayleigh_CI(x, y, nbin=None, width=None, rayleigh_prms={'loc':0, 'sca
 	ax = plt.subplot(111)
 	if interp == None:
 		h = plt.hist2d(x, y, bins=nbin, cmap=cmap, range=[[xcentre - threshold, xcentre + threshold], [ycentre - threshold, ycentre + threshold]])
+		plt.colorbar(h[3], ax=ax).set_label('counts', fontsize=fontsize)
 	else:
 		h, xedges, yedges = np.histogram2d(x, y, bins=nbin, range=[[xcentre - threshold, xcentre + threshold], [ycentre - threshold, ycentre + threshold]])
 		h = h.T
-		plt.imshow(h, interpolation=interp, cmap=cmap, extent=[xcentre - threshold, xcentre + threshold, ycentre - threshold, ycentre + threshold])
+		im = plt.imshow(h, interpolation=interp, cmap=cmap, extent=[xcentre - threshold, xcentre + threshold, ycentre - threshold, ycentre + threshold])
+		plt.colorbar(im, ax=ax).set_label('counts', fontsize=fontsize)
 	plt.xticks(fontsize=fontsize, rotation=rotation)
 	plt.yticks(fontsize=fontsize, rotation=rotation)
 	plt.scatter(xcentre, ycentre, c='w', marker='*', s=ms)
@@ -246,8 +252,6 @@ def hist2d_rayleigh_CI(x, y, nbin=None, width=None, rayleigh_prms={'loc':0, 'sca
 		cir.set_facecolor('none')
 		ax.add_artist(cir)
 
-	if interp == None:
-		cbar = plt.colorbar(h[3], ax=ax).set_label('counts', fontsize=fontsize)
 	plt.axis([xcentre - ax_thresh, xcentre + ax_thresh, ycentre - ax_thresh, ycentre + ax_thresh], 'equal') if ax_thresh != None else None
 	plt.xlabel(xlabel, fontsize=fontsize)
 	plt.ylabel(ylabel, fontsize=fontsize)
@@ -292,10 +296,12 @@ def hist2d_gauss_CI(x, y, nbin=None, width=None, xcentre=0, ycentre=0, threshold
 	ax = plt.subplot(111)
 	if interp == None:
 		h = plt.hist2d(x, y, bins=nbin, cmap=cmap, range=[[xcentre - threshold, xcentre + threshold], [ycentre - threshold, ycentre + threshold]])
+		cbar = plt.colorbar(h[3], ax=ax).set_label('counts', fontsize=fontsize)
 	else:
 		h, xedges, yedges = np.histogram2d(x, y, bins=nbin, range=[[xcentre - threshold, xcentre + threshold], [ycentre - threshold, ycentre + threshold]])
 		h = h.T
-		plt.imshow(h, interpolation=interp, cmap=cmap, extent=[xcentre - threshold, xcentre + threshold, ycentre - threshold, ycentre + threshold])
+		img = plt.imshow(h, interpolation=interp, cmap=cmap, extent=[xcentre - threshold, xcentre + threshold, ycentre - threshold, ycentre + threshold])
+		cbar = plt.colorbar(img, ax=ax).set_label('counts', fontsize=fontsize)
 	plt.xticks(fontsize=fontsize, rotation=rotation)
 	plt.yticks(fontsize=fontsize, rotation=rotation)
 	plt.scatter(xcentre, ycentre, c='w', marker='*', s=ms)
@@ -310,8 +316,6 @@ def hist2d_gauss_CI(x, y, nbin=None, width=None, xcentre=0, ycentre=0, threshold
 		ell.set_facecolor('none')
 		ax.add_artist(ell)
 
-	if interp == None:
-		cbar = plt.colorbar(h[3], ax=ax).set_label('counts', fontsize=fontsize)
 	plt.axis([xcentre - ax_thresh, xcentre + ax_thresh, ycentre - ax_thresh, ycentre + ax_thresh], 'equal') if ax_thresh != None else None
 	plt.xlabel(xlabel, fontsize=fontsize)
 	plt.ylabel(ylabel, fontsize=fontsize)
