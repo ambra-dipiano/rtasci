@@ -37,6 +37,7 @@ else:
     config['simulation']['offset'] = float(args.off)
 config['simulation']['delay'] = args.delay
 config['setup']['trials'] = int(args.tn)
+config['setup']['scalefluxfactor'] = args.flux
 config['options']['plotsky'] = False
 
 for i in range(int(args.tt/args.tn)):
