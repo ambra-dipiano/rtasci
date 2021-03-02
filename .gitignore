@@ -1,4 +1,5 @@
 # files
+.gitignore
 slurm*
 test_*
 testing/*
