@@ -18,7 +18,7 @@ parser.add_argument('--tn', type=float, default=500, help='trials per node')
 parser.add_argument('--delay', type=float, default=50, help='delay')
 parser.add_argument('--off', type=str, default='gw', help='offset')
 parser.add_argument('--flux', type=float, default=1, help='flux scaling factor')
-parger.add_argument('--env', type=str, default='ctools', help='environment to activate')
+parser.add_argument('--env', type=str, default='ctools', help='environment to activate')
 args = parser.parse_args()
 
 #print(args)
