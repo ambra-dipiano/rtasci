@@ -118,7 +118,7 @@ for runid in runids:
             sim.run_simulation()
 
         # ---------------------------------------- merge in single photon list ---!!!
-        print('Merge bins in photon-list')
+        print('Merge in photon-list')
         phlist = join(grbpath, f'{name}.fits')
         sim.input = event_bins
         sim.output = phlist
@@ -131,5 +131,8 @@ for runid in runids:
         del sim
         print('Remove bins')
         os.system('rm ' + join(grbpath, f'{name}*tbin*'))
+        if cfg.get('onset') != 0:
+            print('Remove bins')
+            os.system('rm ' + join(grbpath, f'{name.replace("ebl", "bkg")}.fits'))
 print('... done.\n')
 
