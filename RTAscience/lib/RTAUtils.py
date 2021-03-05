@@ -23,11 +23,11 @@ def get_pointing(fits_file):
 # center of fov from FITS ---!
 def get_offset(fits_file, merger_map):
     true = get_pointing(fits_file)
-    alert = get_alert_pointing(merger_map)
+    alert = get_alert_pointing_gw(merger_map)
     return (true[0]-alert[0], true[1]-alert[1])
 
 # retrieve telescope pointing coordinates from alert probability map ---!
-def get_alert_pointing(merger_map):
+def get_alert_pointing_compressed(merger_map):
     # load map ---!
     merger_map = merger_map.replace('.gz','')
     os.system(f'gunzip {merger_map}.gz')
@@ -126,6 +126,9 @@ def get_mergermap(run, path):
     runid = run.split('_')
     merger = f'{runid[0]}_Merger{runid[1]}_skymap.fits'
     if merger in os.listdir(path):
+        return os.path.join(path, merger)
+    elif merger+'.gz' in os.listdir(path):
+        os.system(f"gunzip {merger}.gz")
         return os.path.join(path, merger)
     else:
         raise FileExistsError(f'Merger map {merger} for not found in path: {path}')
