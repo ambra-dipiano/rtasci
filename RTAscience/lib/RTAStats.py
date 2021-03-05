@@ -41,8 +41,8 @@ def hist1d(x, mean, true=None, nbin=20, hist=True, fontsize=20, color='b', xscal
 	for index, el in enumerate(x):
 		if el[0] is list():
 			el=el[0]
-		sns.distplot(el, bins=nbin, kde=False, hist=hist, fit=norm, norm_hist=True, fit_kws={"color": color[index], "ls": ls[index]}, color=color[index], hist_kws={'alpha':alpha}, label=leglabel[index])
-		plt.axvline(mean[index], c=color[index], ls=ls[index], lw=lw, label='mean ~ %.1E' %mean[index]) if mean != None else None
+		sns.distplot(el, bins=nbin, kde=False, hist=hist, fit=norm, norm_hist=True, fit_kws={"color": color[index], "ls": ls[index]}, color=color[index], hist_kws={'alpha':alpha})
+		plt.axvline(mean[index], c=color[index], ls=ls[index], lw=lw, label=leglabel[index]) if mean != None else None
 	if true != None:
 		plt.axvline(true, c='k', ls='-', lw=lw, label='true ~ %.1E' %true)
 	plt.title(title, fontsize=fontsize)
