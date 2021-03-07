@@ -90,6 +90,7 @@ for runid in runids:
         tgrid, tbin_start, tbin_stop = sim.getTimeSlices(GTI=(cfg.get('delay'), tmax), return_bins=True) 
 
         # -------------------------------------------------------- simulate ---!!!
+        print('Simulate Bkg+GRB with template')
         for j in range(tbin_stop-tbin_start-1):
             sim.t = [tgrid[j], tgrid[j + 1]]
             print(f'GTI (bin) = {sim.t}')
@@ -99,12 +100,33 @@ for runid in runids:
             sim.output = event
             sim.run_simulation()
 
+        # -------------------------------------------- shift time --- !!!
+        if cfg.get('onset') != 0:
+            if cfg.get('delay') != 0:
+                raise ValueError('Bad configuration. Either "onset" or "delay" must be equal to 0.')
+            onset = cfg.get('onset')
+            print(f'Shift template of {onset} s after the start of the observation')
+            sim.shiftTemplateTime(phlist=event_bins, time_shift=onset)
+
+            # ------------------------------------ add background --- !!!
+            print('Simulate bkg to append before the burst')
+            bkg = os.path.join(grbpath, f'bkg{count:06d}.fits')
+            event_bins.insert(0, bkg)
+            sim.t = [0, onset]
+            sim.model = bkg_model
+            sim.output = bkg
+            sim.run_simulation()
+
         # ---------------------------------------- merge in single photon list ---!!!
         print('Merge bins in photon-list')
         phlist = join(grbpath, f'{name}.fits')
         sim.input = event_bins
         sim.output = phlist
-        sim.appendEventsSinglePhList(GTI=[cfg.get('delay'), cfg.get('delay')+cfg.get('tobs')])
+        if cfg.get('delay') != 0:
+            sim.appendEventsSinglePhList(GTI=[cfg.get('delay'), cfg.get('delay')+cfg.get('tobs')])
+        elif cfg.get('onset'):
+            sim.appendEventsSinglePhList(GTI=[0, cfg.get('tobs')])
+
 
         del sim
         print('Remove bins')
