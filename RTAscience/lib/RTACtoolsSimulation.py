@@ -224,7 +224,10 @@ class RTACtoolsSimulation(RTACtoolsBase):
             with open(filename, 'a+') as f:
                 for j in range(self.__Ne):
                     # write spectral data in E [MeV] and I [ph/cm2/s/MeV] ---!
-                    f.write(str(self.__energy[j][0] * 1000.0) + ' ' + str(self.__spectra[i][j] / 1000.0 / scalefluxfactor) + "\n")
+                    if self.set_ebl:
+                        f.write(str(self.__energy[j][0] * 1000.0) + ' ' + str(self.__ebl[i][j] / 1000.0 / scalefluxfactor) + "\n")
+                    else:
+                        f.write(str(self.__energy[j][0] * 1000.0) + ' ' + str(self.__spectra[i][j] / 1000.0 / scalefluxfactor) + "\n")
             # write bin models ---!
             os.system('cp ' + str(self.model) + ' ' + str(os.path.join(data_path, f'{source_name}_tbin{i:02d}.xml')))
             s = open(os.path.join(data_path, f'{source_name}_tbin{i:02d}.xml')).read()
@@ -253,7 +256,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
                 else:
                     continue
         else:
-            raise ValueError('Total exposure time longer than template''s temporal evolution.')
+            raise ValueError('Total exposure time longer than template temporal evolution.')
 
         # energy grid ---!
         en = [1.0 for x in range(self.__Ne + 1)]
@@ -430,10 +433,10 @@ class RTACtoolsSimulation(RTACtoolsBase):
         # manipulate fits ---!
         with fits.open(filename, mode='update') as hdul:
             # drop events exceeding GTI ---!
-            # slice = self.__dropExceedingEvents(hdul=hdul, GTI=GTI)
-            # if len(slice) > 0:
-            #     hdul[1].data = hdul[1].data[slice]
-            # hdul.flush()
+            slice = self.__dropExceedingEvents(hdul=hdul, GTI=GTI)
+            if len(slice) > 0:
+                hdul[1].data = hdul[1].data[slice]
+            hdul.flush()
             # modify indexes  ---!
             self.__reindexEvents(hdul=hdul)
             # modify GTI ---!
