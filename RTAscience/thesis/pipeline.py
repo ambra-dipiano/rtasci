@@ -183,8 +183,8 @@ for k in range(trials):
             grb.model = p.getDataDir() + 'run0406_ID000126_tbin%02d.xml' % (i+start)
             event = p.getSimDir() + f + "_tbin%02d.fits" % (i+start)
         if scaleflux != 1:
-            grb.model = grb.model.replace('_tbin', '_flux%s_tbin' %str(scaleflux))
-            event = event .replace('_tbin', '_flux%s_tbin' %str(scaleflux))
+            grb.model = grb.model.replace('_tbin', '_flux%s_tbin' %str(int(scaleflux)))
+            event = event .replace('_tbin', '_flux%s_tbin' %str(int(scaleflux)))
         event_bins.append(event)
         if os.path.isfile(event):
             os.remove(event)
@@ -194,7 +194,7 @@ for k in range(trials):
     event = event_bins
     event_list = p.getSimDir() + 'obs_%s.xml' % f
     if scaleflux != 1:
-        event_list = event_list.replace('obs_', 'obs_flux%s_' %str(scaleflux))
+        event_list = event_list.replace('obs_', 'obs_flux%s_' %str(int(scaleflux)))
     if os.path.isfile(event_list):
         os.remove(event_list)
     grb.input = event
