@@ -252,11 +252,11 @@ for k in range(trials):
         grb.model = detectionXml
         grb.output = likeXml
         grb.maxLikelihood()
-        likeObj = ManageXml(likeXml)
+        xml = ManageXml(likeXml)
         elapsed = time.time() - start_time
         print(elapsed, 's for %d' %texp[i])
         if src_sort:
-            highest_ts_src = likeObj.sortSrcTs()[0]
+            highest_ts_src = xml.sortSrcTs()[0]
         else:
             highest_ts_src = None
         print('!!! check ---- highest TS: ', highest_ts_src) if checks is True else None
@@ -276,7 +276,7 @@ for k in range(trials):
         # --------------------------------- BEST FIT TSV --------------------------------- !!!
 
         ts_list, ts = ([] for j in range(2))
-        ts_list.append(likeObj.loadTs()) if Ndet > 0 else ts_list.append([np.nan])
+        ts_list.append(xml.loadTs()) if Ndet > 0 else ts_list.append([np.nan])
 
         # only first elem ---!
         ts.append(ts_list[0][0])
@@ -291,22 +291,24 @@ for k in range(trials):
 
         Nsrc = n
 
-        # --------------------------------- BEST FIT RA & DEC --------------------------------- !!!
+        # --------------------------------- BEST FIT RA & DEC ------------------- !!!
 
-        ra_list, ra_fit, dec_list, dec_fit = ([] for j in range(4))
-        coord = likeObj.loadRaDec() if Ndet > 0 else None
-        ra_list.append(coord[0]) if Ndet > 0 else ra_list.append([np.nan])
-        dec_list.append(coord[1]) if Ndet > 0 else dec_list.append([np.nan])
+        if dof == 3:
 
-        # only first elem ---!
-        ra_fit.append(ra_list[0][0])
-        dec_fit.append(dec_list[0][0])
+            ra_list, ra_fit, dec_list, dec_fit = ([] for j in range(4))
+            coord = xml.loadRaDec() if Ndet > 0 else None
+            ra_list.append(coord[0]) if Ndet > 0 else ra_list.append([np.nan])
+            dec_list.append(coord[1]) if Ndet > 0 else dec_list.append([np.nan])
 
-        # --------------------------------- BEST FIT SPECTRAL --------------------------------- !!!
+            # only first elem ---!
+            ra_fit.append(ra_list[0][0])
+            dec_fit.append(dec_list[0][0])
+
+        # --------------------------------- BEST FIT SPECTRAL ------------------- !!!
 
         pref_list, pref, index_list, index, pivot_list, pivot = ([] for j in range(6))
-        likeObj.if_cut = if_cut
-        spectral = likeObj.loadSpectral()
+        xml.if_cut = if_cut
+        spectral = xml.loadSpectral()
         index_list.append(spectral[0]) if Ndet > 0 else index_list.append([np.nan])
         pref_list.append(spectral[1]) if Ndet > 0 else pref_list.append([np.nan])
         pivot_list.append(spectral[2]) if Ndet > 0 else pivot_list.append([np.nan])
@@ -334,25 +336,28 @@ for k in range(trials):
 
         # --------------------------------- CLOSE LIKE XML --------------------------------- !!!
 
-        likeObj.closeXml()
+        xml.closeXml()
 
-        # --------------------------------- RESULTS TABLE (csv) --------------------------------- !!!
+        # --------------------------------- RESULTS TABLE (csv) ----------------------- !!!
 
         if checks:
             print('\n!!! ---------- check trial:', count)
             print('!!! ----- check texp:', texp[i])
-            print('!!! *** check Ndet:', Ndet)
-            print('!!! *** check Nsrc:', Nsrc)
             print('!!! *** check ra_det:', ra_det[0])
             print('!!! *** check dec_det:', dec_det[0])
-            print('!!! *** check ra_fit:', ra_fit[0])
-            print('!!! *** check dec_fit:', dec_fit[0])
+            if dof == 3:
+                print('!!! *** check ra_fit:', ra_fit[0])
+                print('!!! *** check dec_fit:', dec_fit[0])
             print('!!! *** check flux_ph:', flux_ph[0])
             print('!!! *** check ts:', ts[0])
         
         runid = 'run0406_ID000126'
-        ra = float(ra_det[0])
-        dec = float(dec_det[0])
+        if dof == 1:
+            ra = float(ra_det[0])
+            dec = float(dec_det[0])
+        elif dof == 3:
+            ra = float(ra_fit[0])
+            dec = float(dec_fit[0])
         flux = float(flux_ph[0])
         sqrt_ts = np.sqrt(float(ts[0]))
         true = SkyCoord(ra = true_coord[0]*u.deg, dec = true_coord[1]*u.deg, frame='fk5')
@@ -375,7 +380,7 @@ for k in range(trials):
     # --------------------------------- CLEAR SPACE --------------------------------- !!!
 
     print('!!! check ---- ', count, ') trial done...') if checks is True else None
-    if int(count) != 1:
+    if int(count) != 20001:
         os.system('rm ' + p.getSimDir() + '*ebl%06d*' % count)
         os.system('rm ' + p.getSelectDir() + '*ebl%06d*' % count)
         os.system('rm ' + p.getDetDir() + '*ebl%06d*' % count)
