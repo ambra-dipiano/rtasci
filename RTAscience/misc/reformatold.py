@@ -18,35 +18,32 @@ folders = [f for f in listdir(path) if isdir(join(path, f)) and 'offGW' in f and
 folders = sorted(folders)
 for i, folder in enumerate(folders):
     print(folder)
-    tests = [f for f in listdir(join(path, folder)) if isfile(join(path, folder, f))]
+    tests = [f for f in listdir(join(path, folder)) if isfile(join(path, folder, f)) and '.csv' in f]
     tests = sorted(tests)
     for j, test in enumerate(tests):
         data = pd.read_csv(join(path, folder, test), sep=',')
         data['scaleflux'] = i+1
-        if i == 0:
-            if j == 0:
-                table = data
-            else:
-                table = table.append(data, sort=False)
+        data = data.rename(columns={'#trial': 'runid', 'RA_det': 'ra', 'DEC_det': 'dec', 'flux_ph': 'flux', 'TS': 'sqrt_ts'})
+        data['seed'] = [int(seed.replace('ID','')) for seed in data['runid']]
+        data['sqrt_ts'] = [np.sqrt(float(ts)) for ts in np.array(data['sqrt_ts'])]
+        data['runid'] = 'run0406_ID000126'
+        data['offset'] = 1.638
+        data['delay'] = 50
+        data['caldb'] = 'degr3b-v2'
+        data['irf'] = 'South_z40_0.5h'
+        data = data.drop(['Ndet', 'Nsrc', 'RA_fit', 'DEC_fit', 'sigma'], axis=1)
+        dist = []
+        for k in range(len(data)):
+            dist.append(float(true_coord.separation(SkyCoord(ra=np.array(data['ra'])[k], dec=np.array(data['dec'])[k], unit='deg', frame='fk5')).deg))
+        print(len(dist), max(dist), min(dist))
+        data['dist'] = dist
+        #data.sort_index(axis=1, inplace=True)
+        columnsTitles = ['runid', 'seed', 'texp', 'sqrt_ts', 'flux', 'ra', 'dec', 'dist', 'offset', 'delay', 'scaleflux', 'caldb', 'irf']
+        data = data.reindex(columns=columnsTitles)
+        data.to_csv(join(path, folder, test.replace('.csv', '.txt')), sep=' ', index=False, header=True, na_rep='nan')
+        if j == 0:
+            table = data
         else:
             table = table.append(data, sort=False)
-    table = table.rename(columns={'#trial': 'runid', 'TS': 'sqrt_ts', 'RA_det': 'ra', 'DEC_det': 'dec', 'flux_ph': 'flux'})
-    table['seed'] = [int(seed.replace('ID','')) for seed in table['runid']]
-    table['sqrt_ts'] = [np.sqrt(ts) for ts in table['sqrt_ts']]
-    table['runid'] = 'run0406_ID000126'
-    table['offset'] = 2
-    table['delay'] = 50
-    table['caldb'] = 'degr3b-v2'
-    table['irf'] = 'South_z40_0.5h'
-    table = table.drop(['Ndet', 'Nsrc', 'RA_fit', 'DEC_fit', 'sigma'], axis=1)
-    dist = []
-    for k in range(len(table)):
-        print(k)
-        dist.append(float(true_coord.separation(SkyCoord(ra=np.array(table['ra'])[k], dec=np.array(table['dec'])[k], unit='deg', frame='fk5')).deg))
-    print(len(dist), max(dist), min(dist))
-    table['dist'] = dist
-    table = table.sort('seed')
-    #table.sort_index(axis=1, inplace=True)
-    columnsTitles = ['runid', 'seed', 'texp', 'sqrt_ts', 'flux', 'ra', 'dec', 'dist', 'offset', 'delay', 'scaleflux', 'caldb', 'irf']
-    table = table.reindex(columns=columnsTitles)
-    table.to_csv(join(path, folder + '.txt'), sep=' ', index=False, header=True)
+    table.to_csv(join(path, folder + '.txt'), sep=' ', index=False, header=True, na_rep='nan')
+    del table
