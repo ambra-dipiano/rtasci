@@ -3,8 +3,7 @@ from astropy import units as u
 from astropy.coordinates import SkyCoord
 from os.path import join
 
-path = '/home/ambra/Desktop/CTA/projects/rta-pipe/archive_tests/paper2021/newsim_data/'
-
+path = expandvars('$RESULTS')
 total = join(path, 'deg_flux1-3_off2-4_del50-150.txt')    
 data = pd.read_csv(total, sep=' ')
 print(len(data))
