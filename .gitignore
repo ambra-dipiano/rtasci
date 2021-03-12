@@ -1,0 +1,35 @@
+# files
+slurm*
+test_*
+testing/*
+config.yaml
+adptests/*
+RTAscience/cfg/*.yml
+RTAscience/paper/*
+RTAscience/cfg/*.sh
+RTAscience/jobs/*myconfig*
+RTAscience/jobs
+RTAscience/paper
+RTAscience/log
+env.sh
+RTAscience/cancel_jobs.py
+RTAscience/deljobs.py
+RTAscience/wilks.py
+RTAscience/sphdist.py
+RTAscience/datamerger.py
+loadenv.sh
+
+# folders
+.*/
+./
+/.
+!RTAscience/cfg/
+RTAscience/lib/old*
+RTAscience/lib/__pycache__/*
+RTAscience/notebooks
+
+__pycache__
+*.egg-info
+.vscode
+dist/
+build/
