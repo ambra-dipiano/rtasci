@@ -34,6 +34,7 @@ elif type(cfg.get('runid')) == str:
     runids = [cfg.get('runid')]
 else:
     runids = cfg.get('runid')
+runids = sorted(runids)
 
 # general ---!
 start_count = cfg.get('start_count')

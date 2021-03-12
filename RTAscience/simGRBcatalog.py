@@ -33,6 +33,7 @@ elif type(cfg.get('runid')) == str:
     runids = [cfg.get('runid')]
 else:
     runids = cfg.get('runid')
+runids = sorted(runids)
 
 # general ---!
 trials = cfg.get('trials')
@@ -157,8 +158,9 @@ for runid in runids:
         if args.remove.lower() == 'true' and args.merge.lower() == 'true':
             print('Remove bins')
             os.system('rm ' + join(grbpath, f'{name}*tbin*'))
-        if cfg.get('onset') != 0:
-            print('Remove bkg bin')
-            os.system('rm ' + join(grbpath, f'{name.replace("ebl", "bkg")}.fits'))
+            if cfg.get('onset') != 0:
+                print('Remove bkg bin')
+                os.system('rm ' + join(grbpath, f'{name.replace("ebl", "bkg")}.fits'))
+        print(f"{'-'*50} #")
 print('\n... done.\n')
 
