@@ -171,7 +171,7 @@ for k in range(trials):
 
     event_bins = []
     grb.table = p.getDataDir() + tcsv
-    tgrid, start, stop = grb.getTimeSlicesNew(GTI=[delay, max(tmax)], return_bins=True)  
+    tgrid, start, stop = grb.getTimeSlices(GTI=[delay, max(tmax)], return_bins=True)  
     # simulate ---!
     for i in range(len(tgrid)-1):
         grb.t = [tgrid[i], tgrid[i+1]]
