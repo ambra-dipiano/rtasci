@@ -421,21 +421,23 @@ class RTACtoolsSimulation(RTACtoolsBase):
         sample = sorted(sample)
         n = 0
         for i, f in enumerate(sample):
-            print(f)
             with fits.open(f) as hdul:
                 if len(hdul[1].data) == 0:
                     continue
                 if n == 0:
-                    h1 = hdul[1].header
-                    h2 = hdul[2].header
+                    hdr1 = hdul[1].header
+                    hdr2 = hdul[2].header
                     ext1 = Table(hdul[1].data)
                     ext2 = hdul[2].data
                     n += 1
-                    print('A. ext2', ext2)
-                    print('A. ext1 in', ext1.field('TIME').min(), ext1.field('TIME').max())
                 else:
+                    hdr1['LIVETIME'] += hdul[1].header['LIVETIME']
+                    hdr1['ONTIME'] += hdul[1].header['ONTIME']
+                    hdr1['TELAPSE'] += hdul[1].header['TELAPSE']
+                    hdr1['TSTOP'] = hdul[1].header['TSTOP']
+                    hdr1['DATE-END'] = hdul[1].header['DATE-END']
+                    hdr1['TIME-END'] = hdul[1].header['TIME-END']
                     ext1 = vstack([ext1, Table(hdul[1].data)])
-                    print('B. ext1 in', ext1.field('TIME').min(), ext1.field('TIME').max())
                 hdul.close()
         # create output FITS file empty ---!
         hdu = fits.PrimaryHDU()
@@ -444,15 +446,13 @@ class RTACtoolsSimulation(RTACtoolsBase):
         hdul.close()
         # update FITS file ---!
         with fits.open(filename, mode='update') as hdul:
-            print('total ext2', ext2)
-            print('total ext1', ext1.field('TIME').min(), ext1.field('TIME').max())
-            hdu1 = fits.BinTableHDU(name='EVENTS', data=ext1, header=h1)
-            hdu2 = fits.BinTableHDU(name='GTI', data=ext2, header=h2)
+            hdu1 = fits.BinTableHDU(name='EVENTS', data=ext1, header=hdr1)
+            hdu2 = fits.BinTableHDU(name='GTI', data=ext2, header=hdr2)
             hdul.append(hdu1)
             hdul.append(hdu2)
             hdul.flush()
             # sort table by time ---!
-            self.__sortEventsByTime(hdul=hdul, hdr=h1)
+            self.__sortEventsByTime(hdul=hdul, hdr=hdr1)
         # manipulate fits ---!
         with fits.open(filename, mode='update') as hdul:
             # drop events exceeding GTI ---!
