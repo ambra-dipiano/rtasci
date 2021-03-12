@@ -9,8 +9,8 @@ from RTAscience.cfg.Config import Config
 parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
 parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
 parser.add_argument('--merge', type=str, default='true', help='Merge in single phlist (true) or use observation library (false)')
-parser.add_argument('--remove', type=str, default='false', help='Keep only outputs')
-parser.add_argument('--print', type=str, default='true', help='Print out results')
+parser.add_argument('--remove', type=str, default='true', help='Keep only outputs')
+parser.add_argument('--print', type=str, default='false', help='Print out results')
 args = parser.parse_args()
 
 cfg = Config(args.cfgfile)
