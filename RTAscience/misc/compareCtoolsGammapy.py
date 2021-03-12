@@ -6,13 +6,11 @@ from lib.RTAVisualise import *
 from os.path import join, isdir, isfile
 from os import listdir
 
-pypath = str(os.path.dirname(os.path.abspath(__file__)))  
-datapath = pypath.replace('cta-sag-sci/RTAscience', 'DATA/outputs/crab/timing')
 datapath = join(os.path.expandvars('$DATA'), 'outputs/crab/timing')
 try:
     isdir(datapath)
 except ValueError:
-    raise ValueError('Export $DATA envar please.')
+    raise ValueError(f'Folder {datapath} not found.')
 
 pngpath = join(datapath, 'png')
 if not isdir(pngpath):
