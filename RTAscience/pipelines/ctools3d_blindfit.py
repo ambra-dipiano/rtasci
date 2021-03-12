@@ -20,7 +20,7 @@ from RTAscience.lib.RTAVisualise import plotSkymap
 
 parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
 parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
-parser.add_argument('--merge', type=str, default='false', help='Merge in single phlist (true) or use observation library (false)')
+parser.add_argument('--merge', type=str, default='true', help='Merge in single phlist (true) or use observation library (false)')
 parser.add_argument('--remove', type=str, default='true', help='Keep only outputs')
 parser.add_argument('--print', type=str, default='false', help='Print out results')
 args = parser.parse_args()
@@ -57,7 +57,7 @@ if not isdir(f"{datapath}/skymaps"):
 
 # ------------------------------------------------------ loop runid --- !!!
 for runid in runids:
-    print(f'Processing runid: {runid}')
+    print(f'Processing runid: {runid}\n')
     # outputs
     logname = f"{datapath}/outputs/{runid}/{cfg.get('caldb')}-{cfg.get('irf')}_seed{start_count+1:06d}-{start_count+1+trials:06d}_flux{cfg.get('scalefluxfactor')}_offset{offset}_delay{cfg.get('delay')}.txt"
     if not isdir(f"{datapath}/outputs/{runid}"):
@@ -88,21 +88,26 @@ for runid in runids:
             sky = phlist.replace('.xml', '_sky.fits').replace('/obs/', '/rta_products/')
         candidates = sky.replace('_sky.fits', '_sources.xml')
         fit = candidates.replace('sources', 'fit')
+        if args.print.lower() == 'true':
+            print(f'Input observation: {phlist}')
 
         # ---------------------------------------------------------- loop exposure times ---!!!
 
         for texp in cfg.get('exposure'):
             # selection ---!
             selphlist = phlist.replace(f'{name}', f'texp{texp}s_{name}')
-            prefix = join(grbpath, f'texp{texp}s_')
-            print(selphlist)
             grb = RTACtoolsAnalysis()
             grb.configure(cfg)
             grb.t = [cfg.get('delay'), cfg.get('delay')+texp]
-            print(grb.t)
+            if args.print.lower() == 'true':
+                print(f"Selection t = {grb.t} s")
             grb.input = phlist
             grb.output = selphlist
-            grb.run_selection(prefix=prefix)
+            if args.merge.lower() == 'true':
+                grb.run_selection()
+            else:
+                prefix = join(grbpath, f'texp{texp}s_')
+                grb.run_selection(prefix=prefix)
             # skymap ---!
             grb.input = selphlist
             grb.output = sky
