@@ -18,6 +18,7 @@ parser.add_argument('--count', type=int, default=500, help='trials per node')
 parser.add_argument('--delay', type=float, default=50, help='delay')
 parser.add_argument('--off', type=str, default='gw', help='offset')
 parser.add_argument('--flux', type=float, default=1, help='flux scaling factor')
+parser.add_argument('--extdata', type=str, default='false', help='extract spectra and lightcurves')
 args = parser.parse_args()
 
 # initialize global count ---!
@@ -27,7 +28,10 @@ count = start_count
 delay = args.delay 
 offset = args.off
 scaleflux = args.flux
-extract_spec = False 
+if args.extdata.lower() == 'true':
+    extract_spec = True
+else:
+    extract_spec = False
 
 # cpus ---!
 nthreads = 1
