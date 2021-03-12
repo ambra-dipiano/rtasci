@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--trials', type=int, default=1000000, help='total trials')
 parser.add_argument('--count', type=int, default=50000, help='trials per node')
 parser.add_argument('--off', type=str, default='gw', help='offset')
-parser.add_argument('--caldb', type=str, default='degr3b-ve', help='calibration database')
+parser.add_argument('--caldb', type=str, default='degr3b-v2', help='calibration database')
 parser.add_argument('--irf', type=str, default='South_z40_0.5h', help='insturment response function')
 args = parser.parse_args()
 
