@@ -2,7 +2,7 @@ import gammalib
 import ctools
 import cscripts
 from astropy.io import fits
-from astropy import table
+from astropy.table import Table, vstack
 import healpy as hp
 import numpy as np
 import os.path
@@ -278,23 +278,7 @@ class Analysis() :
     E = np.array(df[cols[0]]) / 1e3  # MeV --> GeV ---!
     return tau_gilmore, E
 
-  # retrive csv temporal bin grid of the template in use and return the necessary slice ---!
-  def getTimeSlices(self):
-    df = self.__openCSV()
-    cols = list(df.columns)
-    self.__time = np.append(0, np.array(df[cols[1]]))
-    for i in range(len(self.__time)):
-      if self.__time[i] > self.tmax or self.__time[i] == self.tmax:
-        self.__time[i] = self.tmax
-        bin = i+1
-        break
-    if bin < self.__Nt:
-      sliceObj = slice(0, bin + 1)
-    else:
-      sliceObj = slice(0, bin)
-    return self.__time[sliceObj]
-
-  def getTimeSlicesNew(self, GTI, return_bins=False):
+  def getTimeSlices(self, GTI, return_bins=False):
     self.__getFitsData()
     df = self.__openCSV()
     cols = list(df.columns)
@@ -310,9 +294,9 @@ class Analysis() :
         bin_stop += i
         break
     if bin_stop <= self.__Nt:
-      time_slice = slice(bin_start, bin_stop + 1)
-    else:
       time_slice = slice(bin_start, bin_stop)
+    else:
+      time_slice = slice(bin_start, bin_stop-1)
     if not time_slice:
       raise ValueError('Invalid GTI: cannot extract time slices')
     tgrid = self.__time[time_slice]
@@ -590,10 +574,18 @@ class Analysis() :
 
   # sort simulated events by time (TIME) instead of source (MC_ID) ---!
   def __sortEventsByTime(self, hdul, hdr):
-    data = table.Table(hdul[1].data)
+    data = Table(hdul[1].data)
     data.sort('TIME')
     hdul[1] = fits.BinTableHDU(name='EVENTS', data=data, header=hdr)
     hdul.flush()
+    return
+
+  # check GTI and raise error if bad values are passed
+  def __checkGTI(self, hdul):
+    GTI = hdul[2].data[0]
+    trange = hdul[1].data.field('TIME')
+    if GTI[0] > trange.min() or GTI[1] < trange.max():
+      raise ValueError ('Bad GTI values passed to photon list append.')
     return
 
   # create single photon list from obs list ---!
@@ -605,13 +597,20 @@ class Analysis() :
         if len(hdul[1].data) == 0:
           continue
         if n == 0:
-          h1 = hdul[1].header
-          h2 = hdul[2].header
-          ext1 = hdul[1].data
+          hdr1 = hdul[1].header
+          hdr2 = hdul[2].header
+          ext1 = Table(hdul[1].data)
           ext2 = hdul[2].data
           n += 1
         else:
-          ext1 = np.append(ext1, hdul[1].data)
+          hdr1['LIVETIME'] += hdul[1].header['LIVETIME']
+          hdr1['ONTIME'] += hdul[1].header['ONTIME']
+          hdr1['TELAPSE'] += hdul[1].header['TELAPSE']
+          hdr1['TSTOP'] = hdul[1].header['TSTOP']
+          hdr1['DATE-END'] = hdul[1].header['DATE-END']
+          hdr1['TIME-END'] = hdul[1].header['TIME-END']
+          ext1 = vstack([ext1, Table(hdul[1].data)])
+        hdul.close()
     # create output FITS file empty ---!
     hdu = fits.PrimaryHDU()
     hdul = fits.HDUList([hdu])
@@ -619,13 +618,13 @@ class Analysis() :
     hdul.close()
     # update FITS file ---!
     with fits.open(filename, mode='update') as hdul:
-      hdu1 = fits.BinTableHDU(name='EVENTS', data=ext1, header=h1)
-      hdu2 = fits.BinTableHDU(name='GTI', data=ext2, header=h2)
+      hdu1 = fits.BinTableHDU(name='EVENTS', data=ext1, header=hdr1)
+      hdu2 = fits.BinTableHDU(name='GTI', data=ext2, header=hdr2)
       hdul.append(hdu1)
       hdul.append(hdu2)
       hdul.flush()
       # sort table by time ---!
-      self.__sortEventsByTime(hdul=hdul, hdr=h1)
+      self.__sortEventsByTime(hdul=hdul, hdr=hdr1)
     # manipulate fits ---!
     with fits.open(filename, mode='update') as hdul:
       # drop events exceeding GTI ---!
@@ -642,31 +641,17 @@ class Analysis() :
         hdul[2].data[0][0] = GTI[0]
         hdul[2].data[0][1] = GTI[1]
       hdul.flush()
-    return
+      return                        
 
   # created one FITS table containing all events and GTIs ---!
-  def appendEventsSinglePhList(self, GTI=None):
+  def appendEventsSinglePhList(self, GTI=None, new_GTI=False):
     if GTI == None:
       GTI = []
       with fits.open(self.input[0]) as hdul:
         GTI.append(hdul[2].data[0][0])
       with fits.open(self.input[-1]) as hdul:
         GTI.append(hdul[2].data[0][1])
-    self.__singlePhotonList(sample=self.input, filename=self.output, GTI=GTI)
-    return
-
-  # create one fits table appending source and bkg
-  def appendBkg(self, phlist, bkg, GTI):
-    with fits.open(bkg, mode='update') as hdul:
-      # fix GTI ---!
-      hdul[2].data[0][0] = GTI[0]
-      hdul[2].data[0][1] = GTI[1]
-      hdul.flush()
-      times = hdul[1].data.field('TIME')
-      for i, t, in enumerate(times):
-        hdul[1].data.field('TIME')[i] = t + GTI[0]
-      hdul.flush()
-    self.__singlePhotonList(sample=[phlist, bkg], filename=phlist, GTI=GTI)
+    self.__singlePhotonList(sample=self.input, filename=self.output, GTI=GTI, new_GTI=new_GTI)
     return
 
   # created a number of FITS table containing all events and GTIs ---!
