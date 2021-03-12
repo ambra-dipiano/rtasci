@@ -20,7 +20,7 @@ from astropy.io import fits
 
 parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
 parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
-parser.add_argument('--merge', type=str, default='false', help='Merge in single phlist (true) or use observation library (false)')
+parser.add_argument('--merge', type=str, default='true', help='Merge in single phlist (true) or use observation library (false)')
 parser.add_argument('--remove', type=str, default='true', help='Keep only outputs')
 parser.add_argument('--print', type=str, default='false', help='Print out results')
 args = parser.parse_args()
@@ -105,6 +105,7 @@ for runid in runids:
             sim.run_simulation()
             if args.print.lower() == 'true':
                 h = fits.open(event)
+                print('Check GTI and EVENTS time range:')
                 print('----------')
                 print(h[2].data)
                 print(h[1].data.field('TIME').min(), h[1].data.field('TIME').max())
@@ -139,6 +140,7 @@ for runid in runids:
                 sim.appendEventsSinglePhList(GTI=[0, cfg.get('tobs')])
             if args.print.lower() == 'true':
                 h = fits.open(phlist)
+                print('Check GTI and EVENTS time range:')
                 print('************')
                 print(h[2].data)
                 print(h[1].data.field('TIME').min(), h[1].data.field('TIME').max())
@@ -152,11 +154,11 @@ for runid in runids:
             make_obslist(obslist=obslist, items=event_bins, names=name)
 
         del sim
-        if args.remove.lower() == 'true':
+        if args.remove.lower() == 'true' and args.merge.lower() == 'true':
             print('Remove bins')
             os.system('rm ' + join(grbpath, f'{name}*tbin*'))
         if cfg.get('onset') != 0:
             print('Remove bkg bin')
-            #os.system('rm ' + join(grbpath, f'{name.replace("ebl", "bkg")}.fits'))
-print('... done.\n')
+            os.system('rm ' + join(grbpath, f'{name.replace("ebl", "bkg")}.fits'))
+print('\n... done.\n')
 
