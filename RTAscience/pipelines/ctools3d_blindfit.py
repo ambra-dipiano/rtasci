@@ -58,7 +58,7 @@ if not isdir(f"{datapath}/skymaps"):
 
 # ------------------------------------------------------ loop runid --- !!!
 for runid in runids:
-    print(f'Processing runid: {runid}\n')
+    print(f"{'-'*50} #\nProcessing runid: {runid}")
     # outputs
     logname = f"{datapath}/outputs/{runid}/{cfg.get('caldb')}-{cfg.get('irf')}_seed{start_count+1:06d}-{start_count+1+trials:06d}_flux{cfg.get('scalefluxfactor')}_offset{offset}_delay{cfg.get('delay')}.txt"
     if not isdir(f"{datapath}/outputs/{runid}"):
@@ -91,6 +91,9 @@ for runid in runids:
         fit = candidates.replace('sources', 'fit')
         if args.print.lower() == 'true':
             print(f'Input observation: {phlist}')
+        if not isfile(phlist):
+            print(f'Missing observation {phlist}. \nSkip runid {runid}.')
+            break
 
         # ---------------------------------------------------------- loop exposure times ---!!!
 
@@ -169,8 +172,8 @@ for runid in runids:
                 log.close()
 
             del grb
-    if args.remove.lower() == 'true':
-        print('Remove files')
-        os.system(f"rm {datapath}/obs/{runid}/*{name}*")
-        os.system(f"rm {datapath}/rta_products/{runid}/*{name}*")
+        if args.remove.lower() == 'true':
+            # remove files ---!
+            os.system(f"rm {datapath}/obs/{runid}/*{name}*")
+            os.system(f"rm {datapath}/rta_products/{runid}/*{name}*")
 print('...done.\n')

@@ -135,4 +135,5 @@ def get_mergermap(run, path):
         os.system(f"unzip {merger}.gz")
         return os.path.join(path, merger)
     else:
-        raise FileExistsError(f'Merger map {merger} for not found in path: {path}')
+        print(f'Merger map {merger} for not found in path: {path}.')
+        return None

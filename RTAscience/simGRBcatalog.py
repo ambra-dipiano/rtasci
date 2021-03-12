@@ -50,7 +50,7 @@ bkg_model = cfg.get('bkg')
 
 # ------------------------------------------------------- loop runid --- !!!
 for runid in runids:
-    print(f'Processing runid: {runid}')
+    print(f"{'-'*50} #\nProcessing runid: {runid}")
     # grb path ---!
     grbpath = join(datapath, 'obs', runid)  # folder that will host the phlist 
     if not isdir(grbpath):
@@ -63,6 +63,9 @@ for runid in runids:
         raise ValueError(f'Data from {runid} have not been correctly extracted.')
     mergerpath = os.path.expandvars(cfg.get('merger'))
     mergermap = get_mergermap(runid, mergerpath)
+    if mergermap == None:
+        print(f'Skip runid {runid}. ')
+        continue
 
     # get alert pointing
     if type(cfg.get('offset')) == str and cfg.get('offset').lower() == 'gw':
@@ -156,11 +159,10 @@ for runid in runids:
 
         del sim
         if args.remove.lower() == 'true' and args.merge.lower() == 'true':
-            print('Remove bins')
+            # remove bins ---!
             os.system('rm ' + join(grbpath, f'{name}*tbin*'))
             if cfg.get('onset') != 0:
-                print('Remove bkg bin')
+                # remove bkg bin ---!
                 os.system('rm ' + join(grbpath, f'{name.replace("ebl", "bkg")}.fits'))
-        print(f"{'-'*50} #")
 print('\n... done.\n')
 
