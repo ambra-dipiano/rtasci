@@ -1,4 +1,12 @@
-# IMPORTS ---!
+# *******************************************************************************
+# Copyright (C) 2020 INAF
+#
+# This software is distributed under the terms of the BSD-3-Clause license
+#
+# Authors:
+# Ambra Di Piano <ambra.dipiano@inaf.it>
+# *******************************************************************************
+
 from pkg_blindsearch import *
 import numpy as np
 import os

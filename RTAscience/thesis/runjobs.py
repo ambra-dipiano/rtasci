@@ -1,7 +1,11 @@
-# RUNNING THE SCRIPT:
-# $ python configYamlFilters.py CONFIGURATION.yaml YEARS_args.indir
-# example:
-# $ python configYamlFilters.py M10B_294278402_296870402.yaml YEARS5g019
+# *******************************************************************************
+# Copyright (C) 2020 INAF
+#
+# This software is distributed under the terms of the BSD-3-Clause license
+#
+# Authors:
+# Ambra Di Piano <ambra.dipiano@inaf.it>
+# *******************************************************************************
 
 import sys
 import os
