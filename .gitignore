@@ -26,7 +26,7 @@ loadenv.sh
 !RTAscience/cfg/
 RTAscience/lib/old*
 RTAscience/lib/__pycache__/*
-RTAscience/notebooks
+#RTAscience/notebooks
 
 __pycache__
 *.egg-info
