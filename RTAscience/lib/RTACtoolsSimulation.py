@@ -15,9 +15,26 @@ import re
 import numpy as np
 import pandas as pd
 from astropy.io import fits
-from astropy import table
+from astropy.table import Table, vstack
 from scipy.interpolate import interp1d
 from RTAscience.lib.RTACtoolsBase import RTACtoolsBase
+
+# create observation list with gammalib ---!
+def make_obslist(obslist, items, names, instruments='CTA'):
+    if type(items) != type(list()):
+        items = [items]
+    if type(names) != type(list()):
+        names = [names for i in range(len(items))]
+    if type(instruments) != type(list()):
+        instruments = [instruments for i in range(len(items))]
+    xml = gammalib.GXml()
+    obslib = xml.append('observation_list title="observation library"')
+    for i, item in enumerate(items):
+        obs = obslib.append(f'observation name="{names[i]}" id="{i+1:02d}" instrument="{instruments[i]}"')
+        obs.append(f'parameter name="EventList" file="{item}"')
+    xml.save(obslist)
+    del xml
+    return 
 
 class RTACtoolsSimulation(RTACtoolsBase):
     '''
@@ -276,7 +293,6 @@ class RTACtoolsSimulation(RTACtoolsBase):
     # get tbin_stop without loading the template ---!
     def getTimeBinStop(self):
         self.__getFitsData()
-
         # time grid ---!
         t = [0.0 for x in range(self.__Nt + 1)]
         for i in range(self.__Nt - 1):
@@ -386,7 +402,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
 
     # sort simulated events by time (TIME) instead of source (MC_ID) ---!
     def __sortEventsByTime(self, hdul, hdr):
-        data = table.Table(hdul[1].data)
+        data = Table(hdul[1].data)
         data.sort('TIME')
         hdul[1] = fits.BinTableHDU(name='EVENTS', data=data, header=hdr)
         hdul.flush()
@@ -401,21 +417,26 @@ class RTACtoolsSimulation(RTACtoolsBase):
         return
 
     # create single photon list from obs list ---!
-    def __singlePhotonList(self, sample, filename, GTI, new_GTI=False):
+    def __singlePhotonList(self, sample, filename, GTI, new_GTI=True):
         sample = sorted(sample)
         n = 0
         for i, f in enumerate(sample):
+            print(f)
             with fits.open(f) as hdul:
                 if len(hdul[1].data) == 0:
                     continue
                 if n == 0:
                     h1 = hdul[1].header
                     h2 = hdul[2].header
-                    ext1 = hdul[1].data
+                    ext1 = Table(hdul[1].data)
                     ext2 = hdul[2].data
                     n += 1
+                    print('A. ext2', ext2)
+                    print('A. ext1 in', ext1.field('TIME').min(), ext1.field('TIME').max())
                 else:
-                    ext1 = np.append(ext1, hdul[1].data)
+                    ext1 = vstack([ext1, Table(hdul[1].data)])
+                    print('B. ext1 in', ext1.field('TIME').min(), ext1.field('TIME').max())
+                hdul.close()
         # create output FITS file empty ---!
         hdu = fits.PrimaryHDU()
         hdul = fits.HDUList([hdu])
@@ -423,6 +444,8 @@ class RTACtoolsSimulation(RTACtoolsBase):
         hdul.close()
         # update FITS file ---!
         with fits.open(filename, mode='update') as hdul:
+            print('total ext2', ext2)
+            print('total ext1', ext1.field('TIME').min(), ext1.field('TIME').max())
             hdu1 = fits.BinTableHDU(name='EVENTS', data=ext1, header=h1)
             hdu2 = fits.BinTableHDU(name='GTI', data=ext2, header=h2)
             hdul.append(hdu1)
@@ -446,7 +469,6 @@ class RTACtoolsSimulation(RTACtoolsBase):
                 hdul[2].data[0][0] = GTI[0]
                 hdul[2].data[0][1] = GTI[1]
             hdul.flush()
-            self.__checkGTI(hdul=hdul)
         return
 
     # created one FITS table containing all events and GTIs ---!
