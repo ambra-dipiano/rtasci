@@ -482,20 +482,6 @@ class RTACtoolsSimulation(RTACtoolsBase):
         self.__singlePhotonList(sample=self.input, filename=self.output, GTI=GTI, new_GTI=new_GTI)
         return
 
-    # create one fits table appending source and bkg within GTI ---!
-    def appendBkg(self, phlist, bkg, GTI, new_GTI):
-        with fits.open(bkg, mode='update') as hdul:
-            # fix GTI ---!
-            hdul[2].data[0][0] = GTI[0]
-            hdul[2].data[0][1] = GTI[1]
-            hdul.flush()
-            times = hdul[1].data.field('TIME')
-            for i, t, in enumerate(times):
-                hdul[1].data.field('TIME')[i] = t + GTI[0]
-            hdul.flush()
-        self.__singlePhotonList(sample=[phlist, bkg], filename=phlist, GTI=GTI, new_GTI=new_GTI)
-        return
-
     # shift times in template simulation to append background before burst ---!
     def shiftTemplateTime(self, phlist, time_shift):
         if phlist is str():
