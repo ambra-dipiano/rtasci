@@ -8,7 +8,9 @@ from RTAscience.cfg.Config import Config
 # configure
 parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
 parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
-parser.add_argument('--remove', type=str, default='true', help='Keep only outputs')
+parser.add_argument('--merge', type=str, default='false', help='Merge in single phlist (true) or use observation library (false)')
+parser.add_argument('--remove', type=str, default='false', help='Keep only outputs')
+parser.add_argument('--print', type=str, default='true', help='Print out results')
 args = parser.parse_args()
 
 cfg = Config(args.cfgfile)
@@ -19,7 +21,7 @@ if cfg.get('simtype').lower() == 'grb':
         print('\nPreparing GRB catalog...\n')
         os.system(f'python3 prepareGRBcatalog.py -f {args.cfgfile}')
     print('\nRun simulations...\n')
-    os.system(f'python3 simGRBcatalog.py -f {args.cfgfile}')
+    os.system(f'python3 simGRBcatalog.py -f {args.cfgfile} --merge {args.merge.lower()} --remove {args.remove.lower()} --print {args.print.lower()}')
 elif cfg.get('simtype').lower() == 'bkg':
     print('\nComputing BKG-ONLY simulations is work in progress\n')
 elif cfg.get('simtype').lower() == 'skip':
@@ -41,6 +43,6 @@ elif cfg.get('tool') == 'ctools':
         pipeline += 'blind'
     pipeline += 'fit.py'
     print(f'Pipeline: {pipeline}')
-    os.system(f"python3 pipelines/{pipeline} -f {args.cfgfile} --remove {args.remove.lower()}")
+    os.system(f"python3 pipelines/{pipeline} -f {args.cfgfile} --merge {args.merge.lower()} --remove {args.remove.lower()} --print {args.print.lower()}")
 
 print('\n\nExit\n\n')
