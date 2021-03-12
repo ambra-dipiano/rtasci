@@ -12,13 +12,17 @@ import os
 import sys
 import argparse
 from os.path import isdir, join, isfile
-from RTAscience.lib.RTACtoolsSimulation import RTACtoolsSimulation
+from RTAscience.lib.RTACtoolsSimulation import RTACtoolsSimulation, make_obslist
 from RTAscience.lib.RTAManageXml import ManageXml
 from RTAscience.lib.RTAUtils import get_alert_pointing_gw, get_mergermap, get_pointing
 from RTAscience.cfg.Config import Config
+from astropy.io import fits
 
 parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
 parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
+parser.add_argument('--merge', type=str, default='true', help='Merge in single phlist (true) or use observation library (false)')
+parser.add_argument('--remove', type=str, default='true', help='Keep only outputs')
+parser.add_argument('--print', type=str, default='false', help='Print out results')
 args = parser.parse_args()
 cfg = Config(args.cfgfile)
 
@@ -29,6 +33,7 @@ elif type(cfg.get('runid')) == str:
     runids = [cfg.get('runid')]
 else:
     runids = cfg.get('runid')
+runids = sorted(runids)
 
 # general ---!
 trials = cfg.get('trials')
@@ -45,7 +50,7 @@ bkg_model = cfg.get('bkg')
 
 # ------------------------------------------------------- loop runid --- !!!
 for runid in runids:
-    print(f'Processing runid: {runid}')
+    print(f"{'-'*50} #\nProcessing runid: {runid}")
     # grb path ---!
     grbpath = join(datapath, 'obs', runid)  # folder that will host the phlist 
     if not isdir(grbpath):
@@ -58,6 +63,9 @@ for runid in runids:
         raise ValueError(f'Data from {runid} have not been correctly extracted.')
     mergerpath = os.path.expandvars(cfg.get('merger'))
     mergermap = get_mergermap(runid, mergerpath)
+    if mergermap == None:
+        print(f'Skip runid {runid}. ')
+        continue
 
     # get alert pointing
     if type(cfg.get('offset')) == str and cfg.get('offset').lower() == 'gw':
@@ -99,7 +107,14 @@ for runid in runids:
             event_bins.append(event)
             sim.output = event
             sim.run_simulation()
-
+            if args.print.lower() == 'true':
+                h = fits.open(event)
+                print('Check GTI and EVENTS time range:')
+                print('----------')
+                print(h[2].data)
+                print(h[1].data.field('TIME').min(), h[1].data.field('TIME').max())
+                print('----------')
+                h.close()
         # -------------------------------------------- shift time --- !!!
         if cfg.get('onset') != 0:
             if cfg.get('delay') != 0:
@@ -117,19 +132,37 @@ for runid in runids:
             sim.output = bkg
             sim.run_simulation()
 
-        # ---------------------------------------- merge in single photon list ---!!!
-        print('Merge bins in photon-list')
-        phlist = join(grbpath, f'{name}.fits')
-        sim.input = event_bins
-        sim.output = phlist
-        if cfg.get('delay') != 0:
-            sim.appendEventsSinglePhList(GTI=[cfg.get('delay'), cfg.get('delay')+cfg.get('tobs')])
-        elif cfg.get('onset'):
-            sim.appendEventsSinglePhList(GTI=[0, cfg.get('tobs')])
-
+        # ---------------------------------------- gather bins ---!!!
+        if args.merge.lower() == 'true':
+            print('Merge in photon-list')
+            phlist = join(grbpath, f'{name}.fits')
+            sim.input = event_bins
+            sim.output = phlist
+            if cfg.get('delay') != 0:
+                sim.appendEventsSinglePhList(GTI=[cfg.get('delay'), cfg.get('delay')+cfg.get('tobs')])
+            elif cfg.get('onset'):
+                sim.appendEventsSinglePhList(GTI=[0, cfg.get('tobs')])
+            if args.print.lower() == 'true':
+                h = fits.open(phlist)
+                print('Check GTI and EVENTS time range:')
+                print('************')
+                print(h[2].data)
+                print(h[1].data.field('TIME').min(), h[1].data.field('TIME').max())
+                print('************')
+                h.close()
+        else:
+            # observation list ---!
+            obslist = join(grbpath, f'{name}.xml')
+            if os.path.isfile(obslist):
+                os.remove(obslist)
+            make_obslist(obslist=obslist, items=event_bins, names=name)
 
         del sim
-        print('Remove bins')
-        os.system('rm ' + join(grbpath, f'{name}*tbin*'))
-print('... done.\n')
+        if args.remove.lower() == 'true' and args.merge.lower() == 'true':
+            # remove bins ---!
+            os.system('rm ' + join(grbpath, f'{name}*tbin*'))
+            if cfg.get('onset') != 0:
+                # remove bkg bin ---!
+                os.system('rm ' + join(grbpath, f'{name.replace("ebl", "bkg")}.fits'))
+print('\n... done.\n')
 

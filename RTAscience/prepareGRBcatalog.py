@@ -31,6 +31,7 @@ elif type(cfg.get('runid')) == str:
     runids = [cfg.get('runid')]
 else:
     runids = cfg.get('runid')
+runids = sorted(runids)
 
 # conditions control ---!
 set_ebl = cfg.get('set_ebl')  # uses the EBL absorbed template

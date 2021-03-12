@@ -8,7 +8,7 @@ from RTAscience.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
 from os.path import join
 
 # files and path ---!
-datapath = '/home/ambra/Desktop/CTA/projects/DATA/'
+datapath = expandvars('$DATA')
 model = join(datapath, 'models/grb.xml')
 
 cfg = xmlConfig('/config_irf.xml')

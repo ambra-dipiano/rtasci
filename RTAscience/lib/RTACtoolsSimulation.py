@@ -15,9 +15,26 @@ import re
 import numpy as np
 import pandas as pd
 from astropy.io import fits
-from astropy import table
+from astropy.table import Table, vstack
 from scipy.interpolate import interp1d
 from RTAscience.lib.RTACtoolsBase import RTACtoolsBase
+
+# create observation list with gammalib ---!
+def make_obslist(obslist, items, names, instruments='CTA'):
+    if type(items) != type(list()):
+        items = [items]
+    if type(names) != type(list()):
+        names = [names for i in range(len(items))]
+    if type(instruments) != type(list()):
+        instruments = [instruments for i in range(len(items))]
+    xml = gammalib.GXml()
+    obslib = xml.append('observation_list title="observation library"')
+    for i, item in enumerate(items):
+        obs = obslib.append(f'observation name="{names[i]}" id="{i+1:02d}" instrument="{instruments[i]}"')
+        obs.append(f'parameter name="EventList" file="{item}"')
+    xml.save(obslist)
+    del xml
+    return 
 
 class RTACtoolsSimulation(RTACtoolsBase):
     '''
@@ -224,7 +241,10 @@ class RTACtoolsSimulation(RTACtoolsBase):
             with open(filename, 'a+') as f:
                 for j in range(self.__Ne):
                     # write spectral data in E [MeV] and I [ph/cm2/s/MeV] ---!
-                    f.write(str(self.__energy[j][0] * 1000.0) + ' ' + str(self.__spectra[i][j] / 1000.0 / scalefluxfactor) + "\n")
+                    if self.set_ebl:
+                        f.write(str(self.__energy[j][0] * 1000.0) + ' ' + str(self.__ebl[i][j] / 1000.0 / scalefluxfactor) + "\n")
+                    else:
+                        f.write(str(self.__energy[j][0] * 1000.0) + ' ' + str(self.__spectra[i][j] / 1000.0 / scalefluxfactor) + "\n")
             # write bin models ---!
             os.system('cp ' + str(self.model) + ' ' + str(os.path.join(data_path, f'{source_name}_tbin{i:02d}.xml')))
             s = open(os.path.join(data_path, f'{source_name}_tbin{i:02d}.xml')).read()
@@ -253,7 +273,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
                 else:
                     continue
         else:
-            raise ValueError('Total exposure time longer than template''s temporal evolution.')
+            raise ValueError('Total exposure time longer than template temporal evolution.')
 
         # energy grid ---!
         en = [1.0 for x in range(self.__Ne + 1)]
@@ -273,7 +293,6 @@ class RTACtoolsSimulation(RTACtoolsBase):
     # get tbin_stop without loading the template ---!
     def getTimeBinStop(self):
         self.__getFitsData()
-
         # time grid ---!
         t = [0.0 for x in range(self.__Nt + 1)]
         for i in range(self.__Nt - 1):
@@ -383,7 +402,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
 
     # sort simulated events by time (TIME) instead of source (MC_ID) ---!
     def __sortEventsByTime(self, hdul, hdr):
-        data = table.Table(hdul[1].data)
+        data = Table(hdul[1].data)
         data.sort('TIME')
         hdul[1] = fits.BinTableHDU(name='EVENTS', data=data, header=hdr)
         hdul.flush()
@@ -398,7 +417,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
         return
 
     # create single photon list from obs list ---!
-    def __singlePhotonList(self, sample, filename, GTI, new_GTI=False):
+    def __singlePhotonList(self, sample, filename, GTI, new_GTI=True):
         sample = sorted(sample)
         n = 0
         for i, f in enumerate(sample):
@@ -406,13 +425,20 @@ class RTACtoolsSimulation(RTACtoolsBase):
                 if len(hdul[1].data) == 0:
                     continue
                 if n == 0:
-                    h1 = hdul[1].header
-                    h2 = hdul[2].header
-                    ext1 = hdul[1].data
+                    hdr1 = hdul[1].header
+                    hdr2 = hdul[2].header
+                    ext1 = Table(hdul[1].data)
                     ext2 = hdul[2].data
                     n += 1
                 else:
-                    ext1 = np.append(ext1, hdul[1].data)
+                    hdr1['LIVETIME'] += hdul[1].header['LIVETIME']
+                    hdr1['ONTIME'] += hdul[1].header['ONTIME']
+                    hdr1['TELAPSE'] += hdul[1].header['TELAPSE']
+                    hdr1['TSTOP'] = hdul[1].header['TSTOP']
+                    hdr1['DATE-END'] = hdul[1].header['DATE-END']
+                    hdr1['TIME-END'] = hdul[1].header['TIME-END']
+                    ext1 = vstack([ext1, Table(hdul[1].data)])
+                hdul.close()
         # create output FITS file empty ---!
         hdu = fits.PrimaryHDU()
         hdul = fits.HDUList([hdu])
@@ -420,20 +446,20 @@ class RTACtoolsSimulation(RTACtoolsBase):
         hdul.close()
         # update FITS file ---!
         with fits.open(filename, mode='update') as hdul:
-            hdu1 = fits.BinTableHDU(name='EVENTS', data=ext1, header=h1)
-            hdu2 = fits.BinTableHDU(name='GTI', data=ext2, header=h2)
+            hdu1 = fits.BinTableHDU(name='EVENTS', data=ext1, header=hdr1)
+            hdu2 = fits.BinTableHDU(name='GTI', data=ext2, header=hdr2)
             hdul.append(hdu1)
             hdul.append(hdu2)
             hdul.flush()
             # sort table by time ---!
-            self.__sortEventsByTime(hdul=hdul, hdr=h1)
+            self.__sortEventsByTime(hdul=hdul, hdr=hdr1)
         # manipulate fits ---!
         with fits.open(filename, mode='update') as hdul:
             # drop events exceeding GTI ---!
-            # slice = self.__dropExceedingEvents(hdul=hdul, GTI=GTI)
-            # if len(slice) > 0:
-            #     hdul[1].data = hdul[1].data[slice]
-            # hdul.flush()
+            slice = self.__dropExceedingEvents(hdul=hdul, GTI=GTI)
+            if len(slice) > 0:
+                hdul[1].data = hdul[1].data[slice]
+            hdul.flush()
             # modify indexes  ---!
             self.__reindexEvents(hdul=hdul)
             # modify GTI ---!
@@ -443,7 +469,6 @@ class RTACtoolsSimulation(RTACtoolsBase):
                 hdul[2].data[0][0] = GTI[0]
                 hdul[2].data[0][1] = GTI[1]
             hdul.flush()
-            self.__checkGTI(hdul=hdul)
         return
 
     # created one FITS table containing all events and GTIs ---!
@@ -455,20 +480,6 @@ class RTACtoolsSimulation(RTACtoolsBase):
             with fits.open(self.input[-1]) as hdul:
                 GTI.append(hdul[2].data[0][1])
         self.__singlePhotonList(sample=self.input, filename=self.output, GTI=GTI, new_GTI=new_GTI)
-        return
-
-    # create one fits table appending source and bkg within GTI ---!
-    def appendBkg(self, phlist, bkg, GTI, new_GTI):
-        with fits.open(bkg, mode='update') as hdul:
-            # fix GTI ---!
-            hdul[2].data[0][0] = GTI[0]
-            hdul[2].data[0][1] = GTI[1]
-            hdul.flush()
-            times = hdul[1].data.field('TIME')
-            for i, t, in enumerate(times):
-                hdul[1].data.field('TIME')[i] = t + GTI[0]
-            hdul.flush()
-        self.__singlePhotonList(sample=[phlist, bkg], filename=phlist, GTI=GTI, new_GTI=new_GTI)
         return
 
     # shift times in template simulation to append background before burst ---!

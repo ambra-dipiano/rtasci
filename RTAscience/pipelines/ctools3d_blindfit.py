@@ -20,7 +20,9 @@ from RTAscience.lib.RTAVisualise import plotSkymap
 
 parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
 parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
+parser.add_argument('--merge', type=str, default='true', help='Merge in single phlist (true) or use observation library (false)')
 parser.add_argument('--remove', type=str, default='true', help='Keep only outputs')
+parser.add_argument('--print', type=str, default='false', help='Print out results')
 args = parser.parse_args()
 
 cfg = Config(args.cfgfile)
@@ -32,6 +34,7 @@ elif type(cfg.get('runid')) == str:
     runids = [cfg.get('runid')]
 else:
     runids = cfg.get('runid')
+runids = sorted(runids)
 
 # general ---!
 start_count = cfg.get('start_count')
@@ -55,7 +58,7 @@ if not isdir(f"{datapath}/skymaps"):
 
 # ------------------------------------------------------ loop runid --- !!!
 for runid in runids:
-    print(f'Processing runid: {runid}')
+    print(f"{'-'*50} #\nProcessing runid: {runid}")
     # outputs
     logname = f"{datapath}/outputs/{runid}/{cfg.get('caldb')}-{cfg.get('irf')}_seed{start_count+1:06d}-{start_count+1+trials:06d}_flux{cfg.get('scalefluxfactor')}_offset{offset}_delay{cfg.get('delay')}.txt"
     if not isdir(f"{datapath}/outputs/{runid}"):
@@ -76,24 +79,39 @@ for runid in runids:
     # ------------------------------------------------------ loop trials ---!!!
     for i in range(trials):
         count = start_count + i + 1
-        print(f'seed = {count:06d}')
+        #print(f'seed = {count:06d}')
         name = f'ebl{count:06d}'
-        phlist = join(grbpath, name+'.fits')
-        sky = phlist.replace('.fits', '_sky.fits').replace('/obs/', '/rta_products/')
+        if args.merge.lower() == 'true':
+            phlist = join(grbpath, name+'.fits')
+            sky = phlist.replace('.fits', '_sky.fits').replace('/obs/', '/rta_products/')
+        else:
+            phlist = join(grbpath, f'{name}.xml')
+            sky = phlist.replace('.xml', '_sky.fits').replace('/obs/', '/rta_products/')
         candidates = sky.replace('_sky.fits', '_sources.xml')
         fit = candidates.replace('sources', 'fit')
+        if args.print.lower() == 'true':
+            print(f'Input observation: {phlist}')
+        if not isfile(phlist):
+            print(f'Missing observation {phlist}. \nSkip runid {runid}.')
+            break
 
         # ---------------------------------------------------------- loop exposure times ---!!!
 
         for texp in cfg.get('exposure'):
             # selection ---!
-            selphlist = phlist.replace('.fits', f'_{texp}s.fits')
+            selphlist = phlist.replace(f'{name}', f'texp{texp}s_{name}')
             grb = RTACtoolsAnalysis()
             grb.configure(cfg)
             grb.t = [cfg.get('delay'), cfg.get('delay')+texp]
+            if args.print.lower() == 'true':
+                print(f"Selection t = {grb.t} s")
             grb.input = phlist
             grb.output = selphlist
-            grb.run_selection()
+            if args.merge.lower() == 'true':
+                grb.run_selection()
+            else:
+                prefix = join(grbpath, f'texp{texp}s_')
+                grb.run_selection(prefix=prefix)
             # skymap ---!
             grb.input = selphlist
             grb.output = sky
@@ -139,19 +157,23 @@ for runid in runids:
             else:
                 ra, dec, ts, sqrt_ts, flux, flux_err = np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
 
+            row = f"{runid} {count} {texp} {sqrt_ts} {flux} {flux_err} {ra} {dec} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {cfg.get('caldb')} {cfg.get('irf')}\n"
+            if args.print.lower() == 'true':
+                print(f"Results: {row}")
             if not isfile(logname):
                 hdr = 'runid seed texp sqrt_ts flux flux_err ra dec offset delay scaleflux caldb irf\n'
                 log = open(logname, 'w+')
                 log.write(hdr)
-                log.write(f"{runid} {count} {texp} {sqrt_ts} {flux} {flux_err} {ra} {dec} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {cfg.get('caldb')} {cfg.get('irf')}\n")
+                log.write(row)
                 log.close()
             else:
                 log = open(logname, 'a')
-                log.write(f"{runid} {count} {texp} {sqrt_ts} {flux} {flux_err} {ra} {dec} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {cfg.get('caldb')} {cfg.get('irf')}\n")
+                log.write(row)
                 log.close()
 
             del grb
         if args.remove.lower() == 'true':
+            # remove files ---!
             os.system(f"rm {datapath}/obs/{runid}/*{name}*")
             os.system(f"rm {datapath}/rta_products/{runid}/*{name}*")
 print('...done.\n')
