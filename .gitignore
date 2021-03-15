@@ -18,6 +18,8 @@ RTAscience/wilks.py
 RTAscience/sphdist.py
 RTAscience/datamerger.py
 loadenv.sh
+RTAscience/thesis/*.xml
+
 
 # folders
 .*/
