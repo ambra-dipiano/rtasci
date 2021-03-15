@@ -38,7 +38,7 @@ def make_obslist(obslist, items, names, instruments='CTA'):
 
 class RTACtoolsSimulation(RTACtoolsBase):
     '''
-    WRITE DOCS
+    This class allows to: 1) compute the EBL absorption from a csv data table and add it to the template; 2) extract spectra, lightcuves and time slices from the template (the flux values can also be normalised by a factor); 3) merge bins of the template simulation in a single photon list; 4) perform simulations using ctoobssim from ctools software package.
     '''
     def __init__(self):
         # files fields ---!
@@ -90,6 +90,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
         self.__closeFITS(hdul)
         return
 
+    # check if EBL extention already in template ---!
     def checkEBLinFITS(self, ext_name='EBL-ABS. SPECTRA'):
         hdul = self.__openFITS()
         try:
@@ -98,7 +99,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
         except KeyError:
             return False
 
-    # load csv tabl in pandas DataFrame and drop NaN values---!
+    # load csv table in pandas DataFrame and drop NaN values---!
     def __openCSV(self):
         df = pd.read_csv(self.table)
         df.dropna()
@@ -158,7 +159,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
         for i in range(self.__Nt):
             for j in range(self.__Ne):
                 self.__ebl[i][j] = self.__spectra[i][j] * np.exp(-tau[j])
-
+        # if required return values to plot ---!
         if self.plot:
             return E, tau_table, self.__energy, tau
         else:
@@ -188,6 +189,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
         hdul = self.__openFITS()
         if self.zfetch:
             self.__zfetch()
+        # if required retrive values to plot ---!
         if self.plot:
             x, y, x2, y2 = self.__addEBL(unit=unit)
         else:
@@ -203,19 +205,11 @@ class RTACtoolsSimulation(RTACtoolsBase):
             os.remove(template_ebl)
         hdul.writeto(template_ebl, overwrite=True)
         self.__closeFITS(hdul)
+        # if required return values to plot ---!
         if self.plot:
             return x, y, x2, y2
         else:
             return
-
-    def checkEBLinFITS(self, ext_name='EBL ABS. SPECTRA'):
-        hdul = self.__openFITS()
-        try:
-            self.__ebl = np.array(hdul[4].data)
-            existing = True
-        except:
-            existing = False
-        return existing
 
     # extract template spectra, create xml model files and time slices csv file ---!
     def __extractSpectrumAndModelXML(self, source_name, time_slice_name='time_slices.csv', data_path=None, scalefluxfactor=1):
@@ -227,17 +221,15 @@ class RTACtoolsSimulation(RTACtoolsBase):
             os.remove(table)
         with open(table, 'w+') as tab:
             tab.write('#bin,tmax_bin')
-
         # spectra and models ---!
         for i in range(self.__Nt):
             filename = os.path.join(data_path, f'spec_tbin{i:02d}.out')
             if os.path.isfile(filename):
                 os.remove(filename)
-
             # time slices table ---!
             with open(table, 'a') as tab:
                 tab.write('\n' + str(i) + ', ' + str(self.__time[i][0]))
-        
+            # spectra ---!
             with open(filename, 'a+') as f:
                 for j in range(self.__Ne):
                     # write spectral data in E [MeV] and I [ph/cm2/s/MeV] ---!
@@ -245,7 +237,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
                         f.write(str(self.__energy[j][0] * 1000.0) + ' ' + str(self.__ebl[i][j] / 1000.0 / scalefluxfactor) + "\n")
                     else:
                         f.write(str(self.__energy[j][0] * 1000.0) + ' ' + str(self.__spectra[i][j] / 1000.0 / scalefluxfactor) + "\n")
-            # write bin models ---!
+            # xml models ---!
             os.system('cp ' + str(self.model) + ' ' + str(os.path.join(data_path, f'{source_name}_tbin{i:02d}.xml')))
             s = open(os.path.join(data_path, f'{source_name}_tbin{i:02d}.xml')).read()
             s = s.replace('data/spec', f'spec_tbin{i:02d}')
@@ -256,14 +248,12 @@ class RTACtoolsSimulation(RTACtoolsBase):
     # read template and return tbin_stop containing necessary exposure time coverage ---!
     def loadTemplate(self, source_name, return_bin=False, data_path=None, scalefluxfactor=1):
         self.__getFitsData()
-
         # time grid ---!
         t = [0.0 for x in range(self.__Nt + 1)]
         for i in range(self.__Nt - 1):
             t[i + 1] = self.__time[i][0] + (self.__time[i + 1][0] - self.__time[i][0]) / 2
         # tmax in last bin ---!
         t[self.__Nt] = self.__time[self.__Nt - 1][0] + (self.__time[self.__Nt - 1][0] - t[self.__Nt - 1])
-
         # stop the second after higher tmax ---!
         if self.tmax != None:
             tbin_stop = 1
@@ -274,14 +264,12 @@ class RTACtoolsSimulation(RTACtoolsBase):
                     continue
         else:
             raise ValueError('Total exposure time longer than template temporal evolution.')
-
         # energy grid ---!
         en = [1.0 for x in range(self.__Ne + 1)]
         for i in range(self.__Ne - 1):
             en[i + 1] = self.__energy[i][0] + (self.__energy[i + 1][0] - self.__energy[i][0]) / 2
         # Emax in last bin ---!
         en[self.__Ne] = self.__energy[self.__Ne - 1][0] + (self.__energy[self.__Ne - 1][0] - en[self.__Ne - 1])
-
         # extract spectrum if required ---!
         if self.extract_spectrum:
             self.__extractSpectrumAndModelXML(source_name=source_name, data_path=data_path, scalefluxfactor=scalefluxfactor)
@@ -290,7 +278,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
         else:
             return
 
-    # get tbin_stop without loading the template ---!
+    # get tbin_stop without extracting template data ---!
     def getTimeBinStop(self):
         self.__getFitsData()
         # time grid ---!
@@ -299,7 +287,6 @@ class RTACtoolsSimulation(RTACtoolsBase):
             t[i + 1] = self.__time[i][0] + (self.__time[i + 1][0] - self.__time[i][0]) / 2
         # tmax in last bin ---!
         t[self.__Nt] = self.__time[self.__Nt - 1][0] + (self.__time[self.__Nt - 1][0] - t[self.__Nt - 1])
-
         # stop the second after higher tmax ---!
         if self.tmax != None:
             tbin_stop = 1
@@ -328,7 +315,6 @@ class RTACtoolsSimulation(RTACtoolsBase):
             elif tgrid[i] >= GTI[1]:
                 tbins.append(i)
                 break
-
         tbins = sorted(tbins)
         tbins = self.__dropListDuplicates(tbins)
         return tbins
@@ -373,7 +359,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
                 new_list.append(l)
         return new_list
 
-    # keep only the GTI rows plus a buffering margin ---!
+    # keep only events within given GTI ---!
     def __dropExceedingEvents(self, hdul, GTI):
         slice_list = []
         times = hdul[1].data.field('TIME')
@@ -408,7 +394,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
         hdul.flush()
         return
 
-    # check GTI and raise error if bad values are passed
+    # check GTI and raise error if bad values are passed ---!
     def __checkGTI(self, hdul):
         GTI = hdul[2].data[0]
         trange = hdul[1].data.field('TIME')
@@ -425,12 +411,14 @@ class RTACtoolsSimulation(RTACtoolsBase):
                 if len(hdul[1].data) == 0:
                     continue
                 if n == 0:
+                    # load header and table ---!
                     hdr1 = hdul[1].header
                     hdr2 = hdul[2].header
                     ext1 = Table(hdul[1].data)
                     ext2 = hdul[2].data
                     n += 1
                 else:
+                    # update header and append table ---!
                     hdr1['LIVETIME'] += hdul[1].header['LIVETIME']
                     hdr1['ONTIME'] += hdul[1].header['ONTIME']
                     hdr1['TELAPSE'] += hdul[1].header['TELAPSE']
@@ -496,8 +484,9 @@ class RTACtoolsSimulation(RTACtoolsBase):
                 hdul.flush()
         return
 
-    # created a number of FITS table containing all events and GTIs ---!
+    # created a number of observation runs containing all events and GTIs ---!
     def appendEventsMultiPhList(self, max_length=None, last=None, r=True, new_GTI=False):
+        raise Warning('This method is outdated')
         n = 1
         sample = []
         singlefile = str(self.output)
