@@ -3,7 +3,7 @@ slurm*
 test_*
 testing/*
 config.yaml
-adptests/*
+adptests
 RTAscience/cfg/*.yml
 RTAscience/paper/*
 RTAscience/cfg/*.sh
