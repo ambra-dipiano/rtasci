@@ -36,7 +36,7 @@ caldb = args.caldb
 irf = args.irf
 
 # fix all
-texp = (1, 5, 10, 100)  # exposure times (s)
+texp = (10, 100)  # exposure times (s)
 tint = len(texp)
 tmin = 0  # slewing time (s)
 tmax = []
