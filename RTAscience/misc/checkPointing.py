@@ -19,7 +19,7 @@ from RTAscience.cfg.Config import Config
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 
-parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
+parser = argparse.ArgumentParser(description='This script allows to find the offset between the target coordinate and the pointing coordinate.')
 parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
 args = parser.parse_args()
 cfg = Config(args.cfgfile)
@@ -70,5 +70,6 @@ for runid in runids:
     off = get_offset(template, mergermap)
     print(f"Offset: {off}")
     target = get_pointing(template)
+    # find off-axis ---!
     offangle = SkyCoord(ra=target[0]*u.deg, dec=target[1]*u.deg, unit='deg', frame='icrs').separation(SkyCoord(ra=pointing[0]*u.deg, dec=pointing[1]*u.deg, unit='deg', frame='icrs')).deg
     print(f"Off-axis angle: {offangle}")
