@@ -4,8 +4,6 @@ test_*
 testing/*
 config.yaml
 adptests/*
-loadenv.sh
-env.sh
 RTAscience/cfg/*.yml
 RTAscience/paper/*
 RTAscience/cfg/*.sh
@@ -21,7 +19,8 @@ RTAscience/datamerger.py
 RTAscience/thesis/config.xml
 RTAscience/thesis/wilks.xml
 RTAscience/thesis/rta-test
-
+env.sh
+loadenv.sh
 
 # folders
 .*/
@@ -30,7 +29,7 @@ RTAscience/thesis/rta-test
 !RTAscience/cfg/
 RTAscience/lib/old*
 RTAscience/lib/__pycache__/*
-RTAscience/notebooks
+#RTAscience/notebooks
 
 __pycache__
 *.egg-info
