@@ -18,7 +18,7 @@ from RTAscience.lib.RTAUtils import get_pointing
 from RTAscience.lib.RTAManageXml import ManageXml
 from RTAscience.cfg.Config import Config
 
-parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
+parser = argparse.ArgumentParser(description='This script extracts spectra and lightcurves from the GRB templates, in order to prepare all required files for the simulation.')
 parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
 args = parser.parse_args()
 
