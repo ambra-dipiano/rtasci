@@ -15,7 +15,7 @@ from RTAscience.lib.RTACtoolsBase import RTACtoolsBase
 
 class RTACtoolsAnalysis(RTACtoolsBase) :
     '''
-    WRITE DOCS
+    This class contains wrappers for ctools and cscripts tools.
     '''
     def __init__(self, on_ram=False):
         # files fields ---!
