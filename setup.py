@@ -2,7 +2,7 @@
 # -*- coding: latin-1 -*-
 from setuptools import setup, find_packages
 setup( name='RTAscience',
-       version='0.0.0',
+       version='0.1.0',
        author='Ambra Di Piano',
        author_email='ambra.dipiano@inaf.it',
        packages=find_packages(),
