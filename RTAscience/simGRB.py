@@ -29,7 +29,7 @@ if type(runid) == list:
 # general ---!
 simtype = cfg.get('simtype')  # 'grb' -> src+bkg; 'bkg' -> empty fields
 trials = cfg.get('trials')  # trials
-count = 0  # starting count
+count = cfg.get('start_count')
 nthreads = 2
 # sim parameters ---!
 tobs = cfg.get('tobs')  # total obs time (s)
