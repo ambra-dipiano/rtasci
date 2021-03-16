@@ -29,7 +29,7 @@ class Config:
         self.cfgDesc = {
             'sections' : ['setup', 'simulation', 'analysis', 'options', 'path'],
             'setup' : ['simtype', 'runid', 'trials', 'start_count', 'scalefluxfactor'],
-            'simulation' : ['caldb', 'irf', 'tobs', 'onset', 'emin', 'emax', 'roi', 'delay', 'offset'],
+            'simulation' : ['caldb', 'irf', 'tobs', 'onset', 'emin', 'emax', 'roi', 'delay', 'offset', 'nruns'],
             'analysis' : ['maxsrc', 'skypix', 'skyroifrac', 'smooth', 'tool', 'type', 'blind', 'binned', 'exposure', 'usepnt', 'sgmthresh'],
             'options' : ['set_ebl', 'extract_data', 'plotsky'],
             'path' : ['data', 'ebl', 'model', 'catalog']
@@ -68,7 +68,7 @@ class Config:
         
         # Add validations here
         
-        simTypeValues = ['grb', 'bkg', 'skip']
+        simTypeValues = ['grb', 'bkg', 'skip', 'wobble']
         if sectionDict['simtype'] not in simTypeValues:
             raise BadConfiguration(f'simtype={sectionDict["simtype"]} is not supported. Available values: {simTypeValues}')
 
