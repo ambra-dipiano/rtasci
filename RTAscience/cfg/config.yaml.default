@@ -1,5 +1,6 @@
 setup:
-  simtype:                      # grb -> src+bkg; bkg -> empty fields (str); skip -> skip sim;
+  simtype:                      # grb -> src+bkg; bkg -> empty fields; skip -> skip sim; 
+                                # wobble -> LST-like runs (str)
   runid:                        # can be all or any template (list or str) in catalog
   trials:                       # realisations per runid (int)
   start_count:                  # starting count for seed (int)
@@ -15,6 +16,7 @@ simulation:
   emax:                         # simulation maximum energy (TeV) (float)
   roi:                          # region of interest radius (deg) (float)
   offset:                       # 'gw' -> from alert; value -> otherwise (deg) (str/float)
+  nruns:                        # numer of runs (of lenght=tobs) for wobble simtype (int)
 
 analysis:
   skypix:                       # pixel size in skymap (deg) (float)
