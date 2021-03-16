@@ -20,6 +20,7 @@ class RTACtoolsBase:
         self.roi = 5  # region of indeterest (deg) ---!
     
     def configure(self, cfg: Config):
+        '''Sets common parameters for analysis and simulation: caldb, irf, energy range, field of view.'''
         self.caldb = cfg.get('caldb')
         self.irf = cfg.get('irf')
         self.e = [cfg.get('emin'), cfg.get('emax')] 
