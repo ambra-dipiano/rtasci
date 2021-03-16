@@ -28,6 +28,7 @@ extra = Rectangle((0, 0), 1, 1, fc="w", fill=False, edgecolor='none', linewidth=
 extra2 = Line2D([0], [0], ls='-.', color='k', lw='1')
 
 def hist1d(x, mean, true=None, nbin=20, hist=True, fit=True, fontsize=20, color='b', xscale='linear', figsize=(15,12), rotation=0, alpha=0.5, lw=3, ls=('--', '-.', ':'), title='gaussian fit', ax_thresh=None, xlabel='x', ylabel='y', leglabel='data', filename='hist1d_gauss.png', usetex=False, sns_style=False, show=True):
+    '''Generate multiple 1d histogram in a single plot. Optionally, only the histogram or the fit can be visualised.'''
 
     fig = plt.figure(figsize=figsize)
     if usetex:
@@ -64,6 +65,7 @@ def hist1d(x, mean, true=None, nbin=20, hist=True, fit=True, fontsize=20, color=
 
 # HIST 1D GAUSSIAN DISTRIBUTION ---!
 def hist1d_gauss(x, mean, true=None, loc=0, threshold=1, nbin=20, width=None, hist=True, fontsize=20, figsize=(15,12), color='b', alpha=0.5, lw=3, ls=('--', '-.', ':'), title='gaussian fit', ax_thresh=0.2, xlabel='x', ylabel='y', leglabel='data', rotation=0, filename='hist1d_gauss.png', usetex=False, sns_style=False, show=True):
+    '''Generate multiple 1d histogram in a single plot. Optionally, only the histogram or the fit can be visualised.'''
 
     if nbin == None:
         if width == None:
@@ -104,6 +106,7 @@ def hist1d_gauss(x, mean, true=None, loc=0, threshold=1, nbin=20, width=None, hi
 
 # HIST 1D RAYLEIGH DISTRIBUTION ---!
 def hist1d_rayleigh(x, mean, rayleigh_prms={'loc':0, 'scale':[1]}, threshold=1, nbin=None, width=None, hist=True, fontsize=15, figsize=(15,12), rotation=0, color='b', alpha=0.5, lw=3, ls=('-', '--', '-.', ':'),title='rayleigh fit', ax_thresh=0.2, xlabel='x', ylabel='y', leglabel='data', filename='hist1d_rayleigh.png', usetex=False, sns_style=False, show=True):
+    '''Generate multiple 1d histogram in a single plot. Optionally, only the histogram or the fit can be visualised.'''
 
     if width == None:
         width = threshold/nbin
@@ -145,6 +148,7 @@ def hist1d_rayleigh(x, mean, rayleigh_prms={'loc':0, 'scale':[1]}, threshold=1, 
 
 # RAYLEIGH CDF WITH CONFIDENCE INTERVAL ---!
 def rayleigh_cdf(x, loc=0, scale=1, if_CI=True, probs=(0.6827, 0.9545, 0.9973, 0.99994), xlabel='x', title='x ~ RA(gamma) CDF', colors=('k', 'r', 'orange', 'm'), fontsize=15, figsize=(15,12), rotation=0, filename='theo_rayleigh_cdf.png', usetex=False, sns_style=False, show=False):
+    '''Plots the cumulative of Rayleigh distributed data, with given confidence interval.'''
 
     fig = plt.figure(figsize=figsize)
     if usetex:
@@ -181,6 +185,7 @@ def rayleigh_cdf(x, loc=0, scale=1, if_CI=True, probs=(0.6827, 0.9545, 0.9973, 0
 
 # RAYLEIGH PDF WITH CONFIDENCE INTERVAL ---!
 def rayleigh_pdf(x, loc=0, scale=1, if_CI=True, probs=(0.6827, 0.9545, 0.9973, 0.99994), xlabel='x', title='x ~ RA(gamma) CDF', colors=('k', 'r', 'orange', 'm'), fontsize=15, figsize=(15,12), rotation=0, filename='theo_rayleigh_cdf.png', usetex=False, sns_style=False, show=False):
+    '''Plots the probability distribution of Rayleigh distributed data, with given confidence interval.'''
 
     fig = plt.figure(figsize=figsize)
     if usetex:
@@ -217,6 +222,7 @@ def rayleigh_pdf(x, loc=0, scale=1, if_CI=True, probs=(0.6827, 0.9545, 0.9973, 0
 
 # 2D HISTOGRAM WITH RAYLEIGH CONFIDENCE INTERVAL ---!
 def hist2d_rayleigh_CI(x, y, nbin=None, width=None, rayleigh_prms={'loc':0, 'scale':1}, xcentre=0, ycentre=0, interp=None, threshold=1, probs=(0.6827, 0.9545, 0.9973, 0.99994), colors=('k', 'r', 'orange', 'm'), ls=('-','--','-.',':'), cmap='gist_heat', lw=4, ms=2e2, ax_thresh=0.2, xlabel='x', ylabel='y', title='confidence intervals from theoretical distribution', fontsize=20 , figsize=(12,10), rotation=0, filename='hist2d_CIrayleigh.png', usetex=False, sns_style=False, show=False):
+    '''Plots a 2d histrogram with Rayleigh confidence regions.'''
 
     xmean = np.mean(x)
     ymean = np.mean(y)
@@ -272,14 +278,15 @@ def hist2d_rayleigh_CI(x, y, nbin=None, width=None, rayleigh_prms={'loc':0, 'sca
 
 # COVARIANCE EIGENVALUES ---!
 def eigsorted(cov):
+    '''Returns covariance eigenvalues.'''
     vals, vecs = np.linalg.eigh(cov)
     order = vals.argsort()[::-1]
-
     return vals[order], vecs[:, order]
 
 
 # 2D HISTOGRAM WITH GAUSSIAN COVARIANCE CONFIDENCE INTERVAL ---!
 def hist2d_gauss_CI(x, y, nbin=None, width=None, xcentre=0, ycentre=0, threshold=1, nstd=(1, 2, 3, 5), lw=4, ls=('-','--','-.',':'), cmap='gist_heat', colors=('k', 'r', 'orange', 'm'), ax_thresh=0.2, xlabel='x', ylabel='y', interp=None, ms=2e2, title='confidence intervals from theoretical distribution', fontsize=20, figsize=(12,10), rotation=0, filename='hist2d_CIgauss.png', usetex=False, sns_style=False, show=False):
+    '''Plots a 2d histrogram with Gaussian confidence regions.'''
 
     xmean = np.mean(x)
     ymean = np.mean(y)
@@ -335,6 +342,7 @@ def hist2d_gauss_CI(x, y, nbin=None, width=None, xcentre=0, ycentre=0, threshold
 
 # 2D HISTOGRAM WITH GAUSSIAN COVARIANCE CONFIDENCE INTERVAL ---!
 def contour_gauss_CI(x, y, nbin=None, width=None, xcentre=0, ycentre=0, threshold=1, nstd=(1, 2, 3, 5), colors=('k', 'r', 'orange', 'm'), ax_thresh=0.2, xlabel='x', ylabel='y', interp=None, title='confidence intervals from theoretical distribution', fontsize=20, figsize=(10, 8), rotation=0, filename='hist2d_CIgauss.png', usetex=False, sns_style=False, show=False):
+    '''Plots Gaussian contour map.'''
 
     xmean = np.mean(x)
     ymean = np.mean(y)
@@ -384,6 +392,7 @@ def contour_gauss_CI(x, y, nbin=None, width=None, xcentre=0, ycentre=0, threshol
 
 # 2D HISTOGRAM MAP ---!
 def hist2d_map(x, y, trials, nbin=None, width=None, xcentre=0, ycentre=0, threshold=1, ax_thresh=0.2, xlabel='x', ylabel='y', title='probability map', fontsize=20, figsize=(12,10), rotation=0, filename='hist2d_map.png', if_CI=None, rayleigh={'loc':0, 'scale':1}, nstd=(1, 2, 3, 5), colors=('k', 'r', 'orange', 'm'), probs=(0.6827, 0.9545, 0.9973, 0.99994), smooth=True, usetex=False, sns_style=False, show=False):
+    '''Produces a smoothed count map.'''
 
     if width is None:
         width = threshold/nbin
@@ -463,6 +472,7 @@ def hist2d_map(x, y, trials, nbin=None, width=None, xcentre=0, ycentre=0, thresh
 
 # WILKS THEOREM DIST FOR EMPTY FIELDS ---!
 def ts_wilks(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='TS', ylabel='normalised counts', title='TS distribution (empty fields)', filename='wilks_preTrials.png', usetex=False, sns_style=False):
+    '''Plots a TS distribution comparison with chi2 and chi2/2.'''
 
     if width is None:
         width = (max(x)-min(x))/nbin
@@ -510,6 +520,7 @@ def ts_wilks(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=
 
 # WILKS THEOREM P-VALUES FOR EMPTY FIELDS ---!
 def p_values(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='h', ylabel='p-values', title='p-value (empty fields)', filename='pvalue_preTrials.png', usetex=False, sns_style=False):
+    '''Plots a p-values distribution comparison with chi2 and chi2/2.'''
 
     if width is None:
         width = (max(x)-min(x))/nbin
@@ -567,6 +578,7 @@ def p_values(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=
 
 # WILKS THEOREM P-VALUES FOR EMPTY FIELDS ---!
 def ts_wilks_cumulative(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='h', ylabel='cumulative probability', title='p-value (empty fields)', filename='cumulative_preTrials.png', usetex=False, sns_style=False):
+    '''Plots a TS cumulative distribution.'''
 
     if width is None:
         width = (max(x)-min(x))/nbin
@@ -622,6 +634,7 @@ def ts_wilks_cumulative(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=
     return fig, ax
 
 def chi2_reduced(x, trials, df=1, nbin=None, width=None, var=True):
+    '''Returns the chi2 and chi2 reduced.'''
     np.seterr(divide='ignore', invalid='ignore')
     if width is None:
         width = (max(x)-min(x))/nbin
@@ -655,6 +668,7 @@ def chi2_reduced(x, trials, df=1, nbin=None, width=None, var=True):
 
 # MANUAL NORMALISED HISTOGRAM ---!
 def normedHist(x, trials=None, step=None, nbin=None, ylim=None, xlim=None, show=False, normed=True, xscale='linear', yscale='log', fontsize=15, figsize=(15,12), rotation=0, xlabel='x', ylabel='normalised counts', leglabel='legend', title='normed histogram', usetex=False, sns_style=False, usesns=False, filename='normed_histogram.png'):
+    '''Generates a manually normalised histogram.'''
 
     x = np.sort(x)
     if step is None:
