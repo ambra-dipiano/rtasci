@@ -27,12 +27,14 @@ from astropy.utils.data import get_pkg_data_filename
 
 # handle DS9 regiond (wip) ---!
 def handleReg(reg, col='black'):
+  '''Returns regions from a DS9-like regione file.'''
   r = pyregion.open(reg)
   r[0].attr[1]['color'] = col
   return r
 
 # plot sky map ---!
 def plotSkymap(file, reg='none', col='green', suffix='none', title='skymap', xlabel='R.A. (deg)', ylabel='Dec (deg)', fontsize=20, figsize=(10, 8), rotation=0, show=False, sns_style=False, usetex=False, png=None):
+  '''Plots skymap with Gaussian smoothing.'''
   with fits.open(file) as hdul:
     wcs = WCS(hdul[0].header)
     data = hdul[0].data
@@ -81,8 +83,9 @@ def plotSkymap(file, reg='none', col='green', suffix='none', title='skymap', xla
   return
 
 # plot residual count map ---!
-def plotResmap(file, reg='none', col='black', suffix='none', title='map redisuals',
-               xlabel='R.A. (deg)', ylabel='Dec (deg)', fontsize=12, show=True, tex=False):
+def plotResmap(file, reg='none', col='black', suffix='none', title='map redisuals', xlabel='R.A. (deg)', ylabel='Dec (deg)', fontsize=12, show=True, tex=False):
+  '''Plots residual map with Guassian smoothing.'''
+
   with fits.open(file) as hdul:
     data = hdul[0].data
     hdr = hdul[0].header
@@ -116,8 +119,9 @@ def plotResmap(file, reg='none', col='black', suffix='none', title='map redisual
   return
 
 # show spectral residuals ---!
-def plotResiduals(file, yscale='log', title='spectral residuals', figsize=(10,8),
-                  xlabel='energy (TeV)', ylabel=('counts', 'residuals'), fontsize=12, show=True, tex=False):
+def plotResiduals(file, yscale='log', title='spectral residuals', figsize=(10,8), xlabel='energy (TeV)', ylabel=('counts', 'residuals'), fontsize=12, show=True, tex=False):
+  '''Plots spectral residuals.'''
+
   with fits.open(file) as hdul:
     data = hdul[1].data
     # store data ---!
@@ -161,8 +165,9 @@ def plotResiduals(file, yscale='log', title='spectral residuals', figsize=(10,8)
   return
 
 # flux butterfly diagram ----!
-def plotButterfly(file, flux_pnts=0.0, fluxEn_pnts=0.0, suffix='none', title='flux', fontsize=12,
-                  xlabel='Energy (TeV)', ylabel='E $\cdot \\frac{dN}{dE}$ (erg/$cm^2$/s)', show=True, tex=False):
+def plotButterfly(file, flux_pnts=0.0, fluxEn_pnts=0.0, suffix='none', title='flux', fontsize=12, xlabel='Energy (TeV)', ylabel='E $\cdot \\frac{dN}{dE}$ (erg/$cm^2$/s)', show=True, tex=False):
+  '''Plots a butterfly.'''
+
   data = np.loadtxt(file, delimiter=' ')
   energy = data[:, 0]
   intensity = data[:, 1]
@@ -199,8 +204,9 @@ def plotButterfly(file, flux_pnts=0.0, fluxEn_pnts=0.0, suffix='none', title='fl
   return
 
 # plot spectrum ---!
-def plotSpectrum(file, figsize=(8,15), fontsize=12, title=('spectrum with errors', 'spectrum with errors', 'log spectrum'),
-                 xlabel='Energy (TeV)', ylabel='Flux (erg/$cm^2$/s)', show=True, tex=False):
+def plotSpectrum(file, figsize=(8,15), fontsize=12, title=('spectrum with errors', 'spectrum with errors', 'log spectrum'), xlabel='Energy (TeV)', ylabel='Flux (erg/$cm^2$/s)', show=True, tex=False):
+  '''Plots a spectrum.'''
+
   with fits.open(file) as hdul:
     data = hdul[1].data
     # store data ---!
@@ -256,8 +262,8 @@ def plotSpectrum(file, figsize=(8,15), fontsize=12, title=('spectrum with errors
   return
 
 # plot cslightcrv output ---!
-def plotLightCurve(file, figsize=(15,15), axisLim ='auto', title='lightcurve', yscale=('lin','log'), xscale=('lin','log'),
-                   show = True, tex=False):
+def plotLightCurveFromFile(file, tsthresh=9, figsize=(15,15), axisLim ='auto', title='lightcurve', yscale=('lin','log'), xscale=('lin','log'), show = True, tex=False):
+  '''Plots a lightcurve with upperlimit if TS < tsthresh.'''
 
   fig = plt.figure(figsize=figsize)
   plt.rc('text', usetex=False) if tex else None
@@ -288,7 +294,7 @@ def plotLightCurve(file, figsize=(15,15), axisLim ='auto', title='lightcurve', y
     etul_pnts = []
     # list flux point or upper limit ---!
     for el in range(len(data)):
-      if TS[el] > 9 and 2.0*e_prefact[el] < prefact[el]:
+      if TS[el] > tsthresh and 2.0*e_prefact[el] < prefact[el]:
         pnts.append(prefact[el])
         e_pnts.append(e_prefact[el])
         t_pnts.append(t_mjd[el])
@@ -330,8 +336,9 @@ def plotLightCurve(file, figsize=(15,15), axisLim ='auto', title='lightcurve', y
   return
 
 # show TS map ---!
-def plotTSmap(file, reg='none', col='black', suffix='none', title='TS map', cbar='Significance TSV',
-              xlabel='RA (deg)', ylabel='DEC (deg)', fontsize=12, show=True, tex=False):
+def plotTSmap(file, reg='none', col='black', suffix='none', title='TS map', cbar='Significance TSV', xlabel='RA (deg)', ylabel='DEC (deg)', fontsize=12, show=True, tex=False):
+  '''Plots a TS map.'''
+
   with fits.open(file) as hdul:
     data = hdul[0].data
     hdr = hdul[0].header
@@ -365,8 +372,9 @@ def plotTSmap(file, reg='none', col='black', suffix='none', title='TS map', cbar
   return
 
 # butterfly flux + spectrum ---!
-def plotButterflySpectrum(file, spectrum, axisLim='auto', suffix='none', title='butterfly diagram', fontsize=12,
-                          xlabel='Energy (TeV)', ylabel='Flux (erg/$cm^2$/s)', show=True, tex=False):
+def plotButterflySpectrum(file, spectrum, axisLim='auto', suffix='none', title='butterfly diagram', fontsize=12, xlabel='Energy (TeV)', ylabel='Flux (erg/$cm^2$/s)', show=True, tex=False):
+  '''Plots spectrum and butterfly diagram together.'''
+
   data = np.loadtxt(file, delimiter=' ')
   energy = data[:, 0]
   intensity = data[:, 1]
@@ -408,8 +416,8 @@ def plotButterflySpectrum(file, spectrum, axisLim='auto', suffix='none', title='
   return
 
 # irf degradation via aeff ---!
-def degradedIRF_3d(x, y, z, xlabel='x', ylabel='y', zlabel='z', title=None, c=('b'), zscale='linear', tex=False,
-                   fontsize=14, figsize=(12,6), rotation=0, zlim=(0,1), alpha=(1), label=None, savefig=None, show=True):
+def degradedIRF_3d(x, y, z, xlabel='x', ylabel='y', zlabel='z', title=None, c=('b'), zscale='linear', tex=False, fontsize=14, figsize=(12,6), rotation=0, zlim=(0,1), alpha=(1), label=None, savefig=None, show=True):
+  '''Plots IRF 3d.'''
 
   fig = plt.figure(figsize=figsize)
   plt.rc('text', usetex=False) if tex else None
@@ -435,8 +443,8 @@ def degradedIRF_3d(x, y, z, xlabel='x', ylabel='y', zlabel='z', title=None, c=('
   return
 
 # plot ebl interpolation ---!
-def interp_ebl(x, y, savefig, type='linear', xlabel='x', ylabel='y', title='title',
-               label=('y', 'y2'), fontsize=12, show=True, tex=False, sns_style=False):
+def interp_ebl(x, y, savefig, type='linear', xlabel='x', ylabel='y', title='title', label=('y', 'y2'), fontsize=12, show=True, tex=False, sns_style=False):
+  '''Plots the EBL interpolation.'''
 
   fig = plt.figure()
   plt.rc('text', usetex=False) if tex else None
@@ -456,6 +464,7 @@ def interp_ebl(x, y, savefig, type='linear', xlabel='x', ylabel='y', title='titl
 
 # SENSITIVITY ---!
 def plotSensitivity(x, y, savefig, xlabel='energy (GeV)', ylabel='sensitivity', label=('nominal', 'nominal/2'), xscale='log', yscale='log', title='', fontsize=12, marker=('.'), ratio=True, show=True, tex=False, sns_style=False):
+  '''Plots the sensitivity.'''
 
   fig = plt.figure()
   plt.rc('text', usetex=tex) if tex else None
@@ -488,6 +497,7 @@ def plotSensitivity(x, y, savefig, xlabel='energy (GeV)', ylabel='sensitivity', 
 
 # plot lightcurve from pipeline ---!
 def plotLightCurve(flux, t1, uplims, t2, xerr, yerr, filename, temp_t, temp_f, c1=('b'), c2=('r'), lf=('flux'), lup=('upper limit'), alpha=0.5, fontsize=20, figsize=(20, 16), rotation=0, ylim=None, xlim=None, interp=False, tex=False, sns_style=False):
+  '''Plots lightcurves.'''
 
   fig = plt.figure(figsize=figsize)
   plt.rc('text', usetex=False) if tex else None
