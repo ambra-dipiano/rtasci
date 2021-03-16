@@ -11,7 +11,7 @@ import xml.etree.ElementTree as ET
 
 class ManageXml():
     '''
-    WRITE DOCS
+    This class contains methods to handle XML models for ctools.
     '''
 
     def __init__(self, xml):
@@ -34,11 +34,13 @@ class ManageXml():
 
     # get source element ---!
     def __getSrcObj(self):
+        '''Returns all sources.'''
         src = self.root.findall('source')
         return src
 
     # skip node listed in skip element or filters ---!
     def __skipNode(self, cfg):
+        '''Skip specified nodes.'''
         src = self.__getSrcObj()
         if src.attrib[cfg.get('idAttribute')] in cfg.get('skip'):
             return True
@@ -54,6 +56,7 @@ class ManageXml():
 
     # get TS values ---!
     def getTs(self, highest=None):
+        '''Returns TS values of all sources in library.'''
         for src in self.root.findall('source'):
             if highest == None:
                 if src.attrib['name'] != 'Background' and src.attrib['name'] != 'CTABackgroundModel':
@@ -67,6 +70,7 @@ class ManageXml():
 
     # get RA/DEC values ---!
     def getRaDec(self, highest=None):
+        '''Returns RA and DEC values of all sources in library.'''
         ra_list, dec_list = ([] for i in range(2))
         for src in self.root.findall('source'):
             if highest == None:
@@ -86,6 +90,7 @@ class ManageXml():
 
     # get Gaussian sigma values ---!
     def getConfInt(self, highest=None):
+        '''Returns spatial errors for all sources in library.'''
         ra_list, dec_list = ([] for i in range(2))
         for src in self.root.findall('source'):
             if highest == None:
@@ -105,10 +110,10 @@ class ManageXml():
 
     # get spectral parameter values ---1
     def getSpectral(self, highest=None):
+        '''Returns spectral parameter values for all sources in library.'''
         index_list, pref_list, pivot_list = ([] for i in range(3))
         if self.if_cut is True :
             cutoff_list = []
-
         for src in self.root.findall('source'):
             if src.attrib['name'] != 'Background' and src.attrib['name'] != 'CTABackgroundModel':
                 if highest == None:
@@ -140,7 +145,6 @@ class ManageXml():
                             cutoff = float(src.find('spectrum/parameter[@name="CutoffEnergy"]').attrib['value']) * float(
                                 src.find('spectrum/parameter[@name="CutoffEnergy"]').attrib['scale'])
                             cutoff_list.append(cutoff)
-
         if self.if_cut is False:
             self.spectral = [index_list, pref_list, pivot_list]
         else:
@@ -149,6 +153,7 @@ class ManageXml():
 
     # get prefact error values ---!
     def getPrefError(self, highest=None):
+        '''Returns Prefactor errors for all sources in library.'''
         err_list = []
         for src in self.root.findall('source'):
             if highest == None:
@@ -166,11 +171,13 @@ class ManageXml():
 
     # save xml files ---!
     def __saveXml(self):
+        '''Saves XML model.'''
         self.src_lib.write(self.__xml, encoding="UTF-8", xml_declaration=True)
         return
 
     # set a default spectral model and bkg ---!
     def __setModel(self):
+        '''Sets default XML model for sources (PL) and background (IRF+PL).'''
         if self.default_model is True:
             att_prefactor = {'name': 'Prefactor', 'scale': '1e-16', 'value': '5.7', 'min': '1e-07', 'max': '1e7', 'free': '1'}
             att_index = {'name': 'Index', 'scale': '-1', 'value': '2.48', 'min': '0', 'max': '5.0', 'free': '1'}
@@ -189,6 +196,7 @@ class ManageXml():
 
     # set tscalc to 1 ---!
     def setTsTrue(self):
+        '''Sets tscalc true.'''
         for src in self.root.findall('source'):
             if src.attrib['name'] != 'Background' and src.attrib['name'] != 'CTABackgroundModel':
                 src.set('tscalc', '1')
@@ -196,6 +204,7 @@ class ManageXml():
         return
 
     def setInstrument(self, instrument='CTA'):
+        '''Sets Instrument in the XML model.'''
         for src in self.root.findall('source'):
             if src.attrib['name'] != 'Background' and src.attrib['name'] != 'CTABackgroundModel':
                 src.set('instrument', instrument)
@@ -204,6 +213,7 @@ class ManageXml():
 
     # modeify the spectral component of candidate list ---!
     def modXml(self, overwrite=True):
+        '''Modifies the XML model by halving the Prefactor of the spectral model of each subsequent detected candidated.'''
         self.__setModel()
         # source ---!
         i = 0
@@ -221,14 +231,12 @@ class ManageXml():
                     spc = ET.SubElement(src, 'spectrum', attrib={'type': 'PowerLaw'})
                 spc.text = '\n\t\t\t'.replace('\t', ' ' * 2)
                 spc.tail = '\n\t\t'.replace('\t', ' ' * 2)
-                #src.insert(0, spc)
                 # new spectral params ---!
                 for j in range(len(self.src_att)):
                     prm = ET.SubElement(spc, 'parameter', attrib=self.src_att[j])
                     if prm.attrib['name'] == 'Prefactor' and i > 1:
                         prm.set('value', str(float(prm.attrib['value']) / 2 ** (i - 1)))
                     prm.tail = '\n\t\t\t'.replace('\t', ' ' * 2) if j < len(self.src_att) else '\n\t\t'.replace('\t', ' ' * 2)
-                    #spc.insert(j, prm)
             # background ---!
             else:
                 # set bkg attributes ---!
@@ -248,7 +256,6 @@ class ManageXml():
                 for j in range(len(self.bkg_att)):
                     prm = ET.SubElement(spc, 'parameter', attrib=self.bkg_att[j])
                     prm.tail = '\n\t\t\t'.replace('\t', ' ' * 2) if j < len(self.bkg_att) else '\n\t\t'.replace('\t', ' ' * 2)
-
         # instead of override original xml, save to a new one with suffix "_mod" ---!
         if not overwrite:
             self.__xml = self.__xml.replace('.xml', '_mod.xml')
@@ -257,6 +264,7 @@ class ManageXml():
 
     # free and fix parameters for max like computation ---!
     def parametersFreeFixed(self, src_free=['Prefactor'], bkg_free=['Prefactor', 'Index']):
+        '''Frees selected parameters and fixed all others, for all sources in library.'''
         for src in self.root.findall('source'):
             if src.attrib['name'] != 'Background' and src.attrib['name'] != 'CTABackgroundModel':
                 for prm in src.findall('*/parameter'):
@@ -270,13 +278,13 @@ class ManageXml():
                         prm.set('free', '0')
                     else:
                         prm.set('free', '1')
-
         self.setTsTrue() if self.tscalc is True else None
         self.__saveXml()
         return
 
     # sort candidates by their ts value ---!
     def sortSrcTs(self):
+        '''Sorts the sources by TS in library.'''
         src = self.root.findall("*[@ts]")
         self.root[:-1] = sorted(src, key=lambda el: (el.tag, el.attrib['ts']), reverse=True)
         from_highest = []
@@ -289,17 +297,20 @@ class ManageXml():
 
     # close xml ---!
     def closeXml(self):
+        '''Closes XML.'''
         self.file.close()
         return
 
     # find observation filename ---!
     def getRunList(self):
+        '''Gets observation file.'''
         filenames = []
         for obs in self.root.findall('observation/parameter[@name="EventList"]'):
             filenames.append(obs.attrib['file'])
         return filenames
 
     def setModelParameters(self, source, parameters=(), values=()):
+        '''Sets values of selected model parameters.'''
         parameters = tuple(parameters)
         values = tuple(values)
         for src in self.root.findall('source'):
