@@ -62,9 +62,11 @@ for runid in runids:
     grbpath = join(datapath, 'obs', runid)  # folder that will host the phlist 
     if not isdir(grbpath):
         os.mkdir(grbpath)
+    
     # grb files ---!
     template =  join(os.path.expandvars(cfg.get('catalog')), f'{runid}.fits')  # grb FITS template data
     model_pl = pl_template.replace('grb_file_model.xml', f'{runid}.xml')  # grb XML template model
+    os.mkdir(join(datapath, f'extracted_data'))
     tcsv = join(datapath, f'extracted_data/{runid}/time_slices.csv')  # grb template time grid
     if not os.path.isfile(template):
         raise ValueError(f'Template {runid} FITS not found')
