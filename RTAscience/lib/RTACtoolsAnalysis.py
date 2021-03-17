@@ -422,7 +422,7 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
     # ctulimit wrapper ---!
     def run_lightcurve(self, nbins=20, bin_type='LIN'):
         '''Wrapper of cslightcrv.'''
-        lc = ctools.cslightcrv()
+        lc = cscripts.cslightcrv()
         lc['inobs'] = self.input
         lc['inmodel'] = self.model
         lc['srcname'] = self.src_name
