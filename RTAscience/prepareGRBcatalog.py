@@ -33,6 +33,10 @@ else:
     runids = cfg.get('runid')
 runids = sorted(runids)
 
+# check scalefluxfactor ---!
+if type(cfg.get('scalefluxfactor')) != float or type(cfg.get('scalefluxfactor')) != int:
+    raise ValueError('The parameter "scalefluxfactor" must be int or float. If you want to use the nominal template, please set scalefluxfactor=1.')
+
 # conditions control ---!
 set_ebl = cfg.get('set_ebl')  # uses the EBL absorbed template
 # paths ---!
