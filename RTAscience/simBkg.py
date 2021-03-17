@@ -15,7 +15,7 @@ from RTAscience.lib.RTAUtils import get_pointing, get_mergermap, get_alert_point
 from RTAscience.cfg.Config import Config
 from os.path import isdir, isfile, join, expandvars
 
-parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
+parser = argparse.ArgumentParser(description='Simulate empty fields.')
 parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
 args = parser.parse_args()
 cfg = Config(args.cfgfile)
@@ -36,7 +36,7 @@ bkgpath = join(datapath, 'obs', 'backgrounds')
 if not isdir(bkgpath):
     os.mkdir(bkgpath)
 # background model ---!
-bkg_model = os.path.join(datapath, 'models/CTAIrfBackground.xml')  # XML background model
+bkg_model = expandvars(cfg.get('bkg'))  # XML background model
 
 # ------------------------------------------------------- loop runid --- !!!
 pointing = [0., 0.]
