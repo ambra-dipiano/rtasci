@@ -26,6 +26,9 @@ parser.add_argument('--print', type=str, default='false', help='Print out result
 args = parser.parse_args()
 cfg = Config(args.cfgfile)
 
+if cfg.get('simtype').lower() != 'grb':
+    raise ValueError('This script only simulates grb afterglows')
+
 # GRB ---!
 if cfg.get('runid') == 'all':
     runids = [f.replace('.fits', '') for f in os.listdir(cfg.get('catalog')) if isfile(join(cfg.get('catalog'), f))]
