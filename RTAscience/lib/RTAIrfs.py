@@ -7,12 +7,16 @@
 # Ambra Di Piano <ambra.dipiano@inaf.it>
 # *******************************************************************************
 
+import os
+import subprocess
 import numpy as np
 from os.path import join
+from astropy.io import fits
+from scipy.interpolate import interp1d
 
-class RTAIrfs() :
+class RTAIrfs:
     '''
-    WRITE DOCS
+    This class allows to degrade the CTA instrument response functions.
     '''
     def __init__(self):
         # location of ctools ---!
@@ -26,25 +30,29 @@ class RTAIrfs() :
 
     # set CALDB var location ---!
     def setCALDB(self, path):
+        '''Set path to CALDB.'''
         self.__CALDB = path
         return
 
     # get CALDB var value ---!
     def getCALDB(self):
+        '''Get path to CALDB.'''
         return self.__CALDB
 
     # initialize paths for caldb degradation: directories and files ---!
     def __initCaldbIrf(self):
-        nominal_irf =  join(self.__CALDB, f'/share/caldb/data/cta/{self.caldb}/bcf/{self.irf}/irf_file.fits')
+        '''Initialise paths and folders of nominal CALDB and a copy to degrade.'''
+        nominal_irf =  f'{self.__CALDB}/share/caldb/data/cta/{self.caldb}/bcf/{self.irf}/irf_file.fits'
         degraded_irf = nominal_irf.replace('prod', 'degr')
         caldb_degr = self.caldb.replace('prod', 'degr')
-        folder = join(self.__CALDB, '/share/caldb/data/cta/')
-        nominal_cal =  join(folder, self.caldb)
+        folder = f'{self.__CALDB}/share/caldb/data/cta/'
+        nominal_cal = join(folder, self.caldb)
         degraded_cal = join(folder, caldb_degr)
         return folder, nominal_cal, nominal_irf, degraded_cal, degraded_irf
 
     # updates the degraded caldb index by replacing all "prod" references with "degr" ---!
     def __updateCaldbIndex(self, index):
+        '''Updates the CALDB index.'''
         # read content ---!
         with open(index, 'r', encoding="ISO-8859-1") as f:
             filedata = f.read()
@@ -57,10 +65,11 @@ class RTAIrfs() :
 
     # create copy of caldb and corresponding caldb.inx file ---!
     def __mockNominalCaldb(self, nominal_cal, nominal_irf, degraded_cal, degraded_irf):
+        '''Generates a copy of the nominal CALDB.'''
         if not os.path.isdir(degraded_cal):
             os.mkdir(degraded_cal)
         if not os.path.isfile(join(degraded_cal,'caldb.indx')):
-            os.system(f'cp {join(nominal_cal, 'caldb.indx')} {join(degraded_cal, 'caldb.indx')}')
+            os.system(f"cp {join(nominal_cal, 'caldb.indx')} {join(degraded_cal, 'caldb.indx')}")
             # update caldb.indx file ---!
             self.__updateCaldbIndex(join(degraded_cal, 'caldb.indx'))
         if not os.path.isdir(join(degraded_cal, 'bcf')):
@@ -70,11 +79,12 @@ class RTAIrfs() :
         if os.path.isfile(degraded_irf):
             os.system(f'rm {degraded_irf}')
         if not os.path.isfile(degraded_irf):
-            os.system(f'cp {nominal_irf} {degraded_irf}'))
+            os.system(f'cp {nominal_irf} {degraded_irf}')
         return
 
     # change permission to 777 and ask for password if user id not in idlist param ---!
-    def __openPermission(self, path, idlist=(0,1126)):
+    def __openPermission(self, path, idlist=(0,1126,1001)):
+        '''Grants writing permission to the CALDB folder.'''
         if os.geteuid() in idlist:
             subprocess.run(['chmod', '-R', '777', path], check=True)
         else:
@@ -83,14 +93,16 @@ class RTAIrfs() :
 
     # change permission to 755 and ask for password if user id not in idlist param ---!
     def __closePermission(self, path, idlist=(0,1126)):
+        '''Removes writing permission to the CALDB folder'''
         if os.geteuid() in idlist:
             subprocess.run(['chmod', '-R', '755', path], check=True)
         else:
             subprocess.run(['sudo', 'chmod', '-R', '755', path], check=True)
         return
 
-    # degrade Aff by self.factor (either scalar or array of energy-bins dimension) ---!
+    # degrade Aff by self.factor (for now only scalar is implemented) ---!
     def __degradeAeff(self, nominal_irf, degraded_irf, r=False):
+        '''Modifies the AEFF matrix by a factor (scalar).'''
         # initialise ---!
         inv = 1 / self.factor
         extension = 'EFFECTIVE AREA'
@@ -118,6 +130,7 @@ class RTAIrfs() :
 
     # degrade bkg counts by normalise for aeff nominal and multiply times aeff degraded ---!
     def __degradeBkg(self, nominal_irf, degraded_irf, aeff=True):
+        '''Modifies the BKG matrix by a factor (scalar).'''
         # degrade Aeff (only if True) and get its returns ---!
         if not aeff:
             tmp = self.factor
@@ -148,7 +161,6 @@ class RTAIrfs() :
             nominal_interp[i].append(fnom(e_bkg[:]))
             fdeg = interp1d(e_aeff[:], aeff_deg[i,:])
             degraded_interp[i].append(fdeg(e_bkg[:]))
-
         # flatten list of theta interpolations (theta array of energy frames) ---!
         nominal_interp = np.array([item for sublist in nominal_interp for item in sublist])
         degraded_interp = np.array([item for sublist in degraded_interp for item in sublist])
@@ -176,16 +188,19 @@ class RTAIrfs() :
         return
 
     # degrade IRFs via Effective Area and/or Background ---!
-    def degradeIrf(self, bkg=True, aeff=True):
+    def degradeIrf(self, bkg=True, aeff=True, mod_permission=False):
+        '''From a nominal CALDB generates a degraded copy.'''
         # initialize ---!
         folder, nominal_cal, nominal_irf, degraded_cal, degraded_irf = self.__initCaldbIrf()
         # open all folder permission ---!
-        self.__openPermission(path=folder)
+        if mod_permission:
+            self.__openPermission(path=folder)
         # create degr caldb path if not existing ---!
         self.__mockNominalCaldb(nominal_cal=nominal_cal, nominal_irf=nominal_irf, degraded_cal=degraded_cal, degraded_irf=degraded_irf)
         # close all folder permission and open only degraded caldb permission ---!
-        self.__closePermission(path=folder)
-        self.__openPermission(path=degraded_cal)
+        if mod_permission:
+            self.__closePermission(path=folder)
+            self.__openPermission(path=degraded_cal)
         # degradation aeff ---!
         if not bkg:
             self.__degradeAeff(nominal_irf=nominal_irf, degraded_irf=degraded_irf)
@@ -193,7 +208,8 @@ class RTAIrfs() :
         else:
             self.__degradeBkg(nominal_irf=nominal_irf, degraded_irf=degraded_irf, aeff=aeff)
         # close degraded caldb permission ---!
-        self.__closePermission(degraded_cal)
+        if mod_permission:
+            self.__closePermission(degraded_cal)
         # update caldb ---!
         self.caldb = self.caldb.replace('prod', 'degr')
         return

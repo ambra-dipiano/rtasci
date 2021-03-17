@@ -7,31 +7,48 @@
 # Ambra Di Piano <ambra.dipiano@inaf.it>
 # *******************************************************************************
 
-import numpy as np
 import os
-from lib.RTACtoolsSimulation import RTACtoolsSimulation
+import argparse
+import numpy as np
+from lib.RTACtoolsSimulation import RTACtoolsSimulation, make_obslist
 from lib.RTAUtils import wobble_pointing
-from lib.RTACtoolsAnalysis import make_obslist
+from RTAscience.cfg.Config import Config
+from os.path import join, isfile, isdir, expandvars
+
+parser = argparse.ArgumentParser(description='This scripts allows to simulate wobble observation')
+parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
+args = parser.parse_args()
+
+cfg = Config(args.cfgfile)
 
 # source ---!
-runid = 'crab'
+if cfg.get('simtype').lower() != 'wobble':
+    raise ValueError('Invalid simtype.')
+runid = cfg.get('runid').lower()
+if runid != 'crab':
+    raise ValueError('Currenlty only "crab" runid are contemplated for wobble simulation.')
+
 # general ---!
-trials = 4  # trials
-count = 0  # starting count
-nthreads = 2
+trials = cfg.get('trials')
+start_count = cfg.get('start_count') 
 # sim parameters ---!
-caldb = 'prod3b'  # calibration database
-irf = 'South_z20_average_LST_30m'  # istrument response function
-nruns = 4  # total number of runs
-trun = 1e2  # single run duration (s)
-emin = 3e-2  # simulation minimum energy (TeV)
-emax = 30.  # simulation maximum energy (TeV)
-roi = 2.5  # region of interest radius (deg)
-seed = 1  # seed of MC simulation
+caldb = cfg.get('caldb')
+irf = cfg.get('irf')
+nruns = cfg.get('nruns')
+trun = cfg.get('tobs')
+emin = cfg.get('emin')
+emax = cfg.get('emax')
+roi = cfg.get('roi')
+seed = start_count+1 
+
 # paths ---!
-pypath = str(os.path.dirname(os.path.abspath(__file__)))  
-datapath = pypath.replace('cta-sag-sci', 'DATA')  # all data should be under this folder
-obspath = os.path.join(datapath, 'obs', runid)  # folder that will host the phlist src+bkg phlists
+datapath = cfg.get('data')
+if not isdir(datapath):  # main data folder
+    raise ValueError('Please specify a valid path')
+if not isdir(join(datapath, 'obs')):  # obs parent folder
+    os.mkdir(join(datapath, 'obs'))
+obspath = os.path.join(datapath, 'obs', runid)  
+
 # check folders and create missing ones ---!
 if not os.path.isdir(obspath):
     if not os.path.isdir(obspath.replace(runid, '')):
@@ -45,15 +62,14 @@ obsfile = os.path.join(obspath, 'wobble.xml')
 target = (83.63, 22.01)
 runs = list()
 for count in range(nruns):
-    name = f'crab{count:06d}'
+    name = f'crab{start_count+count:06d}'
     wobble_index = count % 4
-    pointing = wobble_pointing(target, nrun=count, clockwise=True, offset=0.5)
-    print(f'Simulating run {count} at pointing: {pointing} deg')
+    pointing = wobble_pointing(target, nrun=count, clockwise=True, offset=cfg.get('offset'))
+    print(f'Simulating run {count+1}/{nruns} at pointing: {pointing} deg')
 
     # setup ---!
     sim = RTACtoolsSimulation()
     sim.seed = seed
-    sim.nthreads = nthreads
     sim.pointing = pointing
     sim.roi = roi
     sim.e = [emin, emax]

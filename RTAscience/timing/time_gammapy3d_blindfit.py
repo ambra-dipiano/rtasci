@@ -30,7 +30,7 @@ timport = time.time() - t
 print(f'Imports : {timport} s\n')
 
 t = time.time()
-rootpath = str(os.path.dirname(os.path.abspath(__file__))).replace('cta-sag-sci', '')
+rootpath = str(os.path.dirname(os.path.abspath(__file__))).replace('cta-sag-sci/RTAscience/timing', '')
 caldb = f'{rootpath}/caldb/data/cta/prod3b-v2/bcf/South_z20_0.5h/irf_file.fits'
 irfs = load_cta_irfs(caldb)
 filename = f'{rootpath}/DATA/selections/crab/crab_offax_texp{texp}s_n01.fits'
@@ -160,7 +160,7 @@ print(f'Total time: {ttotal} s\n')
 print('\n\n-----------------------------------------------------\n\n')
 
 logname = f'{rootpath}/DATA/outputs/crab/gammapy3d_blindfit.csv'
-if first:
+if first == 'True':
     hdr = 'texp sqrt_ts flux flux_err ra dec ttotal timport tsetup tobs tconf tred tblind tstat tmodel tfit tflux\n'
     log = open(logname, 'w+')
     log.write(hdr)

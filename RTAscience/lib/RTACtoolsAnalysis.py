@@ -13,25 +13,9 @@ import cscripts
 import numpy as np
 from RTAscience.lib.RTACtoolsBase import RTACtoolsBase
 
-# create observation list with gammalib ---!
-def make_obslist(obslist, items, names, instruments='CTA'):
-    if type(items) != type(list()):
-        items = [items]
-    if type(names) != type(list()):
-        names = [names for i in range(len(items))]
-    if type(instruments) != type(list()):
-        instruments = [instruments for i in range(len(items))]
-    xml = gammalib.GXml()
-    obslib = xml.append('observation_list title="observation library"')
-    for i, item in enumerate(items):
-        obs = obslib.append(f'observation name="{names[i]}" run="{i+1:02d}" instrument="{instruments[i]}"')
-        obs.append(f'parameter name="EventList" file="{item}"')
-    xml.save(obslist)
-    return 
-
 class RTACtoolsAnalysis(RTACtoolsBase) :
     '''
-    WRITE DOCS
+    This class contains wrappers for ctools and cscripts tools.
     '''
     def __init__(self, on_ram=False):
         # files fields ---!
@@ -45,7 +29,7 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
         self.t = [0, 1800]  # time range (s/MJD) ---!
         self.pointing = [83.63, 22.01]  # RA/DEC or GLON/GLAT (deg) ---!
         self.target = [83.63, 22.51]  # RA/DEC or GLON/GLAT (deg) ---!
-        self.sigma = 5  # Gaussian significance (sigmas) ---!
+        self.sigma = 3  # Gaussian significance (sigmas) ---!
         self.max_src = 10  # Max number of candidates to list during blind-detection ---!
         # ctools miscellaneous ---!
         self.seed = 1  # MC seed ---!
@@ -75,10 +59,11 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
 
     # ctselect wrapper ---!
     def run_selection(self, prefix=None):
+        '''Wrapper of ctselect.'''
         selection = ctools.ctselect()
         selection['inobs'] = self.input
         selection['outobs'] = self.output
-        selection['usepnt'] = True
+        selection['usepnt'] = self.usepnt
         if prefix != None:
             selection['prefix'] = prefix
         selection['rad'] = self.roi
@@ -99,6 +84,7 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
 
     # ctskymap wrapper ---!
     def run_skymap(self, wbin=0.02, roi_factor=2/np.sqrt(2)):
+        '''Wrapper of ctskymap.'''
         nbin = int(self.roi * roi_factor / wbin)
         skymap = ctools.ctskymap()
         skymap['inobs'] = self.input
@@ -127,7 +113,8 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
         return
 
     # cssrcdetect wrapper ---!
-    def run_blindsearch(self) :
+    def run_blindsearch(self):
+        '''Wrapper of cssrcdetect.'''
         detection = cscripts.cssrcdetect()
         detection['inmap'] = self.input
         detection['outmodel'] = self.output
@@ -154,6 +141,7 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
 
     # csphagen wrapper ---!
     def run_onoff(self, method='reflected', prefix='onoff', radius=0.2, ebins=10, ebins_alg='LOG', binfile=None, exp=None, use_model_bkg=True):
+        '''Wrapper of csphagen.'''
         onoff = cscripts.csphagen()
         onoff['inobs'] = self.input
         onoff['inmodel'] = self.model
@@ -204,6 +192,7 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
 
     # ctbin wrapper ---!
     def run_binning(self, prefix='cube_', ebins_alg='LOG', ebins=10, binfile=None, exp=None, nbins=(200,200), wbin=0.02):
+        '''Wrapper of ctbin.'''
         bins = ctools.ctbin()
         bins['inobs'] = self.input
         bins['outobs'] = self.output
@@ -242,6 +231,7 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
 
     # ctexpcube wrapper ---!
     def run_expcube(self, cube, ebins=10, nbins=(200,200), wbin=0.02, ebin_alg='LOG', ebinfile=None, ebingamma=None, addbounds=False):
+        '''Wrapper of ctexpcube.'''
         exp = ctools.ctexpcube()
         exp['inobs'] = self.input
         exp['incube'] = cube
@@ -281,6 +271,7 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
     
     # ctpsfcube wrapper ---!
     def run_psfcube(self, cube, ebins=10, nbins=(200,200), wbin=0.02, amax=0.3, abins=200, ebin_alg='LOG', ebinfile=None, ebingamma=None, addbounds=False):
+        '''Wrapper of ctpsfcube.'''
         psf = ctools.ctpsfcube()
         psf['inobs'] = self.input
         psf['incube'] = cube
@@ -322,6 +313,7 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
 
     # ctbkgcube wrapper ---!
     def run_bkgcube(self, cube, model):
+        '''Wrapper of ctbkgcube.'''
         bkg = ctools.ctbkgcube()
         bkg['inobs'] = self.input
         bkg['inmodel'] = self.model
@@ -345,6 +337,7 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
 
     # ctlike wrapper ---!
     def run_maxlikelihood(self, binned=False, exp=None, bkg=None, psf=None, edisp=False, edispcube=None):
+        '''Wrapper of ctlike.'''
         like = ctools.ctlike()
         like['inobs'] = self.input
         like['inmodel'] = self.model
@@ -375,6 +368,7 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
 
     # cterror wrapper ---!
     def run_asymerrors(self, asym_errors):
+        '''Wrapper of cterror.'''
         self.confidence_level=[0.6827, 0.9545, 0.9973]
         self.output = []
         for i in range(len(self.confidence_level)):
@@ -401,6 +395,7 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
 
     # ctulimit wrapper ---!
     def run_uplim(self):
+        '''Wrapper of ctulimit.'''
         uplim = ctools.ctulimit()
         uplim['inobs'] = self.input
         uplim['inmodel'] = self.model
@@ -426,7 +421,8 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
 
     # ctulimit wrapper ---!
     def run_lightcurve(self, nbins=20, bin_type='LIN'):
-        lc = cscripts.cslightcrv()
+        '''Wrapper of cslightcrv.'''
+        lc = ctools.cslightcrv()
         lc['inobs'] = self.input
         lc['inmodel'] = self.model
         lc['srcname'] = self.src_name
@@ -458,6 +454,7 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
 
     # cssens wrapper ---!
     def run_sensitivity(self, bins=20, wbin=0.05, enumbins=0):
+        '''Wrapper of cssens.'''
         sens = cscripts.cssens()
         nbin = int(self.roi / wbin)
         sens['inobs'] = self.input

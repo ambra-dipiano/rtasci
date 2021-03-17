@@ -1,26 +1,49 @@
 setup:
-  simtype:                      # grb -> src+bkg; bkg -> empty fields (str)
+  simtype:                      # grb -> src+bkg; bkg -> empty fields; skip -> skip sim; 
+                                # wobble -> LST-like runs (str)
   runid:                        # can be all or any template (list or str) in catalog
   trials:                       # realisations per runid (int)
   start_count:                  # starting count for seed (int)
+  scalefluxfactor:              # scale src nominal flux by factor (float)
 
 simulation:
   caldb:                        # calibration database (str)
   irf:                          # istrument response function (str)
   tobs:                         # total obs time (s) (float)
   onset:                        # time of bkg only a.k.a. delayed onset of burst (s) (float)
+  delay:                        # delayed start of observation (s) (float)
   emin:                         # simulation minimum energy (TeV) (float)
   emax:                         # simulation maximum energy (TeV) (float)
   roi:                          # region of interest radius (deg) (float)
+  offset:                       # 'gw' -> from alert; value -> otherwise (deg) (str/float)
+  nruns:                        # numer of runs (of lenght=tobs) for wobble simtype (int)
+
+analysis:
+  skypix:                       # pixel size in skymap (deg) (float)
+  skyroifrac:                   # ratio between skymap axis and roi (float)
+  smooth:                       # Gaussian corr. kernel rad. (deg) (float)
+  maxsrc:                       # number of hotspot to search for (float)
+  sgmthresh: 3                  # blind-search acc. thresh. in Gaussian sigma (float)
+  usepnt: yes                   # use pointing for RA/DEC (bool)
+  exposure:                     # exposure times for the analysis (s) (float)
+    -
+    -
+  binned: no                    # perform binned or unbinned analysis (bool)
+  blind: yes                    # requires blind-search (bool)
+  tool: ctools                  # which science tool (str) 
+  type: 3d                      # 1d on/off or 3d full-fov (str)
 
 options:
-  set_ebl:                      # uses the EBL absorbed template (bool)
+  set_ebl:                      # if True uses EBL absorbed spectra (bool)
   extract_data:                 # if True extracts lightcurves and spectra (bool) 
+  plotsky:                      # if True generates skymap plot (bool)
 
 path: 
-  data:                         # all data should be under this folder (str)
-  ebl:                          # (str)
-  model:                        # (str)
-  catalog:                      # (str)
+  data:                         # parent folder (str)
+  ebl:                          # file of tau values for EBL (str)
+  model:                        # folder of source models (str)
+  merger:                       # folder of alerts (str)
+  bkg:                          # file of background model (str)
+  catalog:                      # folder of source catalog (str)
 
 

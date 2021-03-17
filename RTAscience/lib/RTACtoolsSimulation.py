@@ -15,13 +15,31 @@ import re
 import numpy as np
 import pandas as pd
 from astropy.io import fits
-from astropy import table
+from astropy.table import Table, vstack
 from scipy.interpolate import interp1d
 from RTAscience.lib.RTACtoolsBase import RTACtoolsBase
 
+# create observation list with gammalib ---!
+def make_obslist(obslist, items, names, instruments='CTA'):
+    '''Generates an observation list XML file using gammalib.'''
+    if type(items) != type(list()):
+        items = [items]
+    if type(names) != type(list()):
+        names = [names for i in range(len(items))]
+    if type(instruments) != type(list()):
+        instruments = [instruments for i in range(len(items))]
+    xml = gammalib.GXml()
+    obslib = xml.append('observation_list title="observation library"')
+    for i, item in enumerate(items):
+        obs = obslib.append(f'observation name="{names[i]}" id="{i+1:02d}" instrument="{instruments[i]}"')
+        obs.append(f'parameter name="EventList" file="{item}"')
+    xml.save(obslist)
+    del xml
+    return 
+
 class RTACtoolsSimulation(RTACtoolsBase):
     '''
-    WRITE DOCS
+    This class allows to: 1) compute the EBL absorption from a csv data table and add it to the template; 2) extract spectra, lightcuves and time slices from the template (the flux values can also be normalised by a factor); 3) merge bins of the template simulation in a single photon list; 4) perform simulations using ctoobssim from ctools software package.
     '''
     def __init__(self):
         # files fields ---!
@@ -42,7 +60,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
         # ctools miscellaneous ---!
         self.edisp = False  # set/unset edisp
         self.seed = 1  # MC seed ---!
-        self.nthreads = 1
+        self.nthreads = 1  # run in parallel 
         # ebl specifics ---!
         self.z = 0.1  # redshift value ---!
         self.z_ind = 1  # redshift value index ---!
@@ -51,17 +69,22 @@ class RTACtoolsSimulation(RTACtoolsBase):
 
     # open and close the FITS files ---!
     def __openFITS(self):
+        '''Opens FITS file.'''
         hdul = fits.open(self.template)
         return hdul
     def __closeFITS(self, hdul):
+        '''Closes FITS file.'''
         hdul.close()
         return
 
     # retrive FITS data ---!
     def __getFitsData(self):
+        '''Loads time, energy, spectra and (if present) absorbed spectra from a FITS file.'''
         hdul = self.__openFITS()
         self.__energy = np.array(hdul[1].data)
         self.__time = np.array(hdul[2].data)
+        self.__Nt = len(self.__time)
+        self.__Ne = len(self.__energy)
         self.__spectra = np.array(hdul[3].data)
         if self.set_ebl:
             try:
@@ -71,14 +94,26 @@ class RTACtoolsSimulation(RTACtoolsBase):
         self.__closeFITS(hdul)
         return
 
-    # load csv tabl in pandas DataFrame and drop NaN values---!
+    # check if EBL extention already in template ---!
+    def checkEBLinFITS(self, ext_name='EBL-ABS. SPECTRA'):
+        '''Checks if specified extension is present in FITS file.'''
+        hdul = self.__openFITS()
+        try:
+            ext = hdul[ext_name]
+            return True
+        except KeyError:
+            return False
+
+    # load csv table in pandas DataFrame and drop NaN values---!
     def __openCSV(self):
+        '''Opens a CSV data file.'''
         df = pd.read_csv(self.table)
         df.dropna()
         return df
 
     # retrive csv data ---!
     def __getEBLfromCSV(self):
+        '''Gets optical depth values from a CSV table.'''
         df = self.__openCSV()
         cols = list(df.columns)
         tau_table = np.array(df[cols[self.z_ind]])
@@ -87,6 +122,8 @@ class RTACtoolsSimulation(RTACtoolsBase):
 
     # retrive csv temporal bin grid of the template in use and return the necessary slice ---!
     def getTimeSlices(self, GTI, return_bins=False):
+        '''Gets the time slices from a GRB afterglow template, within a given interval.'''
+        self.__getFitsData()
         df = self.__openCSV()
         cols = list(df.columns)
         self.__time = np.append(0, np.array(df[cols[1]]))
@@ -96,7 +133,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
             if self.__time[i] < GTI[0]:
                 bin_start += 1
                 continue
-            elif self.__time[i] > GTI[1] or self.__time[i] == GTI[1]:
+            elif self.__time[i] >= GTI[1]:
                 self.__time[i] = GTI[1]
                 bin_stop += i
                 break
@@ -106,13 +143,16 @@ class RTACtoolsSimulation(RTACtoolsBase):
             time_slice = slice(bin_start, bin_stop)
         if not time_slice:
             raise ValueError('Invalid GTI: cannot extract time slices')
+        tgrid = self.__time[time_slice]
+        tgrid[0] = GTI[0]
         if not return_bins:
-            return self.__time[time_slice]
+            return tgrid
         else:
-            return self.__time[time_slice], bin_start, bin_stop
+            return tgrid, bin_start, bin_stop
 
     # compute the EBL absorption ---!
     def __addEBL(self, unit='MeV'):
+        '''Computes the EBL absorption.'''
         self.__getFitsData()
         tau_table, E = self.__getEBLfromCSV()
         if unit == 'GeV':
@@ -125,10 +165,10 @@ class RTACtoolsSimulation(RTACtoolsBase):
         tau = np.array(interp(self.__energy))
         self.__ebl = np.empty_like(self.__spectra)
         # compute absorption ---!
-        for i in range(len(self.__time)):
-            for j in range(len(self.__energy)):
+        for i in range(self.__Nt):
+            for j in range(self.__Ne):
                 self.__ebl[i][j] = self.__spectra[i][j] * np.exp(-tau[j])
-
+        # if required return values to plot ---!
         if self.plot:
             return E, tau_table, self.__energy, tau
         else:
@@ -136,6 +176,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
 
     # retrive redshift, find nearest column then access its index ---!
     def __zfetch(self):
+        '''Retrives the optical depth values from a table, according to redshift.'''
         hdul = self.__openFITS()
         # fetch z from the template and chose the table column with min distance from it 
         z = hdul[0].header['REDSHIFT']
@@ -155,9 +196,11 @@ class RTACtoolsSimulation(RTACtoolsBase):
 
     # add EBL extension to a FITS template ---!
     def addEBLtoFITS(self, template_ebl, ext_name='EBL ABS. SPECTRA', unit='MeV'):
+        '''Adds the EBL absorbed spectra to the tempalte.'''
         hdul = self.__openFITS()
         if self.zfetch:
             self.__zfetch()
+        # if required retrive values to plot ---!
         if self.plot:
             x, y, x2, y2 = self.__addEBL(unit=unit)
         else:
@@ -173,22 +216,15 @@ class RTACtoolsSimulation(RTACtoolsBase):
             os.remove(template_ebl)
         hdul.writeto(template_ebl, overwrite=True)
         self.__closeFITS(hdul)
+        # if required return values to plot ---!
         if self.plot:
             return x, y, x2, y2
         else:
             return
 
-    def checkEBLinFITS(self, ext_name='EBL ABS. SPECTRA'):
-        hdul = self.__openFITS()
-        try:
-            self.__ebl = np.array(hdul[4].data)
-            existing = True
-        except:
-            existing = False
-        return existing
-
     # extract template spectra, create xml model files and time slices csv file ---!
-    def __extractSpectrumAndModelXML(self, source_name, time_slice_name='time_slices.csv', data_path=None):
+    def __extractSpectrumAndModelXML(self, source_name, time_slice_name='time_slices.csv', data_path=None, scalefluxfactor=1):
+        '''Generates spectra, lightcurves and time slices of a template.'''
         # time slices table ---!
         if data_path is None:
             raise ValueError('please specify a valid path')
@@ -197,22 +233,23 @@ class RTACtoolsSimulation(RTACtoolsBase):
             os.remove(table)
         with open(table, 'w+') as tab:
             tab.write('#bin,tmax_bin')
-
         # spectra and models ---!
         for i in range(self.__Nt):
             filename = os.path.join(data_path, f'spec_tbin{i:02d}.out')
             if os.path.isfile(filename):
                 os.remove(filename)
-
             # time slices table ---!
             with open(table, 'a') as tab:
                 tab.write('\n' + str(i) + ', ' + str(self.__time[i][0]))
-        
+            # spectra ---!
             with open(filename, 'a+') as f:
                 for j in range(self.__Ne):
                     # write spectral data in E [MeV] and I [ph/cm2/s/MeV] ---!
-                    f.write(str(self.__energy[j][0] * 1000.0) + ' ' + str(self.__spectra[i][j] / 1000.0) + "\n")
-            # write bin models ---!
+                    if self.set_ebl:
+                        f.write(str(self.__energy[j][0] * 1000.0) + ' ' + str(self.__ebl[i][j] / 1000.0 / scalefluxfactor) + "\n")
+                    else:
+                        f.write(str(self.__energy[j][0] * 1000.0) + ' ' + str(self.__spectra[i][j] / 1000.0 / scalefluxfactor) + "\n")
+            # xml models ---!
             os.system('cp ' + str(self.model) + ' ' + str(os.path.join(data_path, f'{source_name}_tbin{i:02d}.xml')))
             s = open(os.path.join(data_path, f'{source_name}_tbin{i:02d}.xml')).read()
             s = s.replace('data/spec', f'spec_tbin{i:02d}')
@@ -221,18 +258,15 @@ class RTACtoolsSimulation(RTACtoolsBase):
         return
 
     # read template and return tbin_stop containing necessary exposure time coverage ---!
-    def loadTemplate(self, source_name, return_bin=False, data_path=None):
+    def loadTemplate(self, source_name, return_bin=False, data_path=None, scalefluxfactor=1):
+        '''Loads template data (spectra, lightcurves and time slices).'''
         self.__getFitsData()
-        self.__Nt = len(self.__time)
-        self.__Ne = len(self.__energy)
-
         # time grid ---!
         t = [0.0 for x in range(self.__Nt + 1)]
         for i in range(self.__Nt - 1):
             t[i + 1] = self.__time[i][0] + (self.__time[i + 1][0] - self.__time[i][0]) / 2
         # tmax in last bin ---!
         t[self.__Nt] = self.__time[self.__Nt - 1][0] + (self.__time[self.__Nt - 1][0] - t[self.__Nt - 1])
-
         # stop the second after higher tmax ---!
         if self.tmax != None:
             tbin_stop = 1
@@ -242,36 +276,31 @@ class RTACtoolsSimulation(RTACtoolsBase):
                 else:
                     continue
         else:
-            raise ValueError('Total exposure time longer than template''s temporal evolution.')
-
+            raise ValueError('Total exposure time longer than template temporal evolution.')
         # energy grid ---!
         en = [1.0 for x in range(self.__Ne + 1)]
         for i in range(self.__Ne - 1):
             en[i + 1] = self.__energy[i][0] + (self.__energy[i + 1][0] - self.__energy[i][0]) / 2
         # Emax in last bin ---!
         en[self.__Ne] = self.__energy[self.__Ne - 1][0] + (self.__energy[self.__Ne - 1][0] - en[self.__Ne - 1])
-
         # extract spectrum if required ---!
         if self.extract_spectrum:
-            self.__extractSpectrumAndModelXML(source_name=source_name, data_path=data_path)
+            self.__extractSpectrumAndModelXML(source_name=source_name, data_path=data_path, scalefluxfactor=scalefluxfactor)
         if return_bin:
             return tbin_stop
         else:
             return
 
-    # get tbin_stop without loading the template ---!
+    # get tbin_stop without extracting template data ---!
     def getTimeBinStop(self):
+        '''Gets the last time bin of the template if the observation lasts less than the entire afterglow.'''
         self.__getFitsData()
-        self.__Nt = len(self.__time)
-        self.__Ne = len(self.__energy)
-
         # time grid ---!
         t = [0.0 for x in range(self.__Nt + 1)]
         for i in range(self.__Nt - 1):
             t[i + 1] = self.__time[i][0] + (self.__time[i + 1][0] - self.__time[i][0]) / 2
         # tmax in last bin ---!
         t[self.__Nt] = self.__time[self.__Nt - 1][0] + (self.__time[self.__Nt - 1][0] - t[self.__Nt - 1])
-
         # stop the second after higher tmax ---!
         if self.tmax != None:
             tbin_stop = 1
@@ -286,6 +315,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
 
     # get template bins within GTI ---!
     def getTimeBins(self, GTI, tgrid):
+        '''Gets which time bins of the template fall within a give time interval.'''
         tbins = []
         for i in range(len(tgrid)):
             # if tgrid[i] <= GTI[0]+10 and tgrid[i+1] >= GTI[0]-10:
@@ -300,13 +330,13 @@ class RTACtoolsSimulation(RTACtoolsBase):
             elif tgrid[i] >= GTI[1]:
                 tbins.append(i)
                 break
-
         tbins = sorted(tbins)
         tbins = self.__dropListDuplicates(tbins)
         return tbins
 
     # ctobssim wrapper ---!
     def run_simulation(self, inobs=None, prefix=None, startindex=None):
+        '''Wrapper for ctobssim simulation.'''
         self.input = inobs
         sim = ctools.ctobssim()
         if self.input != None: 
@@ -339,14 +369,16 @@ class RTACtoolsSimulation(RTACtoolsBase):
 
     # dopr duplicates in list ---!
     def __dropListDuplicates(self, list):
+        '''Drops duplicate events in list.'''
         new_list = []
         for l in list:
             if l not in new_list:
                 new_list.append(l)
         return new_list
 
-    # keep only the GTI rows plus a buffering margin ---!
+    # keep only events within given GTI ---!
     def __dropExceedingEvents(self, hdul, GTI):
+        '''Drops events exceeding GTI.'''
         slice_list = []
         times = hdul[1].data.field('TIME')
         for i, t in enumerate(times):
@@ -356,6 +388,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
 
     # change from GTI of run to min and max of time events ---!
     def __newGoodTimeIntervals(self, hdul, GTI):
+        '''Replaces GTI with min and max time of events.'''
         GTI_new = []
         GTI_new.append(min(hdul[1].data.field('TIME'), key=lambda x: abs(x - GTI[0])))
         GTI_new.append(min(hdul[1].data.field('TIME'), key=lambda x: abs(x - GTI[1])))
@@ -366,6 +399,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
 
     # reindex rows after sorting ---!
     def __reindexEvents(self, hdul):
+        '''Reindexes events.'''
         indexes = hdul[1].data.field(0)
         for i, ind in enumerate(indexes):
             hdul[1].data.field(0)[i] = i + 1
@@ -374,14 +408,25 @@ class RTACtoolsSimulation(RTACtoolsBase):
 
     # sort simulated events by time (TIME) instead of source (MC_ID) ---!
     def __sortEventsByTime(self, hdul, hdr):
-        data = table.Table(hdul[1].data)
+        '''Sorts events by time.'''
+        data = Table(hdul[1].data)
         data.sort('TIME')
         hdul[1] = fits.BinTableHDU(name='EVENTS', data=data, header=hdr)
         hdul.flush()
         return
 
+    # check GTI and raise error if bad values are passed ---!
+    def __checkGTI(self, hdul):
+        '''Checks that all events fall within the GTI.'''
+        GTI = hdul[2].data[0]
+        trange = hdul[1].data.field('TIME')
+        if GTI[0] > trange.min() or GTI[1] < trange.max():
+            raise ValueError ('Bad GTI values passed to photon list append.')
+        return
+
     # create single photon list from obs list ---!
-    def __singlePhotonList(self, sample, filename, GTI, new_GTI=False):
+    def __singlePhotonList(self, sample, filename, GTI, new_GTI=True):
+        '''Merge segmented simulations into a single photon list, updating all required header keywords.'''
         sample = sorted(sample)
         n = 0
         for i, f in enumerate(sample):
@@ -389,13 +434,22 @@ class RTACtoolsSimulation(RTACtoolsBase):
                 if len(hdul[1].data) == 0:
                     continue
                 if n == 0:
-                    h1 = hdul[1].header
-                    h2 = hdul[2].header
-                    ext1 = hdul[1].data
+                    # load header and table ---!
+                    hdr1 = hdul[1].header
+                    hdr2 = hdul[2].header
+                    ext1 = Table(hdul[1].data)
                     ext2 = hdul[2].data
                     n += 1
                 else:
-                    ext1 = np.append(ext1, hdul[1].data)
+                    # update header and append table ---!
+                    hdr1['LIVETIME'] += hdul[1].header['LIVETIME']
+                    hdr1['ONTIME'] += hdul[1].header['ONTIME']
+                    hdr1['TELAPSE'] += hdul[1].header['TELAPSE']
+                    hdr1['TSTOP'] = hdul[1].header['TSTOP']
+                    hdr1['DATE-END'] = hdul[1].header['DATE-END']
+                    hdr1['TIME-END'] = hdul[1].header['TIME-END']
+                    ext1 = vstack([ext1, Table(hdul[1].data)])
+                hdul.close()
         # create output FITS file empty ---!
         hdu = fits.PrimaryHDU()
         hdul = fits.HDUList([hdu])
@@ -403,20 +457,20 @@ class RTACtoolsSimulation(RTACtoolsBase):
         hdul.close()
         # update FITS file ---!
         with fits.open(filename, mode='update') as hdul:
-            hdu1 = fits.BinTableHDU(name='EVENTS', data=ext1, header=h1)
-            hdu2 = fits.BinTableHDU(name='GTI', data=ext2, header=h2)
+            hdu1 = fits.BinTableHDU(name='EVENTS', data=ext1, header=hdr1)
+            hdu2 = fits.BinTableHDU(name='GTI', data=ext2, header=hdr2)
             hdul.append(hdu1)
             hdul.append(hdu2)
             hdul.flush()
             # sort table by time ---!
-            self.__sortEventsByTime(hdul=hdul, hdr=h1)
+            self.__sortEventsByTime(hdul=hdul, hdr=hdr1)
         # manipulate fits ---!
         with fits.open(filename, mode='update') as hdul:
             # drop events exceeding GTI ---!
-            # slice = self.__dropExceedingEvents(hdul=hdul, GTI=GTI)
-            # if len(slice) > 0:
-            #     hdul[1].data = hdul[1].data[slice]
-            # hdul.flush()
+            slice = self.__dropExceedingEvents(hdul=hdul, GTI=GTI)
+            if len(slice) > 0:
+                hdul[1].data = hdul[1].data[slice]
+            hdul.flush()
             # modify indexes  ---!
             self.__reindexEvents(hdul=hdul)
             # modify GTI ---!
@@ -430,6 +484,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
 
     # created one FITS table containing all events and GTIs ---!
     def appendEventsSinglePhList(self, GTI=None, new_GTI=False):
+        '''From a list of simulations generates a single photon list.'''
         if GTI == None:
             GTI = []
             with fits.open(self.input[0]) as hdul:
@@ -439,22 +494,9 @@ class RTACtoolsSimulation(RTACtoolsBase):
         self.__singlePhotonList(sample=self.input, filename=self.output, GTI=GTI, new_GTI=new_GTI)
         return
 
-    # create one fits table appending source and bkg within GTI ---!
-    def appendBkg(self, phlist, bkg, GTI, new_GTI):
-        with fits.open(bkg, mode='update') as hdul:
-            # fix GTI ---!
-            hdul[2].data[0][0] = GTI[0]
-            hdul[2].data[0][1] = GTI[1]
-            hdul.flush()
-            times = hdul[1].data.field('TIME')
-            for i, t, in enumerate(times):
-                hdul[1].data.field('TIME')[i] = t + GTI[0]
-            hdul.flush()
-        self.__singlePhotonList(sample=[phlist, bkg], filename=phlist, GTI=GTI, new_GTI=new_GTI)
-        return
-
     # shift times in template simulation to append background before burst ---!
     def shiftTemplateTime(self, phlist, time_shift):
+        '''Shifts events in time.'''
         if phlist is str():
             phlist = list(phlist)
         for file in phlist:
@@ -467,8 +509,10 @@ class RTACtoolsSimulation(RTACtoolsBase):
                 hdul.flush()
         return
 
-    # created a number of FITS table containing all events and GTIs ---!
+    # created a number of observation runs containing all events and GTIs ---!
     def appendEventsMultiPhList(self, max_length=None, last=None, r=True, new_GTI=False):
+        '''This method will be deprecated.'''
+        raise Warning('This method is outdated')
         n = 1
         sample = []
         singlefile = str(self.output)
@@ -498,73 +542,3 @@ class RTACtoolsSimulation(RTACtoolsBase):
             return n, singlefile
         else:
             return
-
-    # reduce flux of template by given factor ---!
-    def __reduceSpectrumNorm(self, data_path=None):
-        spec_files = []
-        if data_path is None:
-            raise ValueError('please specify a valid path')
-        # r: root, d: directories, f: files ---!
-        for r, d, f in os.walk(data_path):
-            for file in f:
-                if self.set_ebl:
-                    if '.out' in file and 'ebl' in file and 'flux' not in file:
-                        spec_files.append(os.path.os.path.join(r, file))
-                else:
-                    if '.out' in file and 'ebl' not in file and 'flux' not in file:
-                        spec_files.append(os.path.os.path.join(r, file))
-
-        spec_files.sort()
-        # new files with relative suffix ---!
-        for i in range(len(spec_files)):
-            if self.set_ebl:
-                new_file = spec_files[i].replace('spec_ebl_tbin', 'spec_ebl_flux%d_tbin' %self.factor)
-            else:
-                new_file = spec_files[i].replace('spec_tbin', 'spec_flux%d_tbin' %self.factor)
-            if os.path.isfile(new_file):
-                os.remove(new_file)
-            # modify by a given factor ---!
-            with open(spec_files[i], 'r') as input, open(new_file, 'w+') as output:
-                df = pd.read_csv(input, sep=' ', header=None)
-                df.iloc[:,1] = df.iloc[:,1].apply(lambda x: float(x)/self.factor)
-                df.to_csv(path_or_buf=output, sep=' ', index=False, header=None)
-        return
-
-    # replace path/to/spectrum/file.out in the xml model file ---!
-    def __replaceSpectrumFile(self, data_path=None):
-        xml_files = []
-        if data_path is None:
-            raise ValueError('please specify a valid path')
-        # r: root, d: directories, f: files ---!
-        for r, d, f in os.walk(data_path):
-            for file in f:
-                if self.set_ebl:
-                    if '.xml' in file and 'ebl' in file and 'flux' not in file:
-                        xml_files.append(os.path.os.path.join(r, file))
-                else:
-                    if '.xml' in file and 'ebl' not in file and 'flux' not in file:
-                        xml_files.append(os.path.os.path.join(r, file))
-
-        xml_files.sort()
-        # replace ---!
-        for i in range(len(xml_files)):
-            if self.set_ebl:
-                new_file = xml_files[i].replace('ID000126_ebl_tbin', 'ID000126_ebl_flux%d_tbin' %self.factor)
-            else:
-                new_file = xml_files[i].replace('ID000126_tbin', 'ID000126_flux%d_tbin' %self.factor)
-            if os.path.isfile(new_file):
-                os.remove(new_file)
-            with open(xml_files[i], 'r') as input, open(new_file, 'w+') as output:
-                content = input.read()
-                if self.set_ebl:
-                    content = content.replace('spec_ebl_tbin', 'spec_ebl_flux%d_tbin' %self.factor)
-                else:
-                    content = content.replace('spec_tbin', 'spec_flux%d_tbin' %self.factor)
-                output.write(content)
-        return
-
-    # execute the flux reduction and consequent substitution of files ---!
-    def makeFainter(self, data_path=None):
-        self.__reduceSpectrumNorm(data_path=data_path)
-        self.__replaceSpectrumFile(data_path=data_path)
-        return

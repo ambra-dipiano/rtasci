@@ -7,7 +7,9 @@ dependencies:
   - astropy
   - healpy
   - pandas
-  - lxml
+  - xml
   - pyaml
   - scipy
   - pyregion
+  - seaborn
+#  - untangle  # required ONLY by the old version of the pipeline (folder "thesis")
