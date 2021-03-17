@@ -55,6 +55,9 @@ for i in range(trials):
     sim.configure(cfg)
     sim.seed = count
     sim.pointing = pointing
+    sim.caldb = cfg.get('caldb')
+    sim.irf = cfg.get('irf')
+    sim.roi = cfg.get('roi')
 
     print('Simulate empty fields')
     sim.seed = count
