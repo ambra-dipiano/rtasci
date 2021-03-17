@@ -63,9 +63,9 @@ Be sure to have your calibration database installed under $CTOOLS/share. You can
 python degradation_caldb.py --caldb prod3b pro3b-v2
 ```
 
-Note: corrently the code simply halves the affective area (and consequently renormalise the background rates).
+Note: currently the code simply halves the affective area (and consequently renormalise the background rates).
 
-### Pipeline
+### RTAscience
 To extract spectra and lightcurves from the templates (one, a list or the entire sample):
 
 ```bash
