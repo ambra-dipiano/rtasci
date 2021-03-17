@@ -47,10 +47,8 @@ def get_alert_pointing_compressed(merger_map):
 # retrieve telescope pointing coordinates from alert probability map ---!
 def get_alert_pointing_gw(merger_map):
     '''Given a merger map, it returns the maximum sky localisation probability coordinates.'''
-    try:
-        os.system(f'gunzip {merger_map}.gz')
-    except FileNotFoundError:
-        pass
+    if not os.path.isfile(merger_map):
+        raise ValueError(f'Merger map {merger_map} not found.')
     # load map ---!
     map = hp.read_map(merger_map, dtype=None)
     pixels = len(map)
@@ -142,7 +140,7 @@ def get_mergermap(run, path):
     if merger in os.listdir(path):
         return os.path.join(path, merger)
     elif merger+'.gz' in os.listdir(path):
-        os.system(f"unzip {merger}.gz")
+        os.system(f"gunzip {join(path, merger)}.gz")
         return os.path.join(path, merger)
     else:
         print(f'Merger map {merger} for not found in path: {path}.')

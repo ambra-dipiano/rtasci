@@ -3,7 +3,7 @@ slurm*
 test_*
 testing/*
 config.yaml
-adptests
+adptest*
 RTAscience/cfg/*.yml
 RTAscience/paper/*
 RTAscience/cfg/*.sh
@@ -30,6 +30,7 @@ loadenv.sh
 RTAscience/lib/old*
 RTAscience/lib/__pycache__/*
 #RTAscience/notebooks
+phd
 
 __pycache__
 *.egg-info

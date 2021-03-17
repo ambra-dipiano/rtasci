@@ -32,6 +32,44 @@ To complete the environment be sure to download and install the correct IRFs (on
 
 Under cfg you can find an example of configuration file. Description of each parameter is commented within. This file will serve as input when running the code. 
 
+*__Required config parameters__*
+Those with * are required only if offset = gw!
+
+1. prepareGRBcatalog.py
+    - setup: runid, scalefluxfactor
+    - simulation: /
+    - analysis: /
+    - options: extract_data, set_ebl
+    - path: data, catalog, ebl, model
+2. simGRBcatalog.py
+    - setup: simtype, runid, trials, start_count
+    - simulation: caldb, irf, tobs, onset, delay, emin, emax, roi, offset
+    - analysis: /
+    - options: /
+    - path: data, catalog, model, merger*
+3. simWobble.py
+    - setup: simtype, runid, trials, start_count
+    - simulation: caldb, irf, tobs, emin, emax, roi, offset, nruns
+    - analysis: /
+    - options: /
+    - path: data, catalog, model
+4. simBkg.py
+    - setup: simtype, trials, start_count
+    - simulation: caldb, irf, tobs, emin, emax, roi, offset
+    - analysis: /
+    - options: /
+    - path: data, catalog, model, bkg
+5. pipelines/ctool3d_blindfit.py
+    - setup: simtype, runid, trials, start_count
+    - simulation: caldb, irf, tobs, onset, delay, emin, emax, roi, offset
+    - analysis: tool, type, blind, binned, exposure, skypix, skyroifrac, smooth, maxsrc, sgmthresh, usepnt
+    - options: plotsky
+    - path: data, catalog, model, merger*
+6. rtapipe.py
+    - It combines one or more of the previous scripts, hence the required configuration will depend on their specifics.
+
+
+    
 
 ### **CALDB degradation**
 Be sure to have your calibration database installed under $CTOOLS/share. You can pass a single CALDB or a list, the degraded version will placed along side the nominal one. It will have the same suffix, replacing "prod" with "degr" (i.e., prod2 --> degr2).
@@ -40,9 +78,9 @@ Be sure to have your calibration database installed under $CTOOLS/share. You can
 python degradation_caldb.py --caldb prod3b pro3b-v2
 ```
 
-Note: corrently the code simply halves the affective area (and consequently renormalise the background rates).
+Note: currently the code simply halves the affective area (and consequently renormalise the background rates).
 
-### **Pipeline**
+### RTAscience
 To extract spectra and lightcurves from the templates (one, a list or the entire sample):
 
 ```bash

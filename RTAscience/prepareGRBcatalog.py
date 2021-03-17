@@ -33,6 +33,10 @@ else:
     runids = cfg.get('runid')
 runids = sorted(runids)
 
+# check scalefluxfactor ---!
+if cfg.get('scalefluxfactor') == None:
+    raise ValueError('The parameter "scalefluxfactor" must be int or float. If you want to use the nominal template, please set scalefluxfactor=1.')
+
 # conditions control ---!
 set_ebl = cfg.get('set_ebl')  # uses the EBL absorbed template
 # paths ---!
@@ -62,9 +66,12 @@ for runid in runids:
     grbpath = join(datapath, 'obs', runid)  # folder that will host the phlist 
     if not isdir(grbpath):
         os.mkdir(grbpath)
+    
     # grb files ---!
     template =  join(os.path.expandvars(cfg.get('catalog')), f'{runid}.fits')  # grb FITS template data
     model_pl = pl_template.replace('grb_file_model.xml', f'{runid}.xml')  # grb XML template model
+    if not isdir(join(datapath, f'extracted_data')):
+        os.mkdir(join(datapath, f'extracted_data'))
     tcsv = join(datapath, f'extracted_data/{runid}/time_slices.csv')  # grb template time grid
     if not os.path.isfile(template):
         raise ValueError(f'Template {runid} FITS not found')
