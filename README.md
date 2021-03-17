@@ -18,6 +18,7 @@ To complete the environment be sure to download and install the correct IRFs (on
 Under cfg you can find an example of configuration file. Description of each parameter is commented within. This file will serve as input when running the code. 
 
 *__Required config parameters__*
+
 Those with * are required only if offset = gw!
 
 1. prepareGRBcatalog.py
