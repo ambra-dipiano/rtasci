@@ -61,14 +61,14 @@ for runid in runids:
     tcsv = join(datapath, f'extracted_data/{runid}/time_slices.csv')  # times table 
     if not isfile(tcsv):
         raise ValueError(f'Data from {runid} have not been correctly extracted.')
-    mergerpath = os.path.expandvars(cfg.get('merger'))
-    mergermap = get_mergermap(runid, mergerpath)
-    if mergermap == None:
-        print(f'Skip runid {runid}. ')
-        continue
 
     # get alert pointing
     if type(cfg.get('offset')) == str and cfg.get('offset').lower() == 'gw':
+        mergerpath = os.path.expandvars(cfg.get('merger'))
+        mergermap = get_mergermap(runid, mergerpath)
+        if mergermap == None:
+            print(f'Skip runid {runid}. ')
+            continue
         pointing = get_alert_pointing_gw(mergermap)
     else:
         pointing = list(get_pointing(f"{os.path.expandvars(cfg.get('catalog'))}/{runid}.fits"))
