@@ -66,7 +66,8 @@ for runid in runids:
     # grb files ---!
     template =  join(os.path.expandvars(cfg.get('catalog')), f'{runid}.fits')  # grb FITS template data
     model_pl = pl_template.replace('grb_file_model.xml', f'{runid}.xml')  # grb XML template model
-    os.mkdir(join(datapath, f'extracted_data'))
+    if not isdir(join(datapath, f'extracted_data')):
+        os.mkdir(join(datapath, f'extracted_data'))
     tcsv = join(datapath, f'extracted_data/{runid}/time_slices.csv')  # grb template time grid
     if not os.path.isfile(template):
         raise ValueError(f'Template {runid} FITS not found')
