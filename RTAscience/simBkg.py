@@ -10,6 +10,7 @@
 import numpy as np
 import os, argparse
 from time import time
+from shutil import copy
 from astropy.io import fits
 from multiprocessing import Pool
 from os.path import isdir, isfile, join, expandvars
@@ -51,6 +52,11 @@ def main(args):
         pointing[0] += 0.0
         pointing[1] += cfg.get('offset')
 
+    # Dumping the Conf object to txt file
+    dumpedConfig = os.path.join(bkgpath, "config.yaml")
+    if not os.path.isfile(dumpedConfig):
+        copy(args.cfgfile, str(dumpedConfig))
+        
     # ---------------------------------------------------- loop trials ---!!!
     if args.mp_enabled:
             

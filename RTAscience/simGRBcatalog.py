@@ -12,6 +12,7 @@ import sys
 import argparse
 import numpy as np
 from time import time
+from shutil import copy
 from astropy.io import fits
 from multiprocessing import Pool
 from os.path import isdir, join, isfile
@@ -24,6 +25,7 @@ from RTAscience.lib.RTAUtils import get_alert_pointing_gw, get_mergermap, get_po
 
 def main(args):
     cfg = Config(args.cfgfile)
+
     # GRB ---!
     if cfg.get('runid') == 'all':
         runids = [f.replace('.fits', '') for f in os.listdir(cfg.get('catalog')) if isfile(join(cfg.get('catalog'), f))]
@@ -77,6 +79,10 @@ def main(args):
                 pointing[0] += 0.0
                 pointing[1] += cfg.get('offset')
 
+        # Dumping the Conf object to txt file
+        dumpedConfig = os.path.join(grbpath, "config.yaml")
+        if not os.path.isfile(dumpedConfig):
+            copy(args.cfgfile, str(dumpedConfig))
 
         # ---------------------------------------------------- loop trials ---!!!
         if args.mp_enabled:
