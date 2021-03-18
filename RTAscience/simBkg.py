@@ -61,7 +61,6 @@ else:
         pointing[0] += 0.0
         pointing[1] += cfg.get('offset')
 
-print(pointing)
 for i in range(trials):
     count = cfg.get('start_count') + i + 1
     name = f'bkg{count:06d}'
