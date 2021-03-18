@@ -30,6 +30,10 @@ def main(args):
         raise ValueError('This script only allows bakground simulations')
     trials = cfg.get('trials')  # trials
     tobs = cfg.get('tobs')  # total obs time (s)
+    runid = cfg.get('runid')
+    if type(runid) != str or runid == 'all':
+        raise ValueError('Currently only 1 runid is allowed.')
+
 
     # paths ---!
     datapath = cfg.get('data')
@@ -44,13 +48,24 @@ def main(args):
     bkg_model = expandvars(cfg.get('bkg'))  # XML background model
 
     # ------------------------------------------------------- loop runid --- !!!
-    pointing = [0., 0.]
-    if pointing[1] < 0:
-        pointing[0] += 0.0
-        pointing[1] += -cfg.get('offset')
+    # get alert pointing
+    if type(cfg.get('offset')) == str and cfg.get('offset').lower() == 'gw':
+        mergerpath = os.path.expandvars(cfg.get('merger'))
+        mergermap = get_mergermap(runid, mergerpath)
+        if mergermap == None:
+            raise ValueError(f'Merger map of runid {runid} not found. ')
+        pointing = get_alert_pointing_gw(mergermap)
     else:
-        pointing[0] += 0.0
-        pointing[1] += cfg.get('offset')
+        if runid == 'crab':
+            pointing = [83.6331, 22.0145]
+        else:
+            pointing = list(get_pointing(f"{os.path.expandvars(cfg.get('catalog'))}/{runid}.fits"))
+        if pointing[1] < 0:
+            pointing[0] += 0.0
+            pointing[1] += -cfg.get('offset')
+        else:
+            pointing[0] += 0.0
+            pointing[1] += cfg.get('offset')
 
     # Dumping the Conf object to txt file
     dumpedConfig = os.path.join(bkgpath, "config.yaml")
