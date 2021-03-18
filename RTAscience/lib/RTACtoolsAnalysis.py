@@ -83,7 +83,7 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
         return
 
     # ctskymap wrapper ---!
-    def run_skymap(self, wbin=0.02, roi_factor=2/np.sqrt(2)):
+    def run_skymap(self, wbin=0.02, roi_factor=2):
         '''Wrapper of ctskymap.'''
         nbin = int(self.roi * roi_factor / wbin)
         skymap = ctools.ctskymap()
