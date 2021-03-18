@@ -142,10 +142,10 @@ path:
             print(f"Mean: {np.array(times).mean()}")
 
     def simulate_trial(self, args_tuple):
+        start_t = time()
         cfg = args_tuple[0]
         seed = args_tuple[1]
         print(f"\nSimulation for trial: {seed} started.")
-        start_t = time()
         tobs = cfg.get('tobs')  # total obs time (s)
         onset = cfg.get('onset') # time of bkg only a.k.a. delayed onset of burst (s)
         tmax = tobs-onset  # total src exposure time (s)
@@ -267,43 +267,3 @@ if __name__=='__main__':
 
     grbSim = GRBSimulator(args)
     grbSim.start_simulation(args.ncpu)
-
-
-
-
-"""
-BUG:
-    15, 68, 84 -> trials that gives:
-
-Traceback (most recent call last):
-  File "/data01/home/baroncelli/.conda/envs/bphd/lib/python3.7/multiprocessing/pool.py", line 121, in worker
-    result = (True, func(*args, **kwds))
-  File "/data01/home/baroncelli/.conda/envs/bphd/lib/python3.7/multiprocessing/pool.py", line 44, in mapstar
-    return list(map(*args))
-  File "simGRB.py", line 177, in simulate_trial
-    sim.shiftTemplateTime(phlist=event_bins, time_shift=onset)
-  File "/data01/home/baroncelli/phd/repos/cta-sag-sci/RTAscience/lib/RTACtoolsSimulation.py", line 464, in shiftTemplateTime
-    times = hdul[1].data.field('TIME')
-  File "/data01/home/baroncelli/.conda/envs/bphd/lib/python3.7/site-packages/astropy/io/fits/fitsrec.py", line 694, in field
-    column = self.columns[key]
-  File "/data01/home/baroncelli/.conda/envs/bphd/lib/python3.7/site-packages/astropy/io/fits/column.py", line 1644, in __getitem__
-    key = _get_index(self.names, key)
-  File "/data01/home/baroncelli/.conda/envs/bphd/lib/python3.7/site-packages/astropy/io/fits/column.py", line 2046, in _get_index
-    raise KeyError(f"Key '{key}' does not exist.")
-KeyError: "Key 'TIME' does not exist."
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "simGRB.py", line 230, in <module>
-    grbSim.start_simulation(args.ncpu)
-  File "simGRB.py", line 97, in start_simulation
-    times = p.map(self.simulate_trial, [ (self.cfg,seed) for seed in seeds])
-  File "/data01/home/baroncelli/.conda/envs/bphd/lib/python3.7/multiprocessing/pool.py", line 268, in map
-    return self._map_async(func, iterable, mapstar, chunksize).get()
-  File "/data01/home/baroncelli/.conda/envs/bphd/lib/python3.7/multiprocessing/pool.py", line 657, in get
-    raise self._value
-KeyError: "Key 'TIME' does not exist."
-
-
-"""
