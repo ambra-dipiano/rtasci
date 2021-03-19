@@ -718,7 +718,7 @@ class Analysis() :
 
   # ctskymap wrapper ---!
   def eventSkymap(self, wbin=0.02):
-    nbin = int(self.roi / wbin)
+    nbin=int(self.roi*2/np.sqrt(2)/wbin)
     skymap = ctools.ctskymap()
     skymap['inobs'] = self.input
     skymap['outmap'] = self.output

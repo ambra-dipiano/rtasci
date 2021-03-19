@@ -16,7 +16,6 @@ from shutil import copy
 from astropy.io import fits
 from multiprocessing import Pool
 from os.path import isdir, join, isfile
-
 from RTAscience.cfg.Config import Config
 from RTAscience.lib.RTAManageXml import ManageXml
 from RTAscience.lib.RTACtoolsSimulation import RTACtoolsSimulation, make_obslist
@@ -25,7 +24,6 @@ from RTAscience.lib.RTAUtils import get_alert_pointing_gw, get_mergermap, get_po
 
 def main(args):
     cfg = Config(args.cfgfile)
-
     # GRB ---!
     if cfg.get('runid') == 'all':
         runids = [f.replace('.fits', '') for f in os.listdir(cfg.get('catalog')) if isfile(join(cfg.get('catalog'), f))]
@@ -85,28 +83,23 @@ def main(args):
             copy(args.cfgfile, str(dumpedConfig))
 
         # ---------------------------------------------------- loop trials ---!!!
-        if args.mp_enabled:
-                
+        if args.mp_enabled:                
             with Pool(args.mp_threads) as p:
                 times = p.map(simulateTrial, [ (i, cfg, pointing, tmax, datapath, runid, tcsv, grbpath, bkg_model) for i in range(trials)])
-
         else:
-            
             for i in range(trials):
                 times = simulateTrial((i, cfg, pointing, tmax, datapath, runid, tcsv, grbpath, bkg_model))
-
-        if len(times) > 1:
-            print(f"Trial elapsed time (mean): {np.array(times).mean()}")
-        else:
-            print(f"Trial elapsed time: {times[0]}")    
-
+        # time ---!
+        if args.print.lower() == 'true':
+            if len(times) > 1:
+                print(f"Trial elapsed time (mean): {np.array(times).mean()}")
+            else:
+                print(f"Trial elapsed time: {times[0]}")    
         print('\n... done.\n')
-
 
 
 def simulateTrial(trial_args):
     start_t = time()
-
     i=trial_args[0]
     cfg=trial_args[1]
     pointing=trial_args[2]
@@ -116,7 +109,7 @@ def simulateTrial(trial_args):
     tcsv=trial_args[6]
     grbpath=trial_args[7]
     bkg_model=trial_args[8]
-
+    # initialise ---!
     count = cfg.get('start_count') + i + 1
     name = f'ebl{count:06d}'
     # setup ---!
@@ -134,36 +127,27 @@ def simulateTrial(trial_args):
     tgrid, tbin_start, tbin_stop = sim.getTimeSlices(GTI=(cfg.get('delay'), tmax), return_bins=True) 
 
     # -------------------------------------------------------- simulate ---!!!
-    print('Simulate Bkg+GRB with template')
+    print(f'Simulate template seed={sim.seed}')
     for j in range(tbin_stop-tbin_start-1):
-        sim.t = [tgrid[j], tgrid[j + 1]]
-        print(f'GTI (bin) = {sim.t}')
+        sim.t = [tgrid[j]+cfg.get('onset'), tgrid[j + 1]+cfg.get('onset')]
+        if args.print.lower() == 'true':
+            print(f'GTI (bin) = {sim.t} s')
         sim.model = join(datapath, f'extracted_data/{runid}/{runid}_tbin{tbin_start+j:02d}.xml')
         event = join(grbpath, f'{name}_tbin{tbin_start+j:02d}.fits')
         event_bins.append(event)
         sim.output = event
         sim.run_simulation()
-        if args.print.lower() == 'true':
-            h = fits.open(event)
-            print('Check GTI and EVENTS time range:')
-            print('----------')
-            print(h[2].data)
-            print(h[1].data.field('TIME').min(), h[1].data.field('TIME').max())
-            print('----------')
-            h.close()
     # -------------------------------------------- shift time --- !!!
     if cfg.get('onset') != 0:
         if cfg.get('delay') != 0:
             raise ValueError('Bad configuration. Either "onset" or "delay" must be equal to 0.')
-        onset = cfg.get('onset')
-        print(f'Shift template of {onset} s after the start of the observation')
-        sim.shiftTemplateTime(phlist=event_bins, time_shift=onset)
-
         # ------------------------------------ add background --- !!!
         print('Simulate bkg to append before the burst')
         bkg = os.path.join(grbpath, f'bkg{count:06d}.fits')
         event_bins.insert(0, bkg)
-        sim.t = [0, onset]
+        sim.t = [0, cfg.get('onset')]
+        if args.print.lower() == 'true':
+            print(f"GTI (bkg) = {sim.t)} s")
         sim.model = bkg_model
         sim.output = bkg
         sim.run_simulation()
@@ -174,10 +158,7 @@ def simulateTrial(trial_args):
         phlist = join(grbpath, f'{name}.fits')
         sim.input = event_bins
         sim.output = phlist
-        if cfg.get('delay') != 0:
-            sim.appendEventsSinglePhList(GTI=[cfg.get('delay'), cfg.get('delay')+cfg.get('tobs')])
-        elif cfg.get('onset'):
-            sim.appendEventsSinglePhList(GTI=[0, cfg.get('tobs')])
+        sim.appendEventsSinglePhList(GTI=[cfg.get('delay'), cfg.get('delay')+cfg.get('tobs')])
         if args.print.lower() == 'true':
             h = fits.open(phlist)
             print('Check GTI and EVENTS time range:')
@@ -198,16 +179,16 @@ def simulateTrial(trial_args):
         # remove bins ---!
         os.system('rm ' + join(grbpath, f'{name}*tbin*'))
         if cfg.get('onset') != 0:
-            # remove bkg bin ---!
-            os.system('rm ' + join(grbpath, f'{name.replace("ebl", "bkg")}.fits'))
-    
+            # remove bkg ---!
+            os.system('rm ' + join(grbpath, f'{name.replace("ebl", "bkg")}*'))
+    # time ---!   
     elapsed_t = time()-start_t
-    print(f"Trial {count} took {elapsed_t} seconds")
+    if args.print.lower() == 'true':
+        print(f"Trial {count} took {elapsed_t} seconds")
     return (count, elapsed_t)
 
 
 if __name__=='__main__':
-
     parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
     parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
     parser.add_argument('--merge', type=str, default='true', help='Merge in single phlist (true) or use observation library (false)')
@@ -217,5 +198,4 @@ if __name__=='__main__':
     parser.add_argument('-mpt', '--mp-threads', type=int, default=4, help='The size of the threads pool') 
 
     args = parser.parse_args()
-
     main(args)

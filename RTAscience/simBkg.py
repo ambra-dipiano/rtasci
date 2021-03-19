@@ -14,7 +14,6 @@ from shutil import copy
 from astropy.io import fits
 from multiprocessing import Pool
 from os.path import isdir, isfile, join, expandvars
-
 from RTAscience.cfg.Config import Config
 from RTAscience.lib.RTAManageXml import ManageXml
 from RTAscience.lib.RTACtoolsSimulation import RTACtoolsSimulation
@@ -22,9 +21,7 @@ from RTAscience.lib.RTAUtils import get_pointing, get_mergermap, get_alert_point
 
 
 def main(args):
-
     cfg = Config(args.cfgfile)
-
     # general ---!
     if cfg.get('simtype').lower() != 'bkg':
         raise ValueError('This script only allows bakground simulations')
@@ -33,7 +30,6 @@ def main(args):
     runid = cfg.get('runid')
     if type(runid) != str or runid == 'all':
         raise ValueError('Currently only 1 runid is allowed.')
-
 
     # paths ---!
     datapath = cfg.get('data')
@@ -74,25 +70,21 @@ def main(args):
         
     # ---------------------------------------------------- loop trials ---!!!
     if args.mp_enabled:
-            
         with Pool(args.mp_threads) as p:
             times = p.map(simulateTrial, [ (i, cfg, pointing, bkg_model, bkgpath, tobs) for i in range(trials)])
-
     else:
-        
         for i in range(trials):
             times = simulateTrial((i, cfg, pointing, bkg_model, bkgpath, tobs))
-
-    if len(times) > 1:
-        print(f"Trial elapsed time (mean): {np.array(times).mean()}")
-    else:
-        print(f"Trial elapsed time: {times[0]}")    
-
+    # time ---!
+    if args.print.lower() == 'true':
+        if len(times) > 1:
+            print(f"Trial elapsed time (mean): {np.array(times).mean()}")
+        else:
+            print(f"Trial elapsed time: {times[0]}")    
     print('\n... done.\n')
 
 
 def simulateTrial(trial_args):
-
     start_t = time()
     i=trial_args[0]
     cfg=trial_args[1]
@@ -100,7 +92,7 @@ def simulateTrial(trial_args):
     bkg_model=trial_args[3]
     bkgpath=trial_args[4]
     tobs=trial_args[5]
-
+    # initialise ---!
     count = cfg.get('start_count') + i + 1
     name = f'bkg{count:06d}'
     # setup ---!
@@ -112,26 +104,25 @@ def simulateTrial(trial_args):
     sim.irf = cfg.get('irf')
     sim.roi = cfg.get('roi')
 
-    print('Simulate empty fields')
+    print(f"Simulate empty fields for runid = {cfg.get('runid')}")
     sim.seed = count
     sim.t = [0, tobs]
     bkg = os.path.join(bkgpath, f'{name}.fits')
     sim.model = bkg_model
     sim.output = bkg
     sim.run_simulation()
-
-
+    # time ---!
     elapsed_t = time()-start_t
-    print(f"Trial {count} took {elapsed_t} seconds.")
+    if args.print.lower() == 'true':
+        print(f"Trial {count} took {elapsed_t} seconds.")
     print('.. done')
-
     return (count, elapsed_t)
 
 
 if __name__=='__main__':
-
     parser = argparse.ArgumentParser(description='Simulate empty fields.')
     parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
+    parser.add_argument('--print', type=str, default='false', help='Print out results')
     parser.add_argument('-mp', '--mp-enabled', type=str, default='false', help='To parallelize trials loop')
     parser.add_argument('-mpt', '--mp-threads', type=int, default=4, help='The size of the threads pool') 
     args = parser.parse_args()

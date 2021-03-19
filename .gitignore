@@ -21,6 +21,8 @@ RTAscience/thesis/wilks.xml
 RTAscience/thesis/rta-test
 env.sh
 loadenv.sh
+RTAscience/misc/notebooks/comparison*
+RTAscience/misc/notebooks/check*
 
 # folders
 .*/
