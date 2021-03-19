@@ -21,7 +21,7 @@ RTAscience/thesis/wilks.xml
 RTAscience/thesis/rta-test
 env.sh
 loadenv.sh
-RTAscience/misc/notebooks/comparison*
+RTAscience/misc/notebooks/compar*
 RTAscience/misc/notebooks/check*
 
 # folders
@@ -31,7 +31,8 @@ RTAscience/misc/notebooks/check*
 !RTAscience/cfg/
 RTAscience/lib/old*
 RTAscience/lib/__pycache__/*
-#RTAscience/notebooks
+RTAscience/notebooks
+RTAscience/jnotebooks
 phd
 
 __pycache__
