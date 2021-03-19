@@ -13,7 +13,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import astropy.visualization as avis
-from os.path import join
+from os.path import join, isdir, expandvars
 from astropy.io import fits
 from matplotlib.colors import SymLogNorm
 from matplotlib import rc
@@ -31,6 +31,11 @@ def handleReg(reg, col='black'):
   r = pyregion.open(reg)
   r[0].attr[1]['color'] = col
   return r
+
+def checkPath(png):
+  if not isdir(png):
+    png = expandvars('$PWD')
+  return png
 
 # plot sky map ---!
 def plotSkymap(file, reg='none', col='green', suffix='none', title='skymap', xlabel='R.A. (deg)', ylabel='Dec (deg)', fontsize=20, figsize=(10, 8), rotation=0, show=False, sns_style=False, usetex=False, png=None):
@@ -73,6 +78,7 @@ def plotSkymap(file, reg='none', col='green', suffix='none', title='skymap', xla
   plt.tight_layout()
   # save fig ---!
   head, tail = os.path.split(file)
+  png = checkPath(png)
   if suffix != 'none':
     plt.savefig(join(png, tail.replace('.fits', '_%s.png' % suffix)))
   else:
@@ -109,6 +115,7 @@ def plotResmap(file, reg='none', col='black', suffix='none', title='map redisual
   plt.title(title, fontsize=fontsize)
   plt.colorbar().set_label('Significance $\sigma$')
   # save fig ---!
+  png = checkPath(png)
   if suffix != 'none':
     plt.savefig(file.replace('.fits', '_%s.png' % suffix))
   else:
@@ -194,6 +201,7 @@ def plotButterfly(file, flux_pnts=0.0, fluxEn_pnts=0.0, suffix='none', title='fl
   plt.legend(loc=0)
   plt.grid(True)
   # save fig ---!
+  png = checkPath(png)
   if suffix != 'none':
     plt.savefig(file.replace('.txt', '_%s.png' % suffix))
   else:
