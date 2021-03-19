@@ -137,7 +137,6 @@ def simulateTrial(trial_args):
         event_bins.append(event)
         sim.output = event
         sim.run_simulation()
-
     # -------------------------------------------- shift time --- !!!
     if cfg.get('onset') != 0:
         if cfg.get('delay') != 0:
