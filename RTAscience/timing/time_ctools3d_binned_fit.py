@@ -16,23 +16,27 @@ first = sys.argv[2]
 # start timing
 t = time.time()
 clock0 = time.time()
-from lib.RTACtoolsAnalysis import RTACtoolsAnalysis, make_obslist
-from lib.RTAUtils import *
-from lib.RTAManageXml import ManageXml
+from RTAscience.lib.RTACtoolsSimulation import make_obslist
+from RTAscience.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
+from RTAscience.lib.RTAUtils import *
+from RTAscience.lib.RTAManageXml import ManageXml
+from RTAscience.lib.RTACtoolsBase import *
 timport = time.time() - t
 print(f'Imports : {timport} s\n')
 
 t = time.time()
-rootpath = str(os.path.dirname(os.path.abspath(__file__))).replace('cta-sag-sci', '')
-obspath = f'{rootpath}/DATA/selections/crab/'
+edisp = True
+rootpath = "/data01/homes/cta/gammapy_integration"
+obspath = f'{rootpath}/DATA/obs/crab/'
 rtapath = f'{rootpath}/DATA/rta_products/crab/'
 modelpath = f'{rootpath}/DATA/models/'
 filename = f'{obspath}crab_offax_texp{texp}s_n01.fits'
 obslist = filename.replace('.fits', '_obs.xml')
 cube = filename.replace(obspath,rtapath).replace('.fits','_cube.xml')
-expcube = cube.replace('.xml', '_exp.xml')
-psfcube = cube.replace('.xml', '_psf.xml')
-bkgcube = cube.replace('.xml', '_bkg.xml')
+expcube = cube.replace('.xml', '_exp.fits')
+psfcube = cube.replace('.xml', '_psf.fits')
+edispcube = cube.replace('.xml', '_edisp.fits')
+bkgcube = cube.replace('.xml', '_bkg.fits')
 inmodel = f'{modelpath}crab.xml'
 outmodel = cube.replace('.xml', '_model.xml')
 fitname = filename.replace(obspath,rtapath).replace('.fits', '_fit.xml')
@@ -48,14 +52,15 @@ print(f'Observation: {tobs} s\n')
 # initialise + binning
 t = time.time()
 analysis = RTACtoolsAnalysis()
-analysis.nthreads = 1
 analysis.caldb = 'prod3b-v2'
 analysis.irf = 'South_z20_0.5h'
 analysis.e = [0.05, 20]
+analysis.t = [0, texp]
+analysis.roi = 2.5
 analysis.usepnt = True
 analysis.input = obslist
 analysis.output = cube
-analysis.run_binning(prefix=cube.replace('.xml','_'), ebins=10)
+analysis.run_binning(prefix=cube.replace('.xml','_'), ebins=30, wbin=0.02)
 tcube = time.time() - t
 print(f'Binning: {tcube} s\n')
 
@@ -63,7 +68,10 @@ print(f'Binning: {tcube} s\n')
 t = time.time()
 analysis.input = obslist
 analysis.output = expcube
-analysis.run_expcube(cube=cube.replace('.xml','_cta.fits'), ebins=10)
+if edisp:
+    analysis.run_expcube(cube=cube.replace('.xml','_cta_01.fits'), ebins=30, wbin=0.02)
+else:
+    analysis.run_expcube(cube=cube.replace('.xml','_cta.fits'), ebins=30, wbin=0.02)
 texpcube = time.time() - t
 print(f'Exp. cube: {texpcube} s\n')
 
@@ -71,16 +79,34 @@ print(f'Exp. cube: {texpcube} s\n')
 t = time.time()
 analysis.input = obslist
 analysis.output = psfcube
-analysis.run_psfcube(cube=cube.replace('.xml','_cta.fits'), ebins=10)
+if edisp:
+    analysis.run_psfcube(cube=cube.replace('.xml','_cta_01.fits'), ebins=30, wbin=0.5)
+else:
+    analysis.run_psfcube(cube=cube.replace('.xml','_cta.fits'), ebins=30, wbin=0.5)
 tpsfcube = time.time() - t
 print(f'Psf. cube: {tpsfcube} s\n')
+
+if edisp:
+    # edisp cube
+    t = time.time()
+    analysis.input = obslist
+    analysis.output = edispcube
+    analysis.run_edispcube(cube=cube.replace('.xml','_cta_01.fits'), ebins=30, wbin=0.5)
+    tedispcube = time.time() - t
+    print(f'Edisp. cube: {tedispcube} s\n')
+else:
+    tedispcube = np.nan
+    edispcube=None
 
 # bkg cube
 t = time.time()
 analysis.input = obslist
 analysis.model = inmodel
 analysis.output = bkgcube
-analysis.run_bkgcube(cube=cube.replace('.xml','_cta.fits'), model=outmodel)
+if edisp:
+    analysis.run_bkgcube(cube=cube.replace('.xml','_cta_01.fits'), model=outmodel)
+else:
+    analysis.run_bkgcube(cube=cube.replace('.xml','_cta.fits'), model=outmodel)
 tbkgcube = time.time() - t
 print(f'Bkg. cube: {tbkgcube} s\n')
 
@@ -88,7 +114,7 @@ print(f'Bkg. cube: {tbkgcube} s\n')
 t = time.time()
 xml = ManageXml(outmodel)
 xml.setTsTrue() 
-xml.parametersFreeFixed(src_free=['Prefactor'])
+xml.parametersFreeFixed(src_free=['Prefactor'], bkg_free=['Prefactor', 'Index'])
 xml.closeXml()
 tmodel = time.time() - t
 print(f'Modelling: {tmodel} s\n')
@@ -97,7 +123,7 @@ print(f'Modelling: {tmodel} s\n')
 analysis.input = cube
 analysis.model = outmodel
 analysis.output = fitname
-analysis.run_maxlikelihood(binned=True, exp=expcube, psf=psfcube, bkg=bkgcube)
+analysis.run_maxlikelihood(binned=True, edisp=edisp, exp=expcube, psf=psfcube, bkg=bkgcube, edispcube=edispcube)
 tfit = time.time() - t
 print(f'Fitting: {tfit} s\n')
 
@@ -117,6 +143,8 @@ t = time.time()
 spectra = results.getSpectral()
 index, pref, pivot = spectra[0][0], spectra[1][0], spectra[2][0]
 err = results.getPrefError()[0]
+print(f'pref={pref}')
+print(analysis.e)
 phflux = phflux_powerlaw(index, pref, pivot, analysis.e, unit='TeV')
 phflux_err = phflux_powerlaw(index, err, pivot, analysis.e, unit='TeV')
 print(f'PH-FLUX {phflux} +/- {phflux_err}\n')
@@ -128,16 +156,17 @@ print(f'Total time: {ttotal} s\n')
 print('\n\n-----------------------------------------------------\n\n')
 
 logname = f'{rootpath}/DATA/outputs/crab/ctools3d_binned_fit.csv'
+row = f'{texp} {np.sqrt(ts)} {phflux} {phflux_err} {ttotal} {timport} {tsetup} {tobs} {tcube} {texpcube} {tpsfcube} {tedispcube} {tbkgcube} {tmodel} {tfit} {tstat} {tflux}\n'
 if first == 'True':
-    hdr = 'texp sqrt_ts flux flux_err ttotal timport tsetup tobs tcube texpcube tpsfcube tbkgcube tmodel tfit tstat tflux\n'
+    hdr = 'texp sqrt_ts flux flux_err ttotal timport tsetup tobs tcube texpcube tpsfcube tedispcube tbkgcube tmodel tfit tstat tflux\n'
     log = open(logname, 'w+')
     log.write(hdr)
-    log.write(f'{texp} {np.sqrt(ts)} {phflux} {phflux_err} {ttotal} {timport} {tsetup} {tobs} {tcube} {texpcube} {tpsfcube} {tbkgcube} {tmodel} {tfit} {tstat} {tflux}\n')
+    log.write(row)
     log.close()
 else:
     log = open(logname, 'a')
-    log.write(f'{texp} {np.sqrt(ts)} {phflux} {phflux_err} {ttotal} {timport} {tsetup} {tobs} {tcube} {texpcube} {tpsfcube} {tbkgcube} {tmodel} {tfit} {tstat} {tflux}\n')
+    log.write(row)
     log.close()
 
-
+print(row)
 
