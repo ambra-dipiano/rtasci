@@ -12,20 +12,20 @@ import argparse
 # ---------------------------------------------------------------------------- !
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--infile', type=str, default='cfg/myconfig.yml', help='yaml configuration file')
-parser.add_argument('--tt', type=float, default=10000, help='total trials')
-parser.add_argument('--tn', type=float, default=500, help='trials per node')
-parser.add_argument('--delay', type=float, default=50, help='delay')
+parser.add_argument('-f', '--infile', type=str, default='cfg/myconfig.yml', help='yaml configuration file')
+parser.add_argument('--tt', type=float, default=1000000, help='total trials')
+parser.add_argument('--tn', type=float, default=25000, help='trials per node')
+parser.add_argument('--delay', type=float, default=0, help='delay')
 parser.add_argument('--off', type=str, default='gw', help='offset')
 parser.add_argument('--flux', type=float, default=1, help='flux scaling factor')
 parser.add_argument('--env', type=str, default='ctools', help='environment to activate')
+parser.add_argument('--pipe', type=str, default='wilks', help='pipeline to run')
 args = parser.parse_args()
 
 #print(args)
 
 # compose file path
 filename = os.path.join(os.path.expandvars('$PWD'), args.infile)
-print(filename)
 if not os.path.isfile(filename):
     raise ValueError('yaml file not found')
 # load yaml
@@ -42,6 +42,7 @@ config['setup']['scalefluxfactor'] = args.flux
 config['options']['plotsky'] = False
 
 for i in range(int(args.tt/args.tn)):
+    print(f"run {i+1:02d}")
     # save new gonfig
     config['setup']['start_count'] = int(i*args.tn)
     outname = args.infile.replace('.yml',f'_trials{i*args.tn+1}-{(i+1)*args.tn}')
@@ -57,7 +58,11 @@ for i in range(int(args.tt/args.tn)):
         f. write('#!/bin/bash\n')
         f.write(f'\nsource activate {args.env}')
         f.write('\n\texport DATA=/data01/homes/cta/gammapy_integration/DATA/')
-        f.write(f'\n\tpython rtactools.py -f {yml}\n')
+        if args.pipe.lower() == 'pipe':
+            f.write(f'\n\tpython rtapipe.py -f {yml}\n')
+        elif args.pipe.lower() == 'wilks':
+            f.write(f'\n\tpython emptyfields.py -f {yml}\n')
+
 
     """ 
     # write job
