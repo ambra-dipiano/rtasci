@@ -83,7 +83,7 @@ class Config:
         
         # Add validations here
         
-        simTypeValues = ['grb', 'bkg', 'skip', 'wobble']
+        simTypeValues = ['grb', 'bkg', 'skip', 'wobble', 'wilks']
         if sectionDict['simtype'] not in simTypeValues:
             raise BadConfiguration(f'simtype={sectionDict["simtype"]} is not supported. Available values: {simTypeValues}')
 
