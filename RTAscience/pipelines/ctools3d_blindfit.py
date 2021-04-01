@@ -101,7 +101,10 @@ for runid in runids:
             # selection ---!
             selphlist = phlist.replace(f'{name}', f'texp{texp}s_{name}')
             grb = RTACtoolsAnalysis()
-            grb.configure(cfg)
+            grb.caldb = cfg.get('caldb')
+            grb.irf = cfg.get('irf')
+            grb.roi = cfg.get('roi')
+            grb.e = [cfg.get('emin'), cfg.get('emax')]
             grb.t = [cfg.get('delay'), cfg.get('delay')+texp]
             if args.print.lower() == 'true':
                 print(f"Selection t = {grb.t} s")
