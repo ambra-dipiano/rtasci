@@ -23,6 +23,7 @@ env.sh
 loadenv.sh
 RTAscience/misc/notebooks/compar*
 RTAscience/misc/notebooks/check*
+RTAscience/misc/notebooks
 
 # folders
 .*/
@@ -34,6 +35,7 @@ RTAscience/lib/__pycache__/*
 RTAscience/notebooks
 RTAscience/jnotebooks
 phd
+RTAscience/aph
 
 __pycache__
 *.egg-info
