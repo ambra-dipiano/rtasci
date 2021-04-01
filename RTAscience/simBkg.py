@@ -103,6 +103,8 @@ def simulateTrial(trial_args):
     sim.caldb = cfg.get('caldb')
     sim.irf = cfg.get('irf')
     sim.roi = cfg.get('roi')
+    sim.e = [cfg.get('emin'), cfg.get('emax')]
+
 
     print(f"Simulate empty fields for runid = {cfg.get('runid')}")
     sim.seed = count

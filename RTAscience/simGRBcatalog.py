@@ -114,7 +114,10 @@ def simulateTrial(trial_args):
     name = f'ebl{count:06d}'
     # setup ---!
     sim = RTACtoolsSimulation()
-    sim.configure(cfg)
+    sim.caldb = cfg.get('caldb')
+    sim.irf = cfg.get('irf')
+    sim.fov = cfg.get('roi')
+    sim.e = [cfg.get('emin'), cfg.get('emax')]
     sim.seed = count
     sim.set_ebl = cfg.get('set_ebl')
     sim.pointing = pointing
@@ -147,7 +150,7 @@ def simulateTrial(trial_args):
         event_bins.insert(0, bkg)
         sim.t = [0, cfg.get('onset')]
         if args.print.lower() == 'true':
-            print(f"GTI (bkg) = {sim.t)} s")
+            print(f"GTI (bkg) = {sim.t} s")
         sim.model = bkg_model
         sim.output = bkg
         sim.run_simulation()
