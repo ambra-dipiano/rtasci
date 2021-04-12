@@ -1065,7 +1065,7 @@ class Analysis() :
     return
 
   # cssens wrapper ---!
-  def eventSens(self, bins=20, wbin=0.05, enumbins=0):
+  def eventSens(self, bins=1, wbin=0.05, enumbins=0):
     sens = cscripts.cssens()
     nbin = int(self.roi / wbin)
     sens['inobs'] = self.input
