@@ -20,6 +20,7 @@ from RTAscience.lib.RTACtoolsSimulation import RTACtoolsSimulation
 from RTAscience.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
 from RTAscience.lib.RTAUtils import get_pointing, get_mergermap, get_alert_pointing_gw
 from RTAscience.lib.RTAVisualise import plotSkymap
+from RTAscience.aph.utils import *
 
 
 def main(args):
@@ -58,6 +59,8 @@ def main(args):
     # background model ---!
     bkg_model = expandvars(cfg.get('bkg'))  # XML background model
     logname = join(outpath, f"{cfg.get('caldb')}-{cfg.get('irf')}_seed{cfg.get('start_count')+1:06d}-{cfg.get('start_count')+1+trials:06d}_offset{cfg.get('offset')}.txt")
+    # true coords ---!
+    true_coords = get_pointing(f"{os.path.expandvars(cfg.get('catalog'))}/{runid}.fits")
 
     # get alert pointing
     if type(cfg.get('offset')) == str and cfg.get('offset').lower() == 'gw':
@@ -113,6 +116,15 @@ def main(args):
             an.input = bkg
             an.output = selphlist
             an.run_selection()
+            # aperture photometry ---!
+            if '.fits' in selphlist:
+                results = photometrics_counts(selphlist, pointing=pointing, true_coords=true_coords, events_type='events_filename')
+            elif '.xml' in selphlist:
+                results = photometrics_counts(selphlist, pointing=pointing, true_coords=true_coords, events_type='events_list')
+            sigma = li_ma(results['on'], results['off'], results['alpha'])
+            if args.print.lower() == 'true':
+                print('Photometry counts:', results)
+                print('Li&Ma significance:', sigma)
             # skymap ---!
             sky = selphlist.replace(bkgpath, rtapath).replace('.fits', '_sky.fits')
             if args.print.lower() == 'true':
@@ -148,21 +160,21 @@ def main(args):
             an.output = fit
             an.run_maxlikelihood()
             # stats ---!
-            results = ManageXml(fit)
+            xml = ManageXml(fit)
             try:
-                coords = results.getRaDec()
+                coords = xml.getRaDec()
                 ra = coords[0][0]
                 dec = coords[1][0]
-                ts = results.getTs()[0]
+                ts = xml.getTs()[0]
             except IndexError:
                 ts, ra, dec = np.nan, np.nan, np.nan
                 print('Candidate not found.')
 
-            row = f"{runid} {count} {texp} {ts} {ra} {dec} {cfg.get('offset')} {cfg.get('caldb')} {cfg.get('irf')}\n"
+            row = f"{runid} {count} {texp} {ts} {ra} {dec} {results['on']} {results['off']} {results['alpha']} {results['excess']} {sigma} {cfg.get('offset')} {cfg.get('caldb')} {cfg.get('irf')}\n"
             if args.print.lower() == 'true':
                 print(f"Results: {row}")
             if not isfile(logname):
-                hdr = 'runid seed texp sqrt_ts ra dec offset caldb irf\n'
+                hdr = 'runid seed texp ts ra dec oncounts offcounts alpha excess sigma offset caldb irf\n'
                 log = open(logname, 'w+')
                 log.write(hdr)
                 log.write(row)
@@ -173,11 +185,11 @@ def main(args):
                 log.close()
 
             del an
-    del sim
-    if args.remove.lower() == 'true':
-        # remove files ---!
-        os.system(f"rm {datapath}/obs/{runid}_background/*{name}*")
-        os.system(f"rm {datapath}/rta_products/{runid}_background/*{name}*")
+        del sim
+        if args.remove.lower() == 'true':
+            # remove files ---!
+            os.system(f"rm {datapath}/obs/{runid}_backgrounds/*{name}*")
+            os.system(f"rm {datapath}/rta_products/{runid}_backgrounds/*{name}*")
 
 
 
