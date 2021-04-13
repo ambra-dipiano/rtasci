@@ -22,10 +22,15 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
         self.__on_ram = on_ram
         self.model = str() 
         self.output, self.input = (str() for i in range(2))
+        self.caldb = 'prod2'  # caldb (str) ---!
+        self.irf = 'South_0.5h'  # irf (Str) ---!
         # condition control ---!
         self.set_debug = False  # set/unset debug mode for ctools ---!
         self.set_log = True  # set/unset logfiles for ctools ---!
+        self.edisp = False  # require enegy dispersion ---!
         # data ---!
+        self.e = [0.03, 150.0]  # energy range (TeV) ---!
+        self.roi = 5  # region of interest (deg) ---!
         self.t = [0, 1800]  # time range (s/MJD) ---!
         self.pointing = [83.63, 22.01]  # RA/DEC or GLON/GLAT (deg) ---!
         self.target = [83.63, 22.51]  # RA/DEC or GLON/GLAT (deg) ---!
@@ -48,8 +53,6 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
         self.exclrad = 0.5  # radius around candidate to exclude from further search ---!
         self.corr_kern = 'GAUSSIAN'  # smoothing type ---!
         self.corr_rad = 0.1  # radius for skymap smoothing ---!
-        self.fit_shape = False  # enable shape fitting
-        self.fit_post = False  # enable position fitting
         self.sgmrange = [0, 10]  # range of gaussian sigmas ---!
         self.confidence = 0.95  # confidence level (%) ---!
         self.eref = 1  # energy reference for flux computation ---!
@@ -83,9 +86,9 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
         return
 
     # ctskymap wrapper ---!
-    def run_skymap(self, wbin=0.02, roi_factor=2/np.sqrt(2)):
+    def run_skymap(self, wbin=0.02, roi_factor=1):
         '''Wrapper of ctskymap.'''
-        nbin = int(self.roi * roi_factor / wbin)
+        nbin = int(self.roi*2*roi_factor/wbin)
         skymap = ctools.ctskymap()
         skymap['inobs'] = self.input
         skymap['outmap'] = self.output
@@ -113,7 +116,7 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
         return
 
     # cssrcdetect wrapper ---!
-    def run_blindsearch(self):
+    def run_blindsearch(self, fit_pos=False, fit_shape=False):
         '''Wrapper of cssrcdetect.'''
         detection = cscripts.cssrcdetect()
         detection['inmap'] = self.input
@@ -121,8 +124,8 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
         detection['outds9file'] = self.output.replace('xml','reg')
         detection['srcmodel'] = self.src_type.upper()
         detection['bkgmodel'] = self.bkg_type.upper()
-        detection['fit_pos'] = self.fit_post
-        detection['fit_shape'] = self.fit_shape
+        detection['fit_pos'] = fit_pos
+        detection['fit_shape'] = fit_shape
         detection['threshold'] = int(self.sigma)
         detection['maxsrcs'] = self.max_src
         detection['exclrad'] = self.exclrad
@@ -140,7 +143,7 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
         return
 
     # csphagen wrapper ---!
-    def run_onoff(self, method='reflected', prefix='onoff', radius=0.2, ebins=10, ebins_alg='LOG', binfile=None, exp=None, use_model_bkg=True):
+    def run_onoff(self, method='reflected', prefix='onoff', maxoffset=2.5, radius=0.2, ebins=40, ebins_alg='LOG', binfile=None, exp=None, use_model_bkg=True, etruemin=0.01, etruemax=0.01, etruebins=30):
         '''Wrapper of csphagen.'''
         onoff = cscripts.csphagen()
         onoff['inobs'] = self.input
@@ -174,11 +177,11 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
         onoff['bkgregfile'] = self.output.replace('.xml', '_off.reg')
         onoff['bkgmethod'] = method.upper()
         onoff['use_model_bkg'] = use_model_bkg 
-        onoff['maxoffset'] = self.roi - 1
+        onoff['maxoffset'] = maxoffset
         onoff['stack'] = self.stack 
-        onoff['etruemin'] = self.e[0] * 0.2 
-        onoff['etruemax'] =  self.e[1] * 1.2
-        onoff['etruebins'] = round(ebins * 1.5) 
+        onoff['etruemin'] = etruemin
+        onoff['etruemax'] =  etruemax
+        onoff['etruebins'] = etruebins 
         onoff["nthreads"] = self.nthreads
         onoff['logfile'] = self.output.replace('.xml', '.log')
         onoff['debug'] = self.set_debug
@@ -191,8 +194,10 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
         return
 
     # ctbin wrapper ---!
-    def run_binning(self, prefix='cube_', ebins_alg='LOG', ebins=10, binfile=None, exp=None, nbins=(200,200), wbin=0.02):
+    def run_binning(self, prefix='cube_', ebins_alg='LOG', ebins=10, binfile=None, exp=None, nbins=None, wbin=0.02):
         '''Wrapper of ctbin.'''
+        if nbins == None:
+            nbins = int(self.roi * 2 / wbin)
         bins = ctools.ctbin()
         bins['inobs'] = self.input
         bins['outobs'] = self.output
@@ -208,8 +213,8 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
         if exp != None:
             bins['ebingamma'] = exp
         bins['usepnt'] = self.usepnt
-        bins['nxpix'] = nbins[0]
-        bins['nypix'] = nbins[1]
+        bins['nxpix'] = nbins
+        bins['nypix'] = nbins
         bins['binsz'] = wbin
         bins['coordsys'] = self.coord_sys
         bins['proj'] = self.proj
@@ -230,8 +235,10 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
         return
 
     # ctexpcube wrapper ---!
-    def run_expcube(self, cube, ebins=10, nbins=(200,200), wbin=0.02, ebin_alg='LOG', ebinfile=None, ebingamma=None, addbounds=False):
+    def run_expcube(self, cube, ebins=10, nbins=None, wbin=0.02, ebin_alg='LOG', ebinfile=None, ebingamma=None, addbounds=False):
         '''Wrapper of ctexpcube.'''
+        if nbins == None:
+            nbins = int(self.roi * 2 / wbin)
         exp = ctools.ctexpcube()
         exp['inobs'] = self.input
         exp['incube'] = cube
@@ -248,8 +255,8 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
             exp['ebingamma'] = ebingamma
         exp['addbounds'] = addbounds
         exp['usepnt'] = self.usepnt
-        exp['nxpix'] = nbins[0]
-        exp['nypix'] = nbins[1]
+        exp['nxpix'] = nbins
+        exp['nypix'] = nbins
         exp['binsz'] = wbin
         exp['coordsys'] = self.coord_sys
         exp['proj'] = self.proj
@@ -270,8 +277,10 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
         return
     
     # ctpsfcube wrapper ---!
-    def run_psfcube(self, cube, ebins=10, nbins=(200,200), wbin=0.02, amax=0.3, abins=200, ebin_alg='LOG', ebinfile=None, ebingamma=None, addbounds=False):
+    def run_psfcube(self, cube, ebins=10, nbins=None, wbin=0.02, amax=0.3, abins=200, ebin_alg='LOG', ebinfile=None, ebingamma=None, addbounds=False):
         '''Wrapper of ctpsfcube.'''
+        if nbins == None:
+            nbins = int(self.roi * 2 / wbin)
         psf = ctools.ctpsfcube()
         psf['inobs'] = self.input
         psf['incube'] = cube
@@ -288,8 +297,8 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
             psf['ebingamma'] = ebingamma
         psf['addbounds'] = addbounds
         psf['usepnt'] = self.usepnt
-        psf['nxpix'] = nbins[0]
-        psf['nypix'] = nbins[1]
+        psf['nxpix'] = nbins
+        psf['nypix'] = nbins
         psf['binsz'] = wbin
         psf['coordsys'] = self.coord_sys
         psf['proj'] = self.proj
@@ -309,6 +318,50 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
             psf.execute()
         else:
             psf.run()
+        return
+
+    # ctedispcube wrapper ---!
+    def run_edispcube(self, cube, ebins=10, nbins=None, wbin=1.0, migramax=2.0, migrabins=100, ebin_alg='LOG', ebinfile=None, ebingamma=None, addbounds=False):
+        '''Wrapper of ctedispcube.'''
+        if nbins == None:
+            nbins = int(self.roi * 2 / wbin)
+        edisp = ctools.ctedispcube()
+        edisp['inobs'] = self.input
+        edisp['incube'] = cube
+        edisp['caldb'] = self.caldb
+        edisp['irf'] = self.irf
+        edisp['outcube'] = self.output
+        edisp['ebinalg'] = ebin_alg
+        edisp['emin'] = self.e[0]
+        edisp['emax'] = self.e[1]
+        edisp['enumbins'] = ebins
+        if ebinfile != None:
+            edisp['ebinfile'] = ebinfile
+        if ebingamma != None:
+            edisp['ebingamma'] = ebingamma
+        edisp['addbounds'] = addbounds
+        edisp['usepnt'] = self.usepnt
+        edisp['nxpix'] = nbins
+        edisp['nypix'] = nbins
+        edisp['binsz'] = wbin
+        edisp['coordsys'] = self.coord_sys
+        edisp['proj'] = self.proj
+        if not self.usepnt:
+            edisp['xref'] = self.target[0] 
+            edisp['yref'] = self.target[1] 
+        edisp['migramax'] = migramax 
+        edisp['migrabins'] = migrabins
+        if '.fits' in self.output:
+            edisp['logfile'] = self.output.replace('.fits', '.log')
+        elif '.xml' in self.output:
+            edisp['logfile'] = self.output.replace('.xml', '.log')
+        edisp['debug'] = self.set_debug
+        if self.set_log:
+            edisp.logFileOpen()
+        if not self.__on_ram:
+            edisp.execute()
+        else:
+            edisp.run()
         return
 
     # ctbkgcube wrapper ---!
@@ -336,7 +389,7 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
         return
 
     # ctlike wrapper ---!
-    def run_maxlikelihood(self, binned=False, exp=None, bkg=None, psf=None, edisp=False, edispcube=None):
+    def run_maxlikelihood(self, binned=False, exp=None, bkg=None, psf=None, edisp=False, edispcube=None, fix_spat_for_ts=True):
         '''Wrapper of ctlike.'''
         like = ctools.ctlike()
         like['inobs'] = self.input
@@ -345,15 +398,17 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
             like['expcube'] = exp
             like['psfcube'] = psf
             like['bkgcube'] = bkg
+            if edisp:
+                like['edispcube'] = edispcube
         if edisp:
-            like['edispcube'] = edispcube
+            like['edisp'] = edisp
         like['outmodel'] = self.output
         like['caldb'] = self.caldb
         like['irf'] = self.irf
         like['refit'] = self.refit
         like['max_iter'] = self.max_iter
         like['like_accuracy'] = self.accuracy
-        like['fix_spat_for_ts'] = True
+        like['fix_spat_for_ts'] = fix_spat_for_ts
         like['statistic'] = self.stats
         like["nthreads"] = self.nthreads
         like['logfile'] = self.output.replace('.xml', '.log')

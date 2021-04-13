@@ -33,7 +33,7 @@ t = time.time()
 rootpath = str(os.path.dirname(os.path.abspath(__file__))).replace('cta-sag-sci/RTAscience/timing', '')
 caldb = f'{rootpath}/caldb/data/cta/prod3b-v2/bcf/South_z20_0.5h/irf_file.fits'
 irfs = load_cta_irfs(caldb)
-filename = f'{rootpath}/DATA/selections/crab/crab_onax_texp{texp}s_n01.fits'
+filename = f'{rootpath}/DATA/obs/crab/crab_offax_texp{texp}s_n01.fits'
 obs_id = 1
 print(f'Fits: {filename.replace(rootpath, "")}\n')
 tsetup = time.time() - t
@@ -72,18 +72,18 @@ config_3d.datasets.type = '3d'  # Analysis type is 3D
 config_3d.datasets.stack = False  # We keep track of datasets in all bunches
 # geometry of the map for 3d
 config_3d.datasets.geom.wcs.skydir = {'lon': pointing.ra, 'lat': pointing.dec, 'frame': 'icrs'}  
-config_3d.datasets.geom.wcs.fov = {'width': '6 deg', 'height': '6 deg'}
+config_3d.datasets.geom.wcs.fov = {'width': '10 deg', 'height': '10 deg'}
 config_3d.datasets.geom.wcs.binsize = '0.02 deg'
 # The FoV radius to use for cutouts
 config_3d.datasets.geom.selection.offset_max = 2.5 * u.deg
 # reconstructed energy axis for the counts map 
-config_3d.datasets.geom.axes.energy = dict(min= "0.05 TeV", max="10 TeV", nbins=10)
+config_3d.datasets.geom.axes.energy = dict(min= "0.05 TeV", max="20 TeV", nbins=30)
 # true energy axis for the IRF maps (should always be wider range and larger nbins)
-config_3d.datasets.geom.axes.energy_true = dict(min= "0.03 TeV", max="30 TeV", nbins=30)
+config_3d.datasets.geom.axes.energy_true = dict(min= "0.03 TeV", max="30 TeV", nbins=40)
 # backgroun
 config_3d.datasets.background = {'method': 'fov_background', 'exclusion': None}
 # safe mask from IRF and max offset
-config_3d.datasets.safe_mask.methods = ['aeff-default', 'offset-max']
+#config_3d.datasets.safe_mask.methods = ['aeff-default', 'offset-max']
 # what maps to compute
 config_3d.datasets.map_selection = ['counts', 'exposure', 'background', 'psf', 'edisp']
 # save the configuration for later and overwrite if already existing
@@ -106,7 +106,8 @@ print(f'Data Reduction : {tred} s\n')
 
 # target significance
 t = time.time()
-target = SkyCoord(pointing.ra.deg, pointing.dec.deg, unit='deg', frame='icrs')
+target = {'ra': 83.6331, 'dec': 22.0145}
+target = SkyCoord(target['ra'], target['dec'], unit='deg', frame='icrs')
 target_region = CircleSkyRegion(target.icrs, 0.1 * u.deg)
 stats = analysis_3d.datasets.info_table(cumulative=False)
 print(stats['sqrt_ts'])
@@ -117,7 +118,7 @@ print(f'Statistics: {tstat} s\n')
 t = time.time()
 stacked_3d = analysis_3d.datasets.stack_reduce(name="stacked_3d")
 spatial_model = PointSpatialModel(lon_0=target.ra, lat_0=target.dec, frame="icrs")
-spectral_model = PowerLawSpectralModel(index=2.3, amplitude=2e-12 * u.Unit("1 / (cm2 s TeV)"), reference=1 * u.TeV)
+spectral_model = PowerLawSpectralModel(index=2.48, amplitude=2e-12 * u.Unit("1 / (cm2 s TeV)"), reference=1 * u.TeV)
 spectral_model.parameters['index'].frozen = True
 spatial_model.parameters['lon_0'].frozen = True
 spatial_model.parameters['lat_0'].frozen = True
@@ -148,13 +149,16 @@ print(f'Total time: {ttotal} s\n')
 print('\n\n-----------------------------------------------------\n\n')
 
 logname = f'{rootpath}/DATA/outputs/crab/gammapy3d_binned_fit.csv'
+row = f'{texp} {stats["sqrt_ts"][0]} {phflux_err.value[0]} {phflux_err.value[1]} {ttotal} {timport} {tsetup} {tconf} {tred} {tstat} {tmodel} {tfit} {tflux}\n'
 if first == 'True':
     hdr = 'texp sqrt_ts flux flux_err ttotal timport tsetup tobs tconf tred tstat tmodel tfit tflux\n'
     log = open(logname, 'w+')
     log.write(hdr)
-    log.write(f'{texp} {stats["sqrt_ts"][0]} {phflux_err.value[0]} {phflux_err.value[1]} {ttotal} {timport} {tsetup} {tconf} {tred} {tstat} {tmodel} {tfit} {tflux}\n')
+    log.write(row)
     log.close()
 else:
     log = open(logname, 'a')
-    log.write(f'{texp} {stats["sqrt_ts"][0]} {phflux_err.value[0]} {phflux_err.value[1]} {ttotal} {timport} {tsetup} {tconf} {tred} {tstat} {tmodel} {tfit} {tflux}\n')
+    log.write(row)
     log.close()
+
+print(row)

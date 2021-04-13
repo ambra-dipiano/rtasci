@@ -14,9 +14,10 @@ import argparse
 from os.path import isdir, join, isfile
 from RTAscience.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
 from RTAscience.lib.RTAManageXml import ManageXml
-from RTAscience.lib.RTAUtils import phflux_powerlaw
+from RTAscience.lib.RTAUtils import phflux_powerlaw, get_pointing, get_mergermap, get_alert_pointing_gw
 from RTAscience.cfg.Config import Config
 from RTAscience.lib.RTAVisualise import plotSkymap
+from RTAscience.aph.utils import *
 
 parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
 parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
@@ -75,6 +76,27 @@ for runid in runids:
     if not isdir(grbpath):
         raise FileExistsError(f"Directory {runid} not found in {datapath}/obs")
     rtapath = f'{datapath}/rta_products/{runid}'
+    # true coords ---!
+
+    true_coords = get_pointing(f"{os.path.expandvars(cfg.get('catalog'))}/{runid}.fits")
+    # get alert pointing
+    if type(cfg.get('offset')) == str and cfg.get('offset').lower() == 'gw':
+        mergerpath = os.path.expandvars(cfg.get('merger'))
+        mergermap = get_mergermap(runid, mergerpath)
+        if mergermap == None:
+            raise ValueError(f'Merger map of runid {runid} not found. ')
+        pointing = get_alert_pointing_gw(mergermap)
+    else:
+        if runid == 'crab':
+            pointing = [83.6331, 22.0145]
+        else:
+            pointing = list(get_pointing(f"{os.path.expandvars(cfg.get('catalog'))}/{runid}.fits"))
+        if pointing[1] < 0:
+            pointing[0] += 0.0
+            pointing[1] += -cfg.get('offset')
+        else:
+            pointing[0] += 0.0
+            pointing[1] += cfg.get('offset')
 
     # ------------------------------------------------------ loop trials ---!!!
     for i in range(trials):
@@ -101,7 +123,10 @@ for runid in runids:
             # selection ---!
             selphlist = phlist.replace(f'{name}', f'texp{texp}s_{name}')
             grb = RTACtoolsAnalysis()
-            grb.configure(cfg)
+            grb.caldb = cfg.get('caldb')
+            grb.irf = cfg.get('irf')
+            grb.roi = cfg.get('roi')
+            grb.e = [cfg.get('emin'), cfg.get('emax')]
             grb.t = [cfg.get('delay'), cfg.get('delay')+texp]
             if args.print.lower() == 'true':
                 print(f"Selection t = {grb.t} s")
@@ -112,6 +137,15 @@ for runid in runids:
             else:
                 prefix = join(grbpath, f'texp{texp}s_')
                 grb.run_selection(prefix=prefix)
+            # aperture photometry ---!
+            if '.fits' in selphlist:
+                results = photometrics_counts(selphlist, pointing=pointing, true_coords=true_coords, events_type='events_filename')
+            elif '.xml' in selphlist:
+                results = photometrics_counts(selphlist, pointing=pointing, true_coords=true_coords, events_type='events_list')
+            sigma = li_ma(results['on'], results['off'], results['alpha'])
+            if args.print.lower() == 'true':
+                print('Photometry counts:', results)
+                print('Li&Ma significance:', sigma)
             # skymap ---!
             grb.input = selphlist
             grb.output = sky
@@ -137,31 +171,31 @@ for runid in runids:
             grb.output = fit
             grb.run_maxlikelihood()
             # stats ---!
-            results = ManageXml(fit)
+            xml = ManageXml(fit)
             try:
-                coords = results.getRaDec()
+                coords = xml.getRaDec()
                 ra = coords[0][0]
                 dec = coords[1][0]
-                ts = results.getTs()[0]
+                ts = xml.getTs()[0]
                 sqrt_ts = np.sqrt(ts)
             except IndexError:
                 sqrt_ts = np.nan
                 print('Candidate not found.')
             if sqrt_ts >= 0:
                 # flux ---!
-                spectra = results.getSpectral()
+                spectra = xml.getSpectral()
                 index, pref, pivot = spectra[0][0], spectra[1][0], spectra[2][0]
-                err = results.getPrefError()[0]
+                err = xml.getPrefError()[0]
                 flux = phflux_powerlaw(index, pref, pivot, grb.e, unit='TeV')
                 flux_err = phflux_powerlaw(index, err, pivot, grb.e, unit='TeV')
             else:
                 ra, dec, ts, sqrt_ts, flux, flux_err = np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
 
-            row = f"{runid} {count} {texp} {sqrt_ts} {flux} {flux_err} {ra} {dec} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {cfg.get('caldb')} {cfg.get('irf')}\n"
+            row = f"{runid} {count} {texp} {sqrt_ts} {flux} {flux_err} {ra} {dec} {results['on']} {results['off']} {results['alpha']} {results['excess']} {sigma} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {cfg.get('caldb')} {cfg.get('irf')}\n"
             if args.print.lower() == 'true':
                 print(f"Results: {row}")
             if not isfile(logname):
-                hdr = 'runid seed texp sqrt_ts flux flux_err ra dec offset delay scaleflux caldb irf\n'
+                hdr = 'runid seed texp sqrt_ts flux flux_err ra dec oncounts offcounts alpha excess sigma offset delay scaleflux caldb irf\n'
                 log = open(logname, 'w+')
                 log.write(hdr)
                 log.write(row)

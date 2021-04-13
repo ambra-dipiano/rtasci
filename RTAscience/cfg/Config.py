@@ -36,8 +36,10 @@ class Config:
         }
         self.validateCfg()
 
-    def prettyd(self, d, indent=0):
+    def prettyd(self, d=None, indent=0):
         s = ''
+        if d is None:
+            d = self.cfg
         for key, value in d.items():
             s += '\t' * indent + str(key)
             if isinstance(value, dict):
@@ -81,7 +83,7 @@ class Config:
         
         # Add validations here
         
-        simTypeValues = ['grb', 'bkg', 'skip', 'wobble']
+        simTypeValues = ['grb', 'bkg', 'skip', 'wobble', 'wilks']
         if sectionDict['simtype'] not in simTypeValues:
             raise BadConfiguration(f'simtype={sectionDict["simtype"]} is not supported. Available values: {simTypeValues}')
 

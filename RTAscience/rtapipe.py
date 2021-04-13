@@ -24,6 +24,9 @@ if cfg.get('simtype').lower() == 'grb':
     os.system(f'python3 simGRBcatalog.py -f {args.cfgfile} --merge {args.merge.lower()} --remove {args.remove.lower()} --print {args.print.lower()}')
 elif cfg.get('simtype').lower() == 'bkg':
     print('\nComputing BKG-ONLY simulations is work in progress\n')
+elif cfg.get('simtype').lower() == 'wilks':
+    print("\nRun empty fields simulation + analysis")
+    os.system(f"python3 emptyfields.py -f {args.cfgfile} --remove {args.remove.lower()} --print {args.print.lower()}")
 elif cfg.get('simtype').lower() == 'skip':
     pass
 else:

@@ -27,7 +27,7 @@ from scipy.ndimage.filters import gaussian_filter
 extra = Rectangle((0, 0), 1, 1, fc="w", fill=False, edgecolor='none', linewidth=0)
 extra2 = Line2D([0], [0], ls='-.', color='k', lw='1')
 
-def hist1d(x, mean, true=None, nbin=20, hist=True, fit=True, fontsize=20, color='b', xscale='linear', figsize=(15,12), rotation=0, alpha=0.5, lw=3, ls=('--', '-.', ':'), title='gaussian fit', ax_thresh=None, xlabel='x', ylabel='y', leglabel='data', filename='hist1d_gauss.png', usetex=False, sns_style=False, show=True):
+def hist1d(x, mean, true=None, nbin=20, hist=True, fit=True, fontsize=20, color='b', xscale='linear', figsize=(15,12), rotation=0, alpha=0.5, lw=3, ls=('--', '-.', ':'), title='gaussian fit', yscale='linear', ax_thresh=None, xlabel='x', ylabel='y', leglabel='data', filename='hist1d_gauss.png', usetex=False, sns_style=False, show=True):
     '''Generate multiple 1d histogram in a single plot. Optionally, only the histogram or the fit can be visualised.'''
 
     fig = plt.figure(figsize=figsize)
@@ -35,7 +35,7 @@ def hist1d(x, mean, true=None, nbin=20, hist=True, fit=True, fontsize=20, color=
         plt.rc('text', usetex=usetex)
     sns.set() if sns_style else None
 
-    ax = plt.subplot(111, xscale=xscale)
+    ax = plt.subplot(111, xscale=xscale, yscale=yscale)
     plt.xticks(fontsize=fontsize, rotation=rotation)
     plt.yticks(fontsize=fontsize, rotation=rotation)
     for index, el in enumerate(x):

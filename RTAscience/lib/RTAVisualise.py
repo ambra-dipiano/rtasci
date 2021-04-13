@@ -13,7 +13,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import astropy.visualization as avis
-from os.path import join
+from os.path import join, isdir, expandvars
 from astropy.io import fits
 from matplotlib.colors import SymLogNorm
 from matplotlib import rc
@@ -32,8 +32,13 @@ def handleReg(reg, col='black'):
   r[0].attr[1]['color'] = col
   return r
 
+def checkPath(png):
+  if not isdir(png):
+    png = expandvars('$PWD')
+  return png
+
 # plot sky map ---!
-def plotSkymap(file, reg='none', col='green', suffix='none', title='skymap', xlabel='R.A. (deg)', ylabel='Dec (deg)', fontsize=20, figsize=(10, 8), rotation=0, show=False, sns_style=False, usetex=False, png=None):
+def plotSkymap(file, reg='none', col='green', suffix='none', title='', xlabel='R.A. (deg)', ylabel='Dec (deg)', fontsize=25, figsize=(8, 6), rotation=0, show=False, sns_style=False, usetex=False, png=None):
   '''Plots skymap with Gaussian smoothing.'''
   with fits.open(file) as hdul:
     wcs = WCS(hdul[0].header)
@@ -69,14 +74,15 @@ def plotSkymap(file, reg='none', col='green', suffix='none', title='skymap', xla
   plt.ylabel(ylabel, fontsize=fontsize)
   plt.title(title, fontsize=fontsize)
   plt.tick_params(axis='both', labelsize=fontsize)
-  cbar = plt.colorbar().set_label('cts', fontsize=fontsize)
-  plt.tight_layout()
+  cbar = plt.colorbar().set_label('counts', fontsize=fontsize)
+  fig.set_tight_layout(True)
   # save fig ---!
   head, tail = os.path.split(file)
+  png = checkPath(png)
   if suffix != 'none':
-    plt.savefig(join(png, tail.replace('.fits', '_%s.png' % suffix)))
+    fig.savefig(join(png, tail.replace('.fits', '_%s.png' % suffix)), bbox_inches='tight')
   else:
-    plt.savefig(join(png, tail.replace('.fits', '.png')))
+    fig.savefig(join(png, tail.replace('.fits', '.png')), bbox_inches='tight')
   # show fig ---!
   plt.show() if show else None
   plt.close()
@@ -109,6 +115,7 @@ def plotResmap(file, reg='none', col='black', suffix='none', title='map redisual
   plt.title(title, fontsize=fontsize)
   plt.colorbar().set_label('Significance $\sigma$')
   # save fig ---!
+  png = checkPath(png)
   if suffix != 'none':
     plt.savefig(file.replace('.fits', '_%s.png' % suffix))
   else:
@@ -194,6 +201,7 @@ def plotButterfly(file, flux_pnts=0.0, fluxEn_pnts=0.0, suffix='none', title='fl
   plt.legend(loc=0)
   plt.grid(True)
   # save fig ---!
+  png = checkPath(png)
   if suffix != 'none':
     plt.savefig(file.replace('.txt', '_%s.png' % suffix))
   else:

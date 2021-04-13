@@ -15,15 +15,14 @@ from os.path import join
 from astropy.time import Time
 from astropy.io import fits
 from gammapy.data import DataStore
-
-if len(sys.argv) < 2:
-    raise ValueError('Missing nbins input from line command')
-nbins = int(sys.argv[1])
+import os
+from os.path import join
 
 path = os.path.join(os.path.expandvars('$DATA'), 'obs/crab/')
 filename = 'crab_offax.fits'
 nameroot = 'crab_offax'
 fitsfile = join(path, filename)
+nbins = 1
 
 data = DataStore.from_events_files([fitsfile])
 observations = data.get_observations()
@@ -37,11 +36,14 @@ time_intervals = [Time([tstart, tstop]) for tstart, tstop in zip(times[:-1], tim
 bins = observations.select_time(time_intervals)
 if not os.path.exists(path):
     os.mkdir(path)
+#path.mkdir(exist_ok=True)
 for i, b in enumerate(bins):
+    if i >= 1:
+        break
     hdulist = fits.HDUList([fits.PrimaryHDU()])
     hdu = fits.BinTableHDU(b.events.table, name="EVENTS")
     hdulist.append(hdu)
     hdu = fits.BinTableHDU(b.gti.table, name="GTI")
     hdulist.append(hdu)
-    hdulist.writeto(path / f"{nameroot}_texp{round(duration.value/nbins)}s_n{i+1:02d}.fits", overwrite=True)
-    print(path / f"{nameroot}_texp{round(duration.value/nbins)}s_n{i+1:02d}.fits")
+    hdulist.writeto(join(path, f"{nameroot}_texp{round(duration.value/nbins)}s_n{i+1:02d}.fits"), overwrite=True)
+    print(join(path,f"{nameroot}_texp{round(duration.value/nbins)}s_n{i+1:02d}.fits"))

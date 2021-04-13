@@ -718,7 +718,7 @@ class Analysis() :
 
   # ctskymap wrapper ---!
   def eventSkymap(self, wbin=0.02):
-    nbin = int(self.roi / wbin)
+    nbin=int(self.roi*2/np.sqrt(2)/wbin)
     skymap = ctools.ctskymap()
     skymap['inobs'] = self.input
     skymap['outmap'] = self.output
@@ -1065,7 +1065,7 @@ class Analysis() :
     return
 
   # cssens wrapper ---!
-  def eventSens(self, bins=20, wbin=0.05, enumbins=0):
+  def eventSens(self, bins=1, wbin=0.05, enumbins=0):
     sens = cscripts.cssens()
     nbin = int(self.roi / wbin)
     sens['inobs'] = self.input
