@@ -33,7 +33,7 @@ t = time.time()
 rootpath = str(os.path.dirname(os.path.abspath(__file__))).replace('cta-sag-sci/RTAscience/timing', '')
 caldb = f'{rootpath}/caldb/data/cta/prod3b-v2/bcf/South_z20_0.5h/irf_file.fits'
 irfs = load_cta_irfs(caldb)
-filename = f'{rootpath}/DATA/obs/crab/crab_offax.fits'
+filename = f'{rootpath}/DATA/selections/crab/crab_offax{texp}s_n01.fits'
 obs_id = 1
 print(f'Fits: {filename.replace(rootpath, "")}\n')
 tsetup = time.time() - t
@@ -109,7 +109,7 @@ maps = estimator.run(stacked_3d)
 hotspots_table = find_peaks(maps["sqrt_ts"].get_image_by_idx((0,)), threshold=9, min_distance='0.5 deg')
 try:
     hotspots = SkyCoord(hotspots_table["ra"], hotspots_table["dec"])
-    print(hotspots_table)
+    print(hotspots)
     ra = hotspots.ra[0].deg
     dec = hotspots.dec[0].deg
 except KeyError:

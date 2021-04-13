@@ -87,27 +87,27 @@ for n in range(len(texp)):
   ts = []
   for i in range(trials):
     if tsv[i] < 0.0 or tsv[i] == np.nan:
-      #ts.append(0.0)
-      pass
+      ts.append(0.0)
     else:
       ts.append(tsv[i])
 
   # chi2, chi2r = chi2_reduced(ts, trials, df=dof, nbin=nbin, width=wbin, var=False)
   # print('var=False; chi2=', chi2, '; chi2r=', chi2r)
 
+
   # -------------------------------- PLOT ---!
 
-  fig, ax = ts_wilks(tsv, trials, df=dof, nbin=nbin, width=wbin, figsize=(10, 6), fontsize=fontsize,
+  fig, ax = ts_wilks(ts, len(ts), df=dof, nbin=nbin, width=wbin, figsize=(10, 6), fontsize=fontsize,
                      title='prod3b-v2: South_z40_0.5h (texp=%ds)' % texp[n], show=True, usetex=False,
                      filename=png_path + filename.replace('.csv', '_wilks.png'), ylim=(1e-7, 2e0), 
                      xlim=(0.0, 30))
 
-  fig, ax = p_values(ts, trials, df=dof, nbin=nbin, width=wbin, figsize=(10, 6), fontsize=fontsize,
+  fig, ax = p_values(ts, len(ts), df=dof, nbin=nbin, width=wbin, figsize=(10, 6), fontsize=fontsize,
                      title='prod3b-v2: South_z40_0.5h (texp=%ds)' % texp[n], show=False, usetex=False,
                      filename=png_path + filename.replace('.csv', '_pvalues.png'), ylim=(1e-7, 2e0), 
                      xlim=(0.0, 30))
 
-  fig, ax = ts_wilks_cumulative(ts, trials, df=dof, nbin=nbin, width=wbin, figsize=(10, 6),
+  fig, ax = ts_wilks_cumulative(ts, len(ts), df=dof, nbin=nbin, width=wbin, figsize=(10, 6),
                                 fontsize=fontsize, show=False, usetex=False,
                                 title='prod3b-v2: South_z40_0.5h (texp=%ds)' % texp[n],
                                 filename=png_path + filename.replace('.csv', '_cumulative.png'))

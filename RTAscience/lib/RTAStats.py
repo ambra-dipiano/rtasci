@@ -47,8 +47,8 @@ def hist1d(x, mean, true=None, nbin=20, hist=True, fit=True, fontsize=20, color=
                 plt.axvline(mean[index], c=color[index], ls=ls[index], lw=lw, label=leglabel[index]) 
         else:
             sns.distplot(el, bins=nbin, kde=False, hist=hist, fit=None, norm_hist=True, color=color[index], hist_kws={'alpha':alpha}, label=leglabel[index])
-    if true != None:
-        plt.axvline(true, c='k', ls='-', lw=lw, label='true ~ %.1E' %true)
+        if true != None:
+            plt.axvline(true[index], c='k', ls=ls[index], lw=lw, label=f'{leglabel[index]} (expected)')
     plt.title(title, fontsize=fontsize)
     plt.xlabel(xlabel, fontsize=fontsize)
     plt.ylabel(ylabel, fontsize=fontsize)
@@ -251,7 +251,7 @@ def hist2d_rayleigh_CI(x, y, nbin=None, width=None, rayleigh_prms={'loc':0, 'sca
     plt.xticks(fontsize=fontsize, rotation=rotation)
     plt.yticks(fontsize=fontsize, rotation=rotation)
     plt.scatter(xcentre, ycentre, c='w', marker='*', s=ms)
-    plt.plot([], [], c='none', label='Reyleigh')
+    plt.plot([], [], c='none', label='Rayleigh')
     for i in range(len(probs)):
         plt.plot([], [], c=colors[i], ls=ls[i], label='%.2f' % (probs[i] * 100) + '%')
         r = stats.rayleigh.ppf(q=probs[i], loc=rayleigh_prms['loc'], scale=rayleigh_prms['scale'])
@@ -549,6 +549,12 @@ def p_values(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=
                 h[i] += 1
     p = h/trials
     yerr = np.sqrt(h)/trials
+
+    from scipy.interpolate import interp1d
+
+    f = interp1d(p, cbin, fill_value = "extrapolate", kind='linear')
+    ts = f(3e-7)
+    print(f'TS(5sgm) == {ts}')
 
     x2 = np.arange(min(x), max(x)+5, 1)
     plt.errorbar(cbin[0], p[0], yerr=yerr[0], xerr=xerr[0], fmt='k+', markersize=5)
