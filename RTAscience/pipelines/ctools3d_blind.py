@@ -119,8 +119,17 @@ for runid in runids:
 
         # ---------------------------------------------------------- loop exposure times ---!!!
 
-        for texp in cfg.get('exposure'):
-            # selection ---!
+        if cfg.get('cumulative'):
+            n = int(cfg.get('tobs') / cfg.get('exposure')[0])
+            times = [cfg.get('exposure')[0]*(i+1) for i in range(n)]
+            if times[-1] < cfg.get('tobs'):
+                times.append(cfg.get('tobs'))
+        else:
+            times = cfg.get('exposure')
+        if args.print.lower() == 'true':
+            print(f"Time selections = {times} s")
+        # selection ---!
+        for texp in times:
             selphlist = phlist.replace(f'{name}', f'texp{texp}s_{name}')
             grb = RTACtoolsAnalysis()
             grb.caldb = cfg.get('caldb')
