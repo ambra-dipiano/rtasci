@@ -44,7 +44,7 @@ elif cfg.get('tool') == 'ctools':
         pipeline += 'binned_'
     if cfg.get('blind'):
         pipeline += 'blind'
-    pipeline += 'fit.py'
+    pipeline += '.py'
     print(f'Pipeline: {pipeline}')
     os.system(f"python3 pipelines/{pipeline} -f {args.cfgfile} --merge {args.merge.lower()} --remove {args.remove.lower()} --print {args.print.lower()}")
 
