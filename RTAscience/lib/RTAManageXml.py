@@ -309,7 +309,7 @@ class ManageXml():
             filenames.append(obs.attrib['file'])
         return filenames
 
-    def setModelParameters(self, source, parameters=(), values=()):
+    def setModelParameters(self, parameters=(), values=()):
         '''Sets values of selected model parameters.'''
         parameters = tuple(parameters)
         values = tuple(values)
