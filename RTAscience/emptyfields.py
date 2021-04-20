@@ -132,6 +132,7 @@ def main(args):
             an.input = selphlist
             an.output = sky
             an.max_src = cfg.get('maxsrc')
+            an.sky_subtraction = 'NONE'
             an.run_skymap(wbin=cfg.get('skypix'), roi_factor=cfg.get('skyroifrac'))    
             # blind-search ---!
             candidates = sky.replace('_sky.fits', '_sources.xml')
