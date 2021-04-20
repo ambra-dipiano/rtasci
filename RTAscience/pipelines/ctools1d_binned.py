@@ -122,7 +122,7 @@ for runid in runids:
         xml = ManageXml(model)
         xml.setTsTrue() 
         xml.parametersFreeFixed(src_free=['Prefactor'])
-        xml.setModelParameters(parameters=['ra', 'dec'], values=true_coords)
+        xml.setModelParameters(parameters=['RA', 'DEC'], values=true_coords)
         xml.closeXml()
 
         # ---------------------------------------------------------- loop exposure times ---!!!
