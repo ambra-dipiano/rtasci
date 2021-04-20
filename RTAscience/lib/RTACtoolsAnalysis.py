@@ -11,9 +11,39 @@ import gammalib
 import ctools
 import cscripts
 import numpy as np
-from RTAscience.lib.RTACtoolsBase import RTACtoolsBase
+from astropy.io import fits
 
-class RTACtoolsAnalysis(RTACtoolsBase) :
+# count photometry ctools
+def onoff_counts(pha):
+    '''This function returns on, off and excess counts given ctools on/off files.'''
+    regions = pha.replace('.xml', '_off.reg')
+    off = pha.replace('.xml', '_pha_off.fits')
+    on = pha.replace('.xml', '_pha_on.fits')
+    alpha = 0
+    # regions ---!
+    with open(regions, 'r') as f:
+        for line in f:
+            if line.startswith('fk5'):
+                alpha += 1
+    # on counts ---!
+    with fits.open(on) as h:
+        oncounts = h[1].data.field('counts')
+    onsum = 0
+    for val in oncounts:
+        onsum += val
+    # off counts ---!
+    with fits.open(off) as h:
+        offcounts = h[1].data.field('counts')
+    offsum = 0
+    for val in offcounts:
+        offsum += val
+    offsum = np.sum(offsum)
+    # alpha and excess ---!
+    alpha = 1.0/alpha
+    excess = onsum - alpha * offsum
+    return onsum, offsum, excess, alpha
+
+class RTACtoolsAnalysis() :
     '''
     This class contains wrappers for ctools and cscripts tools.
     '''

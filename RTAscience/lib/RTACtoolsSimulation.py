@@ -17,7 +17,6 @@ import pandas as pd
 from astropy.io import fits
 from astropy.table import Table, vstack
 from scipy.interpolate import interp1d
-from RTAscience.lib.RTACtoolsBase import RTACtoolsBase
 
 # create observation list with gammalib ---!
 def make_obslist(obslist, items, names, instruments='CTA'):
@@ -37,7 +36,7 @@ def make_obslist(obslist, items, names, instruments='CTA'):
     del xml
     return 
 
-class RTACtoolsSimulation(RTACtoolsBase):
+class RTACtoolsSimulation():
     '''
     This class allows to: 1) compute the EBL absorption from a csv data table and add it to the template; 2) extract spectra, lightcuves and time slices from the template (the flux values can also be normalised by a factor); 3) merge bins of the template simulation in a single photon list; 4) perform simulations using ctoobssim from ctools software package.
     '''
