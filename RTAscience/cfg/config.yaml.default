@@ -32,6 +32,7 @@ analysis:
   blind: yes                    # requires blind-search (bool)
   tool: ctools                  # which science tool (str) 
   type: 3d                      # 1d on/off or 3d full-fov (str)
+  cumulative:                   # select events with cumulative or fixed exposure time (bool)
 
 options:
   set_ebl:                      # if True uses EBL absorbed spectra (bool)
