@@ -145,3 +145,23 @@ def get_mergermap(run, path):
     else:
         print(f'Merger map {merger} for not found in path: {path}.')
         return None
+
+def compute_prefactor(flux, erange, gamma=-2.4, e0=1e6, unit='MeV'):
+    '''Compute the prefactor k0 from photon flux for a simple power law spectral model.'''
+    if unit == 'eV':
+        conv = 1e-6
+    elif unit == 'keV':
+        conv = 1e-3
+    elif unit == 'MeV':
+        conv = 1
+    elif unit == 'GeV':
+        conv = 1e3
+    else:
+        conv = 1e6
+
+    e1 = erange[0] * conv
+    e2 = erange[1] * conv
+    delta = gamma + 1
+    factor = flux / (e2**delta - e1**delta)
+    k0 = factor * (e0**gamma * delta)
+    return k0
