@@ -40,10 +40,10 @@ elif cfg.get('tool') != 'ctools':
 elif cfg.get('tool') == 'ctools':
     print(f'\nRun analysis...\n')
     pipeline = f"{cfg.get('tool')}{cfg.get('type')}"
-    if cfg.get('binned'):
-        pipeline += '_binned'
     if cfg.get('blind'):
         pipeline += '_blind'
+    if not cfg.get('binned'):
+        pipeline += '_unbinned'
     pipeline += '.py'
     print(f'Pipeline: {pipeline}')
     os.system(f"python3 pipelines/{pipeline} -f {args.cfgfile} --merge {args.merge.lower()} --remove {args.remove.lower()} --print {args.print.lower()}")
