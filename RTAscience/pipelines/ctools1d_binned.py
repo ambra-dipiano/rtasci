@@ -167,7 +167,7 @@ for runid in runids:
             grb.src_name = 'GRB'
             grb.target = true_coords
             grb.output = onoff
-            grb.run_onoff(prefix=onoff.replace('.xml',''), ebins=30, etruemin=0.03, etruemax=30, etruebins=40, ebins_alg='LOG', maxoffset=2.5)
+            grb.run_onoff(prefix=onoff.replace('.xml',''), ebins=30, etruemin=0.03, etruemax=30, etruebins=40, ebins_alg='LOG', maxoffset=2.5, bkgskip=0)
             # aperture photometry ---!
             oncounts, offcounts, excess, alpha = onoff_counts(pha=onoff)
             sigma = li_ma(oncounts, offcounts, alpha)
@@ -203,7 +203,7 @@ for runid in runids:
                 flux = phflux_powerlaw(index, pref, pivot, grb.e, unit='TeV')
                 flux_err = phflux_powerlaw(index, err, pivot, grb.e, unit='TeV')
             else:
-                ra, dec, k0, gamma, e0, ts, sqrt_ts, flux, flux_err = np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
+                ra, dec, k0, gamma, e0, sqrt_ts, flux, flux_err = np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
 
             row = f"{runid} {count} {texp} {sqrt_ts} {flux} {flux_err} {ra} {dec} {k0} {gamma} {e0} {oncounts} {offcounts} {alpha} {excess} {sigma} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {cfg.get('caldb')} {cfg.get('irf')}\n"
             if args.print.lower() == 'true':
