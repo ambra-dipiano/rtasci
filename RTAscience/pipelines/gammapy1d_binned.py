@@ -186,28 +186,28 @@ for runid in runids:
             sigma = stats['sqrt_ts'][0]
             if args.print.lower() == 'true':
                 print(f"on = {oncounts}; off={offcounts}; excess={excess}; alpha={alpha}; sigma={sigma}")
-            if sigma >= 0:
-                data = grb.datasets.stack_reduce(name="stacked")
-                model = set_model(default=True, target=target, source='GRB')
-                data.models = model[0]
-                # fit ---!
-                fit = Fit([data])
-                result = fit.run()
-                phflux = model[1].integral_error(cfg.get('emin')*u.TeV, cfg.get('emax')*u.TeV)
-                flux = phflux.value[0]
-                flux_err = phflux.value[1]
-                k0 = model[1].amplitude.value
-                gamma = model[1].index.value
-                e0 = model[1].reference.value
-                ra = target[0]
-                dec = target[1]
-                if args.print.lower() == 'true':
-                    print(f"flux={flux} +/- {flux_err}")
-                    print(f"Spectral k0={k0}; gamma={gamma}; e0={e0}")
+            data = grb.datasets.stack_reduce(name="stacked")
+            model = set_model(default=True, target=target, source='GRB')
+            data.models = model[0]
+            # fit ---!
+            fit = Fit([data])
+            result = fit.run()
+            # flux ---!
+            phflux = model[1].integral_error(cfg.get('emin')*u.TeV, cfg.get('emax')*u.TeV)
+            flux = phflux.value[0]
+            flux_err = phflux.value[1]
+            # save spectral ---!
+            k0 = model[1].amplitude.value
+            gamma = model[1].index.value
+            e0 = model[1].reference.value
+            # save target coords ---!
+            ra = target[0]
+            dec = target[1]
+            if args.print.lower() == 'true':
+                print(f"flux={flux} +/- {flux_err}")
+                print(f"Spectral k0={k0}; gamma={gamma}; e0={e0}")
 
-            else:
-                ra, dec, k0, gamma, e0, sqrt_ts, flux, flux_err = np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
-
+            # save data ---!
             row = f"{runid} {count} {texp} {sqrt_ts} {flux} {flux_err} {ra} {dec} {k0} {gamma} {e0} {oncounts} {offcounts} {alpha} {excess} {sigma} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {cfg.get('caldb')} {cfg.get('irf')}\n"
             if args.print.lower() == 'true':
                 print(f"Results: {row}")

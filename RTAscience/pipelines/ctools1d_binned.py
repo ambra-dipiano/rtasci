@@ -183,27 +183,26 @@ for runid in runids:
             # stats ---!
             xml = ManageXml(fit)
             try:
+                # target coords ---!
                 coords = xml.getRaDec()
                 ra = coords[0][0]
                 dec = coords[1][0]
+                # spectral ---!
                 spec = xml.getSpectral()
                 k0 = spec[0][0]
                 gamma = spec[1][0]
                 e0 = spec[2][0]
                 ts = xml.getTs()[0]
                 sqrt_ts = np.sqrt(ts)
-            except IndexError:
-                sqrt_ts = np.nan
-                print('Candidate not found.')
-            if sqrt_ts >= 0:
                 # flux ---!
                 spectra = xml.getSpectral()
                 index, pref, pivot = spectra[0][0], spectra[1][0], spectra[2][0]
                 err = xml.getPrefError()[0]
                 flux = phflux_powerlaw(index, pref, pivot, grb.e, unit='TeV')
                 flux_err = phflux_powerlaw(index, err, pivot, grb.e, unit='TeV')
-            else:
-                ra, dec, k0, gamma, e0, sqrt_ts, flux, flux_err = np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
+            except IndexError:
+                sqrt_ts = np.nan
+                print('Candidate not found.')
 
             row = f"{runid} {count} {texp} {sqrt_ts} {flux} {flux_err} {ra} {dec} {k0} {gamma} {e0} {oncounts} {offcounts} {alpha} {excess} {sigma} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {cfg.get('caldb')} {cfg.get('irf')}\n"
             if args.print.lower() == 'true':
