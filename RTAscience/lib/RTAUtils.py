@@ -165,3 +165,32 @@ def compute_prefactor(flux, erange, gamma=-2.4, e0=1e6, unit='MeV'):
     factor = flux / (e2**delta - e1**delta)
     k0 = factor * (e0**gamma * delta)
     return k0
+
+def compute_phcount(texp, irf, k0, offset=1.638, eTeV=[0.03, 150.0], nbin=1000):
+    '''Compute the photon count from the prefactor, for given irf, off-axs angle, and energy range.'''
+    with fits.open(irf) as h:
+        aeff = h['EFFECTIVE AREA'].data
+
+    elow = aeff['ENERG_LO'][0] # TeV
+    ehigh = aeff['ENERG_HI'][0] # TeV
+    thetalo = aeff['THETA_LO'][0] # deg
+    thetahi = aeff['THETA_HI'][0] # deg
+    area = aeff['EFFAREA'][0] # m2
+    # energy in TeV
+    x = (elow+ehigh)/2
+    y = (thetalo+thetahi)/2
+    z = area
+    # interpolate
+    f = interp2d(x, y, z, kind='linear')
+    yref = offset
+    eref = np.logspace(np.log10(eTeV[0]), np.log10(eTeV[1]), nbin)
+    s = 0
+    for i in range(len(eref)-1):
+        # aeff at energy bin edges; convert m2 -> cm2
+        a1 = f(eref[i], yref) * 10**4 # cm2
+        a2 = f(eref[i+1], yref) * 10**4 # cm2
+        # delta ph = prefactor * exposure * mean aeff * delta energy (convert TeV -> MeV)
+        ph = k0 * texp * (a1+a2)/2 * (eref[i+1]-eref[i])*1e6 # dph = ph/cm2/s/MeV * s * <cm2> * dMeV
+        # sum photons in bins
+        s += float(ph) # sum dph
+    return s
