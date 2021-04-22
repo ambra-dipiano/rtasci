@@ -12,6 +12,7 @@ import astropy.units as u
 import healpy as hp
 import numpy as np
 from astropy.io import fits
+from os.path import join, expandvars
 
 # center of fov from FITS ---!
 def get_pointing(fits_file):
@@ -194,3 +195,23 @@ def compute_phcount(texp, irf, k0, offset=1.638, eTeV=[0.03, 150.0], nbin=1000):
         # sum photons in bins
         s += float(ph) # sum dph
     return s
+
+def phmOptions(cfg, texp, target, pointing, index=-2.4, bkg_method="reflection", radius=0.2, pixsize=0.05, runid='crab', verbose=0):
+    opts = {}
+    opts['verbose'] = verbose
+    opts['irf_file'] = join(expandvars('$CTOOLS'), f"share/caldb/data/cta/{cfg.get('caldb')}/bcf/{cfg.get('irf')}/irf_file.fits")
+    opts['source_ra'] = target[0]
+    opts['source_dec'] = target[1]
+    opts['pointing_ra'] = pointing[0]
+    opts['pointing_dec'] = pointing[1]
+    opts['region_radius'] = radius
+    opts['background_method'] = bkg_method
+    opts['save_off_regions'] = f"{expandvars(cfg.get('data'))}/rta_products/{runid}/off_regions.reg"
+    opts['energy_min'] = cfg.get('emin')
+    opts['energy_max'] = cfg.get('emax')
+    opts['pixel_size'] = pixsize
+    opts['begin_time'] = cfg.get('delay')
+    opts['end_time'] =  cfg.get('delay') + texp
+    opts['step_time'] = texp
+    opts['power_law_index'] = index
+    return opts
