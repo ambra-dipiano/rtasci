@@ -35,9 +35,7 @@ else:
 # analysis
 if cfg.get('tool') not in ('ctools', 'gammapy', 'rtatool'):
     raise ValueError('Invalit "tool" selection.')
-elif cfg.get('tool') != 'ctools':
-    raise ValueError('Option not yet implemented.')
-elif cfg.get('tool') == 'ctools':
+else:
     print(f'\nRun analysis...\n')
     pipeline = f"{cfg.get('tool')}{cfg.get('type')}"
     if cfg.get('blind'):
