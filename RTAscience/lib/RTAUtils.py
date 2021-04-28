@@ -60,15 +60,19 @@ def get_alert_pointing_gw(merger_map):
     pointing = (np.rad2deg(phi), np.rad2deg(0.5 * np.pi - theta))
     return pointing
 
-def increase_exposure(x, function='double'):
+def increase_exposure(x=10, nbins=20, function='double', **args):
     '''Increse the exposure time with a given function: double, power2, times10.'''
-    y = None
+    y = [x]
     if function.lower() == 'double':
-        y = x*2
+        y.append(x[i]*2 for i in range(nbins))
     elif function.lower() == 'power2':
-        y = x**2
+        y.append(x**(2+i) for i in range(nbins))
     elif function.lower() == 'times10':
-        y = x*10
+        y.append(x[i]*10 for i in range(nbins))
+    elif function.lower() == 'power10':
+        y.append(x**(10+i) for i in range(nbins))
+    elif function.lower() == 'linear':
+        y.append(x*(i+2) for i in range(nbins))
     return y
 
 # compute integral photon flux for PL model ---!

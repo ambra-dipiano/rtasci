@@ -14,7 +14,7 @@ import argparse
 from os.path import isdir, join, isfile, expandvars
 from RTAscience.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
 from RTAscience.lib.RTAGammapyAnalysis import *
-from RTAscience.lib.RTAUtils import get_pointing, get_mergermap, get_alert_pointing_gw
+from RTAscience.lib.RTAUtils import get_pointing, get_mergermap, get_alert_pointing_gw, increase_exposure
 from RTAscience.cfg.Config import Config
 from RTAscience.lib.RTAVisualise import plotSkymap
 from RTAscience.aph.utils import *
@@ -126,6 +126,8 @@ for runid in runids:
 
         if cfg.get('cumulative'):
             n = int(cfg.get('tobs') / cfg.get('exposure')[0])
+            times = increase_exposure(x=cfg.get('exposure')[0], nbins=n, function='linear')
+            print(times)
             times = [cfg.get('exposure')[0]*(i+1) for i in range(n)]
             if times[-1] < cfg.get('tobs'):
                 times.append(cfg.get('tobs'))
