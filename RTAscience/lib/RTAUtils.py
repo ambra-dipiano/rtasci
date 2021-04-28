@@ -65,12 +65,10 @@ def increase_exposure(x=10, nbins=20, function='double', **args):
     y = [x]
     if function.lower() == 'double':
         y.append(x[i]*2 for i in range(nbins))
-    elif function.lower() == 'power2':
+    elif function.lower() == 'powerlaw':
         y.append(x**(2+i) for i in range(nbins))
     elif function.lower() == 'times10':
         y.append(x[i]*10 for i in range(nbins))
-    elif function.lower() == 'power10':
-        y.append(x**(10+i) for i in range(nbins))
     elif function.lower() == 'linear':
         y.append(x*(i+2) for i in range(nbins))
     return y
