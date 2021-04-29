@@ -14,7 +14,7 @@ import argparse
 from os.path import isdir, join, isfile, expandvars
 from RTAscience.lib.RTACtoolsAnalysis import RTACtoolsAnalysis, onoff_counts
 from RTAscience.lib.RTAManageXml import ManageXml
-from RTAscience.lib.RTAUtils import phflux_powerlaw, get_pointing, get_mergermap, get_alert_pointing_gw, phmOptions
+from RTAscience.lib.RTAUtils import phflux_powerlaw, get_pointing, get_mergermap, get_alert_pointing_gw, phmOptions, increase_exposure
 from RTAscience.cfg.Config import Config
 from RTAscience.lib.RTAVisualise import plotSkymap
 from RTAscience.aph.utils import *

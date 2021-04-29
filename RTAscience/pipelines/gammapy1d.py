@@ -125,12 +125,7 @@ for runid in runids:
         # ---------------------------------------------------------- loop exposure times ---!!!
 
         if cfg.get('cumulative'):
-            n = int(cfg.get('tobs') / cfg.get('exposure')[0])
-            times = increase_exposure(x=cfg.get('exposure')[0], nbins=n, function='linear')
-            print(times)
-            times = [cfg.get('exposure')[0]*(i+1) for i in range(n)]
-            if times[-1] < cfg.get('tobs'):
-                times.append(cfg.get('tobs'))
+            times = increase_exposure(start=cfg.get('exposure')[0], stop=cfg.get('tobs'), function='linear')
         else:
             times = cfg.get('exposure')
         if args.print.lower() == 'true':

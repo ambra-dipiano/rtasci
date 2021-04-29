@@ -14,7 +14,7 @@ import argparse
 from os.path import isdir, join, isfile, expandvars
 from RTAscience.lib.RTACtoolsAnalysis import RTACtoolsAnalysis, onoff_counts
 from RTAscience.lib.RTAManageXml import ManageXml
-from RTAscience.lib.RTAUtils import phflux_powerlaw, get_pointing, get_mergermap, get_alert_pointing_gw
+from RTAscience.lib.RTAUtils import phflux_powerlaw, get_pointing, get_mergermap, get_alert_pointing_gw, increase_exposure
 from RTAscience.cfg.Config import Config
 from RTAscience.lib.RTAVisualise import plotSkymap
 from RTAscience.aph.utils import *
@@ -128,10 +128,7 @@ for runid in runids:
         # ---------------------------------------------------------- loop exposure times ---!!!
 
         if cfg.get('cumulative'):
-            n = int(cfg.get('tobs') / cfg.get('exposure')[0])
-            times = [cfg.get('exposure')[0]*(i+1) for i in range(n)]
-            if times[-1] < cfg.get('tobs'):
-                times.append(cfg.get('tobs'))
+            times = increase_exposure(start=cfg.get('exposure')[0], stop=cfg.get('tobs'), function='linear')
         else:
             times = cfg.get('exposure')
         if args.print.lower() == 'true':
