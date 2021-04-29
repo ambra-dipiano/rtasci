@@ -47,8 +47,10 @@ def hist1d(x, mean, true=None, nbin=20, hist=True, fit=True, fontsize=20, color=
                 plt.axvline(mean[index], c=color[index], ls=ls[index], lw=lw, label=leglabel[index]) 
         else:
             sns.distplot(el, bins=nbin, kde=False, hist=hist, fit=None, norm_hist=True, color=color[index], hist_kws={'alpha':alpha}, label=leglabel[index])
-        if true != None:
+        if true != None and type(true) == list:
             plt.axvline(true[index], c='k', ls=ls[index], lw=lw, label=f'{leglabel[index]} (expected)')
+    if true != None and type(true) == float:
+        plt.axvline(true, c='k', ls='-', lw=lw, label=f'expected')
     plt.title(title, fontsize=fontsize)
     plt.xlabel(xlabel, fontsize=fontsize)
     plt.ylabel(ylabel, fontsize=fontsize)
