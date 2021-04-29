@@ -23,6 +23,8 @@ RTAscience/misc/notebooks
 RTAscience/misc/notebooks/*ipynb
 env.sh
 loadenv.sh
+RTAscience/misc/rmfiles.py
+RTAscience/test*
 
 # folders
 .*/
@@ -41,7 +43,8 @@ RTAscience/lib/old*
 RTAscience/lib/__pycache__/*
 RTAscience/notebooks
 RTAscience/jnotebooks
-RTAscience/aph
+!RTAscience/aph
+RTAscience/adpthesis
 
 # exceptions
 !RTAscience/cfg/

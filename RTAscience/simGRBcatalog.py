@@ -19,6 +19,7 @@ from os.path import isdir, join, isfile
 from RTAscience.cfg.Config import Config
 from RTAscience.lib.RTAManageXml import ManageXml
 from RTAscience.lib.RTACtoolsSimulation import RTACtoolsSimulation, make_obslist
+from RTAscience.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
 from RTAscience.lib.RTAUtils import get_alert_pointing_gw, get_mergermap, get_pointing
 
 
@@ -178,12 +179,34 @@ def simulateTrial(trial_args):
         make_obslist(obslist=obslist, items=event_bins, names=name)
 
     del sim
+
+    # selections ---!
+    """for texp in cfg.get('exposure'):
+        selphlist = phlist.replace(f'{name}', f'texp{texp}s_{name}')
+        grb = RTACtoolsAnalysis()
+        grb.caldb = cfg.get('caldb')
+        grb.irf = cfg.get('irf')
+        grb.roi = cfg.get('roi')
+        grb.e = [cfg.get('emin'), cfg.get('emax')]
+        grb.t = [cfg.get('delay'), cfg.get('delay')+texp]
+        if args.print.lower() == 'true':
+            print(f"Selection t = {grb.t} s")
+        grb.input = phlist
+        grb.output = selphlist
+        if args.merge.lower() == 'true':
+            grb.run_selection()
+        else:
+            prefix = join(grbpath, f'texp{texp}s_')
+            grb.run_selection(prefix=prefix) """
+
+    # remove files ---!
     if args.remove.lower() == 'true' and args.merge.lower() == 'true':
         # remove bins ---!
         os.system('rm ' + join(grbpath, f'{name}*tbin*'))
         if cfg.get('onset') != 0:
             # remove bkg ---!
             os.system('rm ' + join(grbpath, f'{name.replace("ebl", "bkg")}*'))
+
     # time ---!   
     elapsed_t = time()-start_t
     if args.print.lower() == 'true':

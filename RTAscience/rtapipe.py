@@ -35,16 +35,14 @@ else:
 # analysis
 if cfg.get('tool') not in ('ctools', 'gammapy', 'rtatool'):
     raise ValueError('Invalit "tool" selection.')
-elif cfg.get('tool') != 'ctools':
-    raise ValueError('Option not yet implemented.')
-elif cfg.get('tool') == 'ctools':
+else:
     print(f'\nRun analysis...\n')
-    pipeline = f"{cfg.get('tool')}{cfg.get('type')}_"
-    if cfg.get('binned'):
-        pipeline += 'binned_'
+    pipeline = f"{cfg.get('tool')}{cfg.get('type')}"
     if cfg.get('blind'):
-        pipeline += 'blind'
-    pipeline += 'fit.py'
+        pipeline += '_blind'
+    if not cfg.get('binned'):
+        pipeline += '_unbinned'
+    pipeline += '.py'
     print(f'Pipeline: {pipeline}')
     os.system(f"python3 pipelines/{pipeline} -f {args.cfgfile} --merge {args.merge.lower()} --remove {args.remove.lower()} --print {args.print.lower()}")
 

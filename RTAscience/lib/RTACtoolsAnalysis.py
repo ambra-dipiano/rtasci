@@ -11,9 +11,40 @@ import gammalib
 import ctools
 import cscripts
 import numpy as np
-from RTAscience.lib.RTACtoolsBase import RTACtoolsBase
+from astropy.io import fits
 
-class RTACtoolsAnalysis(RTACtoolsBase) :
+# count photometry ctools
+def onoff_counts(pha):
+    '''This function returns on, off and excess counts given ctools on/off files.'''
+    regions = pha.replace('.xml', '_off.reg')
+    off = pha.replace('.xml', '_pha_off.fits')
+    on = pha.replace('.xml', '_pha_on.fits')
+    nreg = 0
+    # regions ---!
+    with open(regions, 'r') as f:
+        for line in f:
+            if line.startswith('fk5'):
+                nreg += 1
+    # on counts ---!
+    with fits.open(on) as h:
+        oncounts = h[1].data.field('counts')
+    onsum = 0
+    for val in oncounts:
+        onsum += val
+    # off counts ---!
+    with fits.open(off) as h:
+        offcounts = h[1].data.field('counts')
+    offsum = 0
+    for val in offcounts:
+        offsum += val
+    offsum = np.sum(offsum)
+    # alpha and excess ---!
+    alpha = 1.0/nreg
+    print('N REGION', nreg)
+    excess = onsum - alpha * offsum
+    return onsum, offsum, excess, alpha
+
+class RTACtoolsAnalysis() :
     '''
     This class contains wrappers for ctools and cscripts tools.
     '''
@@ -143,7 +174,7 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
         return
 
     # csphagen wrapper ---!
-    def run_onoff(self, method='reflected', prefix='onoff', maxoffset=2.5, radius=0.2, ebins=40, ebins_alg='LOG', binfile=None, exp=None, use_model_bkg=True, etruemin=0.01, etruemax=0.01, etruebins=30):
+    def run_onoff(self, method='reflected', prefix='onoff', maxoffset=2.5, radius=0.2, ebins=40, ebins_alg='LOG', binfile=None, exp=None, use_model_bkg=True, etruemin=0.01, etruemax=0.01, etruebins=30, bkgskip=1, bkgmin=2):
         '''Wrapper of csphagen.'''
         onoff = cscripts.csphagen()
         onoff['inobs'] = self.input
@@ -178,6 +209,8 @@ class RTACtoolsAnalysis(RTACtoolsBase) :
         onoff['bkgmethod'] = method.upper()
         onoff['use_model_bkg'] = use_model_bkg 
         onoff['maxoffset'] = maxoffset
+        onoff['bkgregmin'] = bkgmin
+        onoff['bkgregskip'] = bkgskip
         onoff['stack'] = self.stack 
         onoff['etruemin'] = etruemin
         onoff['etruemax'] =  etruemax

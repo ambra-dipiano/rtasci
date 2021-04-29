@@ -40,42 +40,57 @@ if degraded:
   caldb.append(caldb_deg)
   print('Use degraded caldb')
 
-e = [0.03, 150.0]
-#texp = [42, 40, 70, 151.5, 438.5, 1654] # MAGIC 2
-#texp = [38.2, 39.8, 70.28] # MAGIC 1
-texp = [1, 5, 10, 100] # CTA
-#texp = [400, 500, 600] # HESS
-pointing = (33.057, -51.841) # pointing direction RA/DEC (deg) - centered on the source
-nbins = 0 # energy bins for sensitivity computation
+if inst.lower() == 'magic':
+  e = [0.3, 1.]
+  #texp = [42, 40, 70, 151.5, 438.5, 1654] # MAGIC 2
+  texp = [38.2, 39.8, 70.28] # MAGIC 1
+elif inst.lower() == 'hess':
+  e = [0.1, 0.44]
+  texp = [300, 400, 500, 600] # HESS
+elif inst.lower() == 'cta':
+  e = [0.03, 150.0]
+  #texp = [5, 10, 50, 100, 200, 300, 500] # CTA
+  texp = [10, 100]
+
+target = (33.057, -51.841) # centered on the source
+offsets = [0]#, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5]
+nbins = 10   # energy bins for sensitivity computation
 src_name = 'GRB'
 
 # INITIALIZE ---!
 if compute:
   for i in range(len(caldb)):
-    for j in range(len(texp)):
-      event = outpath + 'texp%ds_' %texp[j] + caldb[i] + f'_{inst.upper()}sim.fits'
-      results = outpath + 'texp%ds_' %texp[j] + caldb[i] + f'_{inst.upper()}fit.xml'
-      output = outpath + 'texp%ds_' %texp[j] + caldb[i] + f'_{inst.upper()}sens.csv'
-      nObj = Analysis('/config.xml')
-      nObj.e = e
-      nObj.t = [0, texp[j]]
-      nObj.caldb = caldb[i]
-      nObj.roi = 5
-      nObj.irf = irf
-      nObj.model = model
-      # NOMINAL SIM ---!
-      nObj.output = event
-      nObj.pointing = pointing  # (deg)
-      nObj.eventSim()
-      print('texp = ', texp[j], ' s')
-      print('caldb = ', caldb[i])
-      # NOMINAL MAX LIKELIHOOD ---!
-      nObj.input = event
-      nObj.output = results
-      nObj.maxLikelihood()
-      # NOMINAL SENS ---!
-      nObj.sens_type = sens_type
-      nObj.model = results
-      nObj.output = output
-      nObj.src_name = src_name
-      nObj.eventSens(bins=nbins)
+    for offset in offsets:
+      pointing = (target[0], target[1]-offset) 
+      for j in range(len(texp)):
+        event = outpath + 'texp%ds_' %texp[j] + caldb[i] + f'_{inst.upper()}sim.fits'
+        results = outpath + 'texp%ds_' %texp[j] + caldb[i] + f'_{inst.upper()}fit.xml'
+        output = outpath + 'texp%ds_' %texp[j] + caldb[i] + f'_{inst.upper()}sens.csv'
+        nObj = Analysis('/config.xml')
+        nObj.e = e
+        nObj.t = [0, texp[j]]
+        nObj.caldb = caldb[i]
+        nObj.roi = 5
+        nObj.irf = irf
+        nObj.model = model
+        # NOMINAL SIM ---!
+        nObj.output = event
+        nObj.pointing = pointing  # (deg)
+        nObj.eventSim()
+        print('caldb = ', caldb[i])
+        print('texp = ', texp[j], ' s')
+        print('off = ', offset)
+        # NOMINAL MAX LIKELIHOOD ---!
+        nObj.input = event
+        nObj.output = results
+        nObj.maxLikelihood()
+        # NOMINAL SENS ---!
+        nObj.sens_type = sens_type
+        nObj.model = results
+        nObj.output = output
+        nObj.src_name = src_name
+        nObj.eventSens(bins=nbins)
+
+        if not isdir(f"{outpath}/off{offset}"):
+          os.mkdir(f"{outpath}/off{offset}")
+        os.system(f"mv {outpath}/*csv {outpath}/off{offset}/.")

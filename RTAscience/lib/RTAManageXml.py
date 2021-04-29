@@ -309,14 +309,16 @@ class ManageXml():
             filenames.append(obs.attrib['file'])
         return filenames
 
-    def setModelParameters(self, source, parameters=(), values=()):
+    def setModelParameters(self, parameters=(), values=(), source=None):
         '''Sets values of selected model parameters.'''
         parameters = tuple(parameters)
         values = tuple(values)
         for src in self.root.findall('source'):
             if 'Background' not in src.attrib['name']:
-                src.set('name', source)
+                if source != None:
+                    src.set('name', source)
                 for i, prm in enumerate(parameters):
-                    src.find('*/parameter[@name="%s"]' % prm).set('value', str(values[i]))
+                    p = src.find('*/parameter[@name="%s"]' % prm)
+                    p.set('value', str(values[i]))
         self.__saveXml()
         return
