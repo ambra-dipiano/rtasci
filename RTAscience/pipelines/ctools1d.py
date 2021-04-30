@@ -119,11 +119,12 @@ for runid in runids:
 
         # set model
         model = join(expandvars(cfg.get('model')), 'grb.xml')
+        """
         xml = ManageXml(model)
         xml.setTsTrue() 
         xml.parametersFreeFixed(src_free=['Prefactor'])
         xml.setModelParameters(parameters=['RA', 'DEC'], values=target)
-        xml.closeXml()
+        xml.closeXml() """
 
         # ---------------------------------------------------------- loop exposure times ---!!!
 
@@ -201,11 +202,11 @@ for runid in runids:
                 sqrt_ts = np.nan
                 print('Candidate not found.')
 
-            row = f"{runid} {count} {texp} {sqrt_ts} {flux} {flux_err} {ra} {dec} {k0} {gamma} {e0} {oncounts} {offcounts} {alpha} {excess} {sigma} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {cfg.get('caldb')} {cfg.get('irf')}\n"
+            row = f"{runid} {count} {texp} {sqrt_ts} {flux} {flux_err} {ra} {dec} {k0} {gamma} {e0} {oncounts} {offcounts} {alpha} {excess} {sigma} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {cfg.get('caldb')} {cfg.get('irf')} ctools1d\n"
             if args.print.lower() == 'true':
                 print(f"Results: {row}")
             if not isfile(logname):
-                hdr = 'runid seed texp sqrt_ts flux flux_err ra dec prefactor index scale oncounts offcounts alpha excess sigma offset delay scaleflux caldb irf\n'
+                hdr = 'runid seed texp sqrt_ts flux flux_err ra dec prefactor index scale oncounts offcounts alpha excess sigma offset delay scaleflux caldb irf pipe\n'
                 log = open(logname, 'w+')
                 log.write(hdr)
                 log.write(row)

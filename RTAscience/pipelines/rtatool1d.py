@@ -14,7 +14,7 @@ import argparse
 from os.path import isdir, join, isfile, expandvars
 from RTAscience.lib.RTACtoolsAnalysis import RTACtoolsAnalysis, onoff_counts
 from RTAscience.lib.RTAManageXml import ManageXml
-from RTAscience.lib.RTAUtils import phflux_powerlaw, get_pointing, get_mergermap, get_alert_pointing_gw, phmOptions, increase_exposure
+from RTAscience.lib.RTAUtils import phflux_powerlaw, get_pointing, get_mergermap, get_alert_pointing_gw, phm_options, increase_exposure
 from RTAscience.cfg.Config import Config
 from RTAscience.lib.RTAVisualise import plotSkymap
 from RTAscience.aph.utils import *
@@ -166,7 +166,7 @@ for runid in runids:
             
             # aperture photometry ---!
             phm = Photometrics({events_type: selphlist})
-            opts = phmOptions(cfg, texp=texp, target=target, pointing=pointing, runid=runid)
+            opts = phm_options(cfg, texp=texp, target=target, pointing=pointing, runid=runid, prefix=f"texp{texp}s_{name}_")
             off_regions = find_off_regions(phm, opts['background_method'], target, pointing, opts['region_radius'], verbose=opts['verbose'], save=opts['save_off_regions'])
             oncounts, offcounts, alpha, excess, sigma, err_note = counting(phm, target, opts['region_radius'], off_regions, e_min=opts['energy_min'], e_max=opts['energy_max'], t_min=opts['begin_time'], t_max=opts['end_time'], draconian=False)
             if args.print.lower() == 'true':
@@ -187,11 +187,11 @@ for runid in runids:
                 print(f'Flux={flux}')
 
             # save results ---!
-            row = f"{runid} {count} {texp} {sqrt_ts} {flux} {flux_err} {ra} {dec} {k0} {gamma} {e0} {oncounts} {offcounts} {alpha} {excess} {sigma} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {cfg.get('caldb')} {cfg.get('irf')}\n"
+            row = f"{runid} {count} {texp} {sqrt_ts} {flux} {flux_err} {ra} {dec} {k0} {gamma} {e0} {oncounts} {offcounts} {alpha} {excess} {sigma} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {cfg.get('caldb')} {cfg.get('irf')} rtatool1d\n"
             if args.print.lower() == 'true':
                 print(f"Results: {row}")
             if not isfile(logname):
-                hdr = 'runid seed texp sqrt_ts flux flux_err ra dec prefactor index scale oncounts offcounts alpha excess sigma offset delay scaleflux caldb irf\n'
+                hdr = 'runid seed texp sqrt_ts flux flux_err ra dec prefactor index scale oncounts offcounts alpha excess sigma offset delay scaleflux caldb irf pipe\n'
                 log = open(logname, 'w+')
                 log.write(hdr)
                 log.write(row)
