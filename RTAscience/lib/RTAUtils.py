@@ -217,7 +217,7 @@ def compute_phcount(texp, irf, k0, offset=1.638, eTeV=[0.03, 150.0], nbin=1000):
         s += float(ph) # sum dph
     return s
 
-def phmOptions(cfg, texp, target, pointing, index=-2.4, bkg_method="reflection", radius=0.2, pixsize=0.05, runid='crab', verbose=0):
+def phm_options(cfg, texp, target, pointing, index=-2.4, bkg_method="reflection", radius=0.2, pixsize=0.05, runid='crab', verbose=0, prefix=''):
     opts = {}
     opts['verbose'] = verbose
     opts['irf_file'] = join(expandvars('$CTOOLS'), f"share/caldb/data/cta/{cfg.get('caldb')}/bcf/{cfg.get('irf')}/irf_file.fits")
@@ -227,7 +227,7 @@ def phmOptions(cfg, texp, target, pointing, index=-2.4, bkg_method="reflection",
     opts['pointing_dec'] = pointing[1]
     opts['region_radius'] = radius
     opts['background_method'] = bkg_method
-    opts['save_off_regions'] = f"{expandvars(cfg.get('data'))}/rta_products/{runid}/off_regions.reg"
+    opts['save_off_regions'] = f"{expandvars(cfg.get('data'))}/rta_products/{runid}/{prefix}off_regions.reg"
     opts['energy_min'] = cfg.get('emin')
     opts['energy_max'] = cfg.get('emax')
     opts['pixel_size'] = pixsize
