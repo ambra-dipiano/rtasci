@@ -547,3 +547,40 @@ def plotLightCurve(flux, t1, uplims, t2, xerr, yerr, filename, temp_t, temp_f, c
   fig.savefig(filename)
   plt.close()
   return
+
+def plot_template_lc(runid, erange=(0.04, 150), path='/home/ambra/Desktop/CTA/projects/DATA/templates/grb_afterglow/GammaCatalogV1.0'):
+
+  with fits.open(join(path, runid)) as hdul:
+    energy=np.array(hdul[1].data)
+    # timebins [s]
+    time=np.array(hdul[2].data)
+    # spectra [fotoni/GeV/cm^2/s]
+    spectra=np.array(hdul[3].data)
+    # ebl [fotoni/GeV/cm^2/s]
+    ebl=np.array(hdul[4].data)
+  Nt=len(time)
+  Ne=len(energy)
+  # TIME GRID ---!
+  t=[0.0 for x in range(Nt+1)]
+  for i in range(Nt-1):
+      t[i+1]=time[i][0]+(time[i+1][0]-time[i][0])/2
+  # last bin
+  t[Nt]=time[Nt-1][0]+(time[Nt-1][0]-t[Nt-1])
+  # ENERGY GRID ---!
+  en=[1.0 for x in range(Ne+1)]
+  for i in range(Ne-1):
+      en[i+1]=energy[i][0]+(energy[i+1][0]-energy[i][0])/2
+  # last bin
+  en[Ne]=energy[Ne-1][0]+(energy[Ne-1][0]-en[Ne-1])
+  # instrument range
+  inst = (min(en, key=lambda x:abs(x-erange[0]*1e3)), min(en, key=lambda x:abs(x-erange[1]*1e3)))
+  # FLUX SPECTRA ---!
+  f, f2 = [], []
+  for i in range(Nt):
+      f.append(0.0)
+      f2.append(0.0)
+      for j in range(Ne):
+          if en[j] <= inst[1] and en[j] >= inst[0]:
+              f[i]=f[i]+spectra[i][j]*(en[j+1]-en[j])
+              f2[i]=f2[i]+ebl[i][j]*(en[j+1]-en[j])
+  return time, f, f2
