@@ -8,6 +8,7 @@ Library
    RTAUtils
    RTAStats
    RTAVisualise
+   RTAManageXml
    RTACtoolsSimulation
    RTACtoolsAnalysis
    RTAGammapyAnalysis
