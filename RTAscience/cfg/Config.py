@@ -11,18 +11,22 @@ import os
 import yaml
 
 class ConfigException(Exception):
+    """Alert for exception."""
     def __init__(self, message):
         super().__init__(message)
 
 class BadConfiguration(ConfigException):
+    """Alert for bad configuration."""
     def __init__(self, message):
         super().__init__(message)
 
 class ConfigParamNotFound(ConfigException):
+    """Alert when parameter is not found."""
     def __init__(self, message):
         super().__init__(message)
 
 class Config:
+    """Configure pipeline."""
     def __init__(self, cfgfile):
         configuration = open(cfgfile)
         self.cfg = yaml.load(configuration, Loader=yaml.FullLoader)

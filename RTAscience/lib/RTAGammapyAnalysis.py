@@ -19,6 +19,7 @@ from gammapy.modeling.models import PowerLawSpectralModel, SkyModel, PointSpatia
 
 
 def gammapy_config(cfg, target, radius=0.2, rbins=20, etrue=[0.02, 300], tbins=30, bkg_method='reflected', maxoffset=2.5, fitflux=False, fbins=30, source='GRB', level='info', stack=False, exclusion=None, save=False):
+    """Wrapper for gammapy configuration class."""
     config = AnalysisConfig()
     config.general.log = {'level': level}
     config.datasets.type = cfg.get('type')
@@ -46,6 +47,7 @@ def gammapy_config(cfg, target, radius=0.2, rbins=20, etrue=[0.02, 300], tbins=3
     return config
 
 def set_model(target, source='Crab', freeze_spc=['index'], freeze_spt=['lon_0', 'lat_0'], default=True):
+    """Wrapper to create gammapy model."""
     target = SkyCoord(target[0], target[1], unit='deg', frame='icrs')
     spatial_model = PointSpatialModel(lon_0=target.ra, lat_0=target.dec, frame="icrs")
     if default:
