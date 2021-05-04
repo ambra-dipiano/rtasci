@@ -204,7 +204,8 @@ for runid in runids:
                     print(f'Photometry on={on_gammapy} off={off_gammapy} ex={exc_gammapy} a={a_gammapy}')
                     print('Li&Ma significance:', sigma_gammapy)
             except KeyError:
-                print('No candidates found.')   
+                if args.print.lower() == 'true':
+                    print('No candidates found.')   
                 ra_gammapy, dec_gammapy, on_gammapy, off_gammapy, a_gammapy, exc_gammapy, sigma_gammapy = np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan 
 
 
@@ -251,7 +252,8 @@ for runid in runids:
                     print(f'Photometry on={on_ctools} off={off_ctools} ex={exc_ctools} a={a_ctools}')
                     print('Li&Ma significance:', sigma_ctools)
             except KeyError:
-                print('No candidates found.')   
+                if args.print.lower() == 'true':
+                    print('No candidates found.')   
                 ra_ctools, dec_ctools, on_ctools, off_ctools, a_ctools, exc_ctools, sigma_ctools = np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan  
 
             # save results ---!
