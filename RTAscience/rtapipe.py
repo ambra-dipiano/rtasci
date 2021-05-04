@@ -1,3 +1,12 @@
+# *******************************************************************************
+# Copyright (C) 2020 INAF
+#
+# This software is distributed under the terms of the BSD-3-Clause license
+#
+# Authors:
+# Ambra Di Piano <ambra.dipiano@inaf.it>
+# *******************************************************************************
+
 import yaml
 import sys
 import os
@@ -46,4 +55,6 @@ else:
     print(f'Pipeline: {pipeline}')
     os.system(f"python3 pipelines/{pipeline} -f {args.cfgfile} --merge {args.merge.lower()} --remove {args.remove.lower()} --print {args.print.lower()}")
 
+if "_trials" in args.cfgfile:
+    os.system(f"rm {args.cfgfile}")
 print('\n\nExit\n\n')
