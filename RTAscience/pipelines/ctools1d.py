@@ -105,12 +105,10 @@ for runid in runids:
         name = f'ebl{count:06d}'
         if args.merge.lower() == 'true':
             phlist = join(grbpath, name+'.fits')
-            sky = phlist.replace('.fits', '_sky.fits').replace('/obs/', '/rta_products/')
+            fit = phlist.replace('.fits', '_fit.xml').replace('/obs/', '/rta_products/')
         else:
             phlist = join(grbpath, f'{name}.xml')
-            sky = phlist.replace('.xml', '_sky.fits').replace('/obs/', '/rta_products/')
-        candidates = sky.replace('_sky.fits', '_sources.xml')
-        fit = candidates.replace('sources', 'fit')
+            fit = phlist.replace('.xml', '_fit.xml').replace('/obs/', '/rta_products/')
         if args.print.lower() == 'true':
             print(f'Input observation: {phlist}')
         if not isfile(phlist):
@@ -119,12 +117,6 @@ for runid in runids:
 
         # set model
         model = join(expandvars(cfg.get('model')), 'grb.xml')
-        """
-        xml = ManageXml(model)
-        xml.setTsTrue() 
-        xml.parametersFreeFixed(src_free=['Prefactor'])
-        xml.setModelParameters(parameters=['RA', 'DEC'], values=target)
-        xml.closeXml() """
 
         # ---------------------------------------------------------- loop exposure times ---!!!
 
@@ -160,6 +152,13 @@ for runid in runids:
                 onoff = selphlist.replace('.fits', '_cspha.xml').replace('/obs/', '/rta_products/')
             else:
                 onoff = selphlist.replace('.xml', '_cspha.xml').replace('/obs/', '/rta_products/')
+            # fix parameters
+            xml = ManageXml(model)
+            xml.setTsTrue() 
+            xml.parametersFreeFixed(src_free=['Prefactor'])
+            xml.setModelParameters(parameters=['RA', 'DEC'], values=target)
+            xml.closeXml() 
+            
             grb.input = selphlist            
             grb.model = model
             grb.src_name = 'GRB'
