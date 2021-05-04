@@ -18,21 +18,39 @@ from gammapy.modeling import Fit
 from gammapy.modeling.models import PowerLawSpectralModel, SkyModel, PointSpatialModel
 
 
-def gammapy_config(cfg, target, radius=0.2, rbins=20, etrue=[0.02, 300], tbins=30, bkg_method='reflected', maxoffset=2.5, fitflux=False, fbins=30, source='GRB', level='info', stack=False, exclusion=None, save=False):
+def gammapy_config(cfg, target=None, pointing=None, radius=0.2, rbins=20, etrue=[0.02, 300], tbins=30, maxoffset=2.5, fitflux=False, fbins=30, source='GRB', level='info', stack=False, exclusion=None, safe_mask=['aeff-default', 'offset-max'], save=False):
     """Wrapper for gammapy configuration class."""
+    if target is None and pointing is None:
+        raise ValueError("Either target or pointing must be not null.")
     config = AnalysisConfig()
     config.general.log = {'level': level}
     config.datasets.type = cfg.get('type')
     config.datasets.stack = stack
+    # 3d analysis or blind
+    if cfg.get('type').lower() == "3d" or cfg.get('blind') == True:
+        # type
+        config.datasets.type = "3d"
+        # geometry of the map for 3d
+        config.datasets.geom.wcs.skydir = {'lon': pointing.ra, 'lat': pointing.dec, 'frame': 'icrs'}  
+        config.datasets.geom.wcs.fov = {'width': f"{int(cfg.get('roi')*2*cfg.get('skyroifrac'))} deg", 'height': f"{int(cfg.get('roi')*2*cfg.get('skyroifrac'))} deg"}
+        config.datasets.geom.wcs.binsize = f"{cfg.get('skypix')} deg"
+        # background
+        config.datasets.background=dict(method="fov_background", exclusion=exclusion)
     # 1d analysis
-    if cfg.get('type').lower() == "1d":
+    elif cfg.get('type').lower() == "1d":
+        # type
+        config.datasets.type = "1d"
         # ON region and make sure that PSF leakage is corrected
         config.datasets.on_region = dict(frame="icrs", lon=f"{target[0]} deg", lat=f"{target[1]} deg", radius=f"{radius} deg")
-        config.datasets.geom.selection.offset_max = f"{maxoffset} deg"
+        # background
+        config.datasets.background=dict(method="reflected", exclusion=exclusion)
+    # what maps to compute
+    config.datasets.map_selection = ['counts', 'exposure', 'background', 'psf', 'edisp']
+    # safe mask and IRF
+    config.datasets.safe_mask.methods = safe_mask
     config.datasets.containment_correction = True
-    # background
-    config.datasets.background=dict(method=bkg_method, exclusion=exclusion)
-    #config.datasets.safe_mask.methods = ["edisp-bias"]
+    # roi
+    config.datasets.geom.selection.offset_max = f"{maxoffset} deg"
     # energy binning for the spectra
     config.datasets.geom.axes.energy = dict(min=f"{cfg.get('emin')} TeV", max=f"{cfg.get('emax')} TeV", nbins=rbins)
     config.datasets.geom.axes.energy_true = dict(min=f"{etrue[0]} TeV", max=f"{etrue[1]} TeV", nbins=tbins)
