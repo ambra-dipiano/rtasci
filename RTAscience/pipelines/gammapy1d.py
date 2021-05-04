@@ -110,12 +110,8 @@ for runid in runids:
         name = f'ebl{count:06d}'
         if args.merge.lower() == 'true':
             phlist = join(grbpath, name+'.fits')
-            sky = phlist.replace('.fits', '_sky.fits').replace('/obs/', '/rta_products/')
         else:
             phlist = join(grbpath, f'{name}.xml')
-            sky = phlist.replace('.xml', '_sky.fits').replace('/obs/', '/rta_products/')
-        candidates = sky.replace('_sky.fits', '_sources.xml')
-        fit = candidates.replace('sources', 'fit')
         if args.print.lower() == 'true':
             print(f'Input observation: {phlist}')
         if not isfile(phlist):
@@ -150,12 +146,6 @@ for runid in runids:
             else:
                 prefix = join(grbpath, f'texp{texp}s_')
                 grb.run_selection(prefix=prefix)
-
-            # on/off ---!
-            if '.fits' in selphlist:
-                onoff = selphlist.replace('.fits', '_cspha.xml').replace('/obs/', '/rta_products/')
-            else:
-                onoff = selphlist.replace('.xml', '_cspha.xml').replace('/obs/', '/rta_products/')
 
             # load the event list
             events = EventList.read(selphlist, hdu='EVENTS')
