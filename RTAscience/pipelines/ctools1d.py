@@ -152,13 +152,6 @@ for runid in runids:
                 onoff = selphlist.replace('.fits', '_cspha.xml').replace('/obs/', '/rta_products/')
             else:
                 onoff = selphlist.replace('.xml', '_cspha.xml').replace('/obs/', '/rta_products/')
-            # fix parameters
-            xml = ManageXml(model)
-            xml.setTsTrue() 
-            xml.parametersFreeFixed(src_free=['Prefactor'])
-            xml.setModelParameters(parameters=['RA', 'DEC'], values=target)
-            xml.closeXml() 
-            
             grb.input = selphlist            
             grb.model = model
             grb.src_name = 'GRB'
@@ -171,6 +164,12 @@ for runid in runids:
             if args.print.lower() == 'true':
                 print(f'Photometry on={oncounts} off={offcounts} ex={excess} a={alpha}')
                 print('Li&Ma significance:', sigma)
+            # fix parameters
+            xml = ManageXml(onoff)
+            xml.setTsTrue() 
+            xml.parametersFreeFixed(src_free=['Prefactor'])
+            xml.setModelParameters(parameters=['RA', 'DEC'], values=target)
+            xml.closeXml() 
             # fit ---!
             onoff_model = onoff.replace('.xml','_model.xml')
             grb.input = onoff
