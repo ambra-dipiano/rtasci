@@ -13,6 +13,7 @@ import healpy as hp
 import numpy as np
 from astropy.io import fits
 from os.path import join, expandvars
+from scipy import stats
 
 # center of fov from FITS ---!
 def get_pointing(fits_file):
@@ -86,6 +87,20 @@ def increase_exposure(start, stop, function='double'):
         while y[i] < stop:
             y.append(start*(i+2))
             i += 1    # check stop
+    if y[-1] > stop:
+        y[-1] = stop
+    elif y[-1] < stop:
+        y.append(stop)
+    return y
+
+# find base binning for lightcurve
+def lightcurve_base_binning(start, stop, exposure):
+    '''Return lightcurve binning with minimum exposure.'''
+    y = [start]
+    i = 0
+    while y[i] < stop:
+        y.append(y[i] + exposure)
+        i += 1    # check stop
     if y[-1] > stop:
         y[-1] = stop
     elif y[-1] < stop:
@@ -217,10 +232,10 @@ def compute_phcount(texp, irf, k0, offset=1.638, eTeV=[0.03, 150.0], nbin=1000):
         s += float(ph) # sum dph
     return s
 
-def phm_options(cfg, texp, target, pointing, index=-2.4, bkg_method="reflection", radius=0.2, pixsize=0.05, runid='crab', verbose=0, prefix=''):
+def phm_options(cfg, texp, start, stop, target, pointing, caldb, irf, index=-2.4, bkg_method="reflection", radius=0.2, pixsize=0.05, runid='crab', verbose=0, prefix=''):
     opts = {}
     opts['verbose'] = verbose
-    opts['irf_file'] = join(expandvars('$CTOOLS'), f"share/caldb/data/cta/{cfg.get('caldb')}/bcf/{cfg.get('irf')}/irf_file.fits")
+    opts['irf_file'] = join(expandvars('$CTOOLS'), f"share/caldb/data/cta/{caldb}/bcf/{irf}/irf_file.fits")
     opts['source_ra'] = target[0]
     opts['source_dec'] = target[1]
     opts['pointing_ra'] = pointing[0]
@@ -231,8 +246,38 @@ def phm_options(cfg, texp, target, pointing, index=-2.4, bkg_method="reflection"
     opts['energy_min'] = cfg.get('emin')
     opts['energy_max'] = cfg.get('emax')
     opts['pixel_size'] = pixsize
-    opts['begin_time'] = cfg.get('delay')
-    opts['end_time'] =  cfg.get('delay') + texp
+    opts['begin_time'] = start
+    opts['end_time'] = stop
     opts['step_time'] = texp
     opts['power_law_index'] = index
     return opts
+
+# check energy thresholds agains irf
+def check_energy_thresholds(erange, irf):
+    # minimum energy
+    if "z60" in irf and erange[0] < 0.11:
+        erange[0] = 0.011
+    elif "z40" in irf and erange[0] < 0.04:
+        erange[0] = 0.04
+    elif "z20" in irf and erange[0] < 0.03:
+        erange[0] = 0.03
+    # maximum energy
+    if "North" in irf and erange[1] > 30:
+        erange[1] = 30
+    elif "South" in irf and erange[1] > 150:
+        erange[1] = 150
+    return erange
+
+def get_gamma_r_rayleigh(dist, prob=0.6827):
+    tmp = 0
+    for d in dist:
+        tmp += d**2
+    if len(dist) != 0.0 :
+        mode = np.sqrt(1/(2*len(dist)) * tmp) 
+        MLE = 0.606/mode
+    else:
+        mode = np.nan
+        MLE = np.nan
+    gamma = mode
+    r = stats.rayleigh.ppf(q=prob, loc=0, scale=gamma)
+    return gamma, r
