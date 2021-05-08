@@ -17,8 +17,8 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--infile', type=str, default='cfg/myconfig.yml', help='yaml configuration file')
-parser.add_argument('--tt', type=float, default=1000, help='total trials')
-parser.add_argument('--tn', type=float, default=50, help='trials per node')
+parser.add_argument('--tt', type=float, default=100, help='total trials')
+parser.add_argument('--tn', type=float, default=5, help='trials per node')
 parser.add_argument('--delay', type=float, default=90, help='delay')
 parser.add_argument('--off', type=str, default='gw', help='offset')
 parser.add_argument('--flux', type=float, default=1, help='flux scaling factor')
