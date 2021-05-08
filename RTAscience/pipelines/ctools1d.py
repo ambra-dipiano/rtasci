@@ -167,7 +167,7 @@ for runid in runids:
             # fix parameters
             xml = ManageXml(onoff)
             xml.setTsTrue() 
-            xml.parametersFreeFixed(src_free=['Prefactor'])
+            xml.parametersFreeFixed(src_free=['Prefactor'], bkg_free=[])
             xml.setModelParameters(parameters=['RA', 'DEC'], values=target)
             xml.closeXml() 
             # fit ---!

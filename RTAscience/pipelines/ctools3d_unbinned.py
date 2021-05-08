@@ -11,8 +11,8 @@ import numpy as np
 import os
 import sys
 import argparse
-from os.path import isdir, join, isfile, expandvars
-from RTAscience.lib.RTACtoolsAnalysis import RTACtoolsAnalysis, onoff_counts
+from os.path import isdir, join, isfile
+from RTAscience.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
 from RTAscience.lib.RTAManageXml import ManageXml
 from RTAscience.lib.RTAUtils import *
 from RTAscience.cfg.Config import Config
@@ -58,7 +58,6 @@ if cfg.get('offset') == 'str':
     offset = cfg.get('offset').upper()
 else:
     offset = cfg.get('offset')
-
 # paths ---!
 datapath = cfg.get('data')
 if not isdir(datapath):  # main data folder
@@ -118,31 +117,31 @@ for runid in runids:
             if args.print.lower() == 'true':
                 print(f'Instrument response function: {irf}')  
             erange = check_energy_thresholds(erange=[cfg.get('emin'), cfg.get('emax')], irf=irf)
+
             # outputs
             logname = f"{datapath}/outputs/{runid}/{cfg.get('tool')}{cfg.get('type')}_offset{offset}_seed{start_count+1:06d}-{start_count+1+trials:06d}.txt"
             if isfile(logname):
-                os.remove(logname)
-            # ------------------------------------------------------ loop trials ---!!!
+                os.remove(logname)    # ------------------------------------------------------ loop trials ---!!!
             for i in range(trials):
                 count = start_count + i + 1
-                if args.print.lower() == 'true':
-                    print(f'Seed = {count:06d}')
+                #print(f'seed = {count:06d}')
                 name = f'ebl{count:06d}'
                 if args.merge.lower() == 'true':
                     phlist = join(grbpath, name+'.fits')
-                    sky = phlist.replace('.fits', '_sky.fits').replace('/obs/', '/rta_products/')
+                    model = phlist.replace('.fits', '_grb.xml').replace('/obs/', '/rta_products/')
                 else:
                     phlist = join(grbpath, f'{name}.xml')
-                    sky = phlist.replace('.xml', '_sky.fits').replace('/obs/', '/rta_products/')
-                candidates = sky.replace('_sky.fits', '_sources.xml')
-                fit = candidates.replace('sources', 'fit')
+                    model = phlist.replace('.xml', '_grb.xml').replace('/obs/', '/rta_products/')
+                os.system(f"cp {join(expandvars(cfg.get('model')), f'{runid}.xml')} {model}")
+                fit = model.replace('grb.xml', 'fit.xml')
                 if args.print.lower() == 'true':
                     print(f'Input observation: {phlist}')
                 if not isfile(phlist):
                     print(f'Missing observation {phlist}. \nSkip runid {runid}.')
                     break
 
-                # --------------------------------------------------- loop exposure times ---!!!
+                # -------------------------------------------- loop exposure times ---!!!
+
                 for exp in cfg.get('exposure'):   
                     if cfg.get('cumulative'):
                         times = increase_exposure(start=exp, stop=cfg.get('tobs'), function='linear')
@@ -157,7 +156,6 @@ for runid in runids:
                     for t in times:
                         if t == len(times) and cfg.get('lightcurve'):
                             break
-                        # selection ---!
                         selphlist = phlist.replace(f'{name}', f'texp{exp}s_{name}')
                         grb = RTACtoolsAnalysis()
                         grb.caldb = caldb
@@ -182,45 +180,51 @@ for runid in runids:
                         else:
                             prefix = join(grbpath, f'texp{exp}s_')
                             grb.run_selection(prefix=prefix)
-
-                        # on/off ---!
-                        if '.fits' in selphlist:
-                            onoff = selphlist.replace('.fits', '_cspha.xml').replace('/obs/', '/rta_products/')
-                            events_type = 'events_filename'
-                        else:
-                            onoff = selphlist.replace('.xml', '_cspha.xml').replace('/obs/', '/rta_products/')
-                            events_type = 'events_list'
-                            filenames = ManageXml(event_selected)
-                            run_list = filenames.getRunList()
-                            filenames.closeXml()
-                            del filenames
-                            selphlist = Photometrics.load_data_from_fits_file(run_list[0])
-                            for file in run_list[1:]:
-                                selphlist = np.append(selphlist, Photometrics.load_data_from_fits_file(file))
-                        
                         # aperture photometry ---!
-                        phm = Photometrics({events_type: selphlist})
-                        opts = phm_options(cfg, texp=texp, start=grb.t[0], stop=grb.t[1], target=target, pointing=pointing, runid=runid, irf=irf, caldb=caldb, prefix=f"texp{exp}s_{name}_")
-                        off_regions = find_off_regions(phm, opts['background_method'], target, pointing, opts['region_radius'], verbose=opts['verbose'], save=opts['save_off_regions'])
-                        oncounts, offcounts, alpha, excess, sigma, err_note = counting(phm, target, opts['region_radius'], off_regions, e_min=opts['energy_min'], e_max=opts['energy_max'], t_min=opts['begin_time'], t_max=opts['end_time'], draconian=False)
+                        if '.fits' in selphlist:
+                            results = photometrics_counts(selphlist, pointing=pointing, true_coords=target, events_type='events_filename')
+                        elif '.xml' in selphlist:
+                            results = photometrics_counts(selphlist, pointing=pointing, true_coords=target, events_type='events_list')
+                        sigma = li_ma(results['on'], results['off'], results['alpha'])
                         if args.print.lower() == 'true':
-                            print(f'Photometry on={oncounts} off={offcounts} ex={excess} a={alpha}')
+                            print('Photometry counts:', results)
                             print('Li&Ma significance:', sigma)
 
-                        # flux ---!
-                        src = {'ra': target[0], 'dec': target[1], 'rad': opts['region_radius']}
-                        conf = ObjectConfig(opts)
-                        region_eff_resp = aeff_eval(conf, src, {'ra': pointing[0], 'dec': pointing[1]})
-                        livetime = opts['end_time'] - opts['begin_time']
-                        flux = excess / region_eff_resp / livetime
-                        k0, e0, flux_err, sqrt_ts = np.nan, np.nan, np.nan, np.nan
-                        ra = target[0]
-                        dec = target[1]
-                        gamma = opts['power_law_index']
-                        if args.print.lower() == 'true':
-                            print(f'Flux={flux}')
+                        # modify model
+                        detection = ManageXml(model)
+                        detection.modXml(overwrite=True)
+                        detection.setTsTrue() 
+                        detection.parametersFreeFixed(src_free=['Prefactor'])
+                        detection.closeXml()
+                        # fit ---!
+                        grb.input = selphlist
+                        grb.model = model
+                        grb.output = fit
+                        grb.run_maxlikelihood()
+                        # stats ---!
+                        xml = ManageXml(fit)
+                        try:
+                            coords = xml.getRaDec()
+                            ra = coords[0][0]
+                            dec = coords[1][0]
+                            ts = xml.getTs()[0]
+                            sqrt_ts = np.sqrt(ts)
+                            if args.print.lower() == 'true':
+                                print('TS significance:', sqrt_ts)
+                        except IndexError:
+                            sqrt_ts = np.nan
+                            print('Candidate not found.')
+                        if sqrt_ts >= 0:
+                            # flux ---!
+                            spectra = xml.getSpectral()
+                            index, pref, pivot = spectra[0][0], spectra[1][0], spectra[2][0]
+                            err = xml.getPrefError()[0]
+                            flux = phflux_powerlaw(index, pref, pivot, grb.e, unit='TeV')
+                            flux_err = phflux_powerlaw(index, err, pivot, grb.e, unit='TeV')
+                        else:
+                            ra, dec, ts, sqrt_ts, flux, flux_err = np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
 
-                        if sigma < 5 and cfg.get('lightcurve') and cfg.get('cumulative'):
+                        if sqrt_ts < 5 and cfg.get('lightcurve') and cfg.get('cumulative'):
                             if exp < max(cfg.get('exposure')):
                                 if args.print.lower() == 'true':
                                     print(f'No significance detection, increase exposure.')
@@ -228,12 +232,11 @@ for runid in runids:
                             else:
                                 sys.exit(f"No significance detection with maximum exposure {texp} s.")
 
-                        # save results ---!
-                        row = f"{runid} {count} {grb.t[0]} {grb.t[1]} {grb.t[1]-grb.t[-0]} {sqrt_ts} {flux} {flux_err} {ra} {dec} {k0} {gamma} {e0} {oncounts} {offcounts} {alpha} {excess} {sigma} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {caldb} {irf} rtatool1d\n"
+                        row = f"{runid} {count} {grb.t[0]} {grb.t[1]} {exp} {sqrt_ts} {flux} {flux_err} {ra} {dec} {results['on']} {results['off']} {results['alpha']} {results['excess']} {sigma} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {caldb} {irf} ctools3d_unbinned\n"
                         if args.print.lower() == 'true':
                             print(f"Results: {row}")
                         if not isfile(logname):
-                            hdr = 'runid seed start stop texp sqrt_ts flux flux_err ra dec prefactor index scale oncounts offcounts alpha excess sigma offset delay scaleflux caldb irf pipe\n'
+                            hdr = 'runid seed start stop texp sqrt_ts flux flux_err ra dec oncounts offcounts alpha excess sigma offset delay scaleflux caldb irf pipe\n'
                             log = open(logname, 'w+')
                             log.write(hdr)
                             log.write(row)
@@ -243,11 +246,9 @@ for runid in runids:
                             log.write(row)
                             log.close()
 
-                        del grb, phm
-                if args.remove.lower() == 'true':
-                    # remove files ---!
-                    os.system(f"rm {datapath}/obs/{runid}/texp*{name}*")
-                    os.system(f"rm {datapath}/rta_products/{runid}/*{name}*")
+                        del grb
+                    if args.remove.lower() == 'true':
+                        # remove files ---!
+                        os.system(f"rm {datapath}/obs/{runid}/texp*{name}*")
+                        os.system(f"rm {datapath}/rta_products/{runid}/*{name}*")
 print('...done.\n')
-
-

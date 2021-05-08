@@ -197,7 +197,7 @@ for runid in runids:
                     print(f'Target = [{ra_gammapy}, {dec_gammapy}]')           
                 # aperture photometry ---!
                 phm = Photometrics({events_type: selphlist})
-                opts = phm_options(cfg, texp=texp, target=(ra_gammapy, dec_gammapy), pointing=pointing, runid=runid, prefix=f"texp{texp}s_{name}_")
+                opts = phm_options(cfg, texp=texp, start=grb.t[0], stop=grb.t[1], target=(ra_gammapy, dec_gammapy), pointing=pointing, runid=runid, prefix=f"texp{texp}s_{name}_")
                 off_regions = find_off_regions(phm, opts['background_method'], (ra_gammapy, dec_gammapy), pointing, opts['region_radius'], verbose=opts['verbose'], save=opts['save_off_regions'])
                 on_gammapy, off_gammapy, a_gammapy, exc_gammapy, sigma_gammapy, err_note = counting(phm, target, opts['region_radius'], off_regions, e_min=opts['energy_min'], e_max=opts['energy_max'], t_min=opts['begin_time'], t_max=opts['end_time'], draconian=False)
                 if args.print.lower() == 'true':
