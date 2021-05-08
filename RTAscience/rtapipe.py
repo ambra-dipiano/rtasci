@@ -42,9 +42,7 @@ else:
     raise ValueError('Invalid "simtype" value')
 
 # analysis
-if cfg.get('analysis') == 'skip':
-    pass
-elif cfg.get('tool') not in ('ctools', 'gammapy', 'rtatool'):
+if cfg.get('tool') not in ('ctools', 'gammapy', 'rtatool'):
     raise ValueError('Invalit "tool" selection.')
 else:
     print(f'\nRun analysis...\n')
