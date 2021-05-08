@@ -40,7 +40,6 @@ def onoff_counts(pha):
     offsum = np.sum(offsum)
     # alpha and excess ---!
     alpha = 1.0/nreg
-    print('N REGION', nreg)
     excess = onsum - alpha * offsum
     return onsum, offsum, excess, alpha
 
