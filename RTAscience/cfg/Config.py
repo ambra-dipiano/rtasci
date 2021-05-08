@@ -34,7 +34,7 @@ class Config:
             'sections' : ['setup', 'simulation', 'analysis', 'options', 'path'],
             'setup' : ['simtype', 'runid', 'trials', 'start_count', 'scalefluxfactor'],
             'simulation' : ['caldb', 'irf', 'tobs', 'onset', 'emin', 'emax', 'roi', 'delay', 'offset', 'nruns'],
-            'analysis' : ['maxsrc', 'skypix', 'skyroifrac', 'smooth', 'tool', 'type', 'blind', 'binned', 'exposure', 'usepnt', 'sgmthresh', 'cumulative'],
+            'analysis' : ['maxsrc', 'skypix', 'skyroifrac', 'smooth', 'tool', 'type', 'blind', 'binned', 'exposure', 'usepnt', 'sgmthresh', 'cumulative', 'lightcurve'],
             'options' : ['set_ebl', 'extract_data', 'plotsky'],
             'path' : ['data', 'ebl', 'model', 'catalog']
         }
@@ -135,7 +135,7 @@ class Config:
 
         # Add other validations here....
         # ....        
-        toolTypeValues = ['ctools', 'gammapy', 'rtatool']
+        toolTypeValues = ['ctools', 'gammapy', 'rtatool', 'skip']
         if sectionDict['tool'] not in toolTypeValues:
             raise BadConfiguration(f'tool={sectionDict["tool"]} is not supported. Available values: {toolTypeValues}')
         typeValues = ['1d', '3d']
