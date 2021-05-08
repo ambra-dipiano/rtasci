@@ -116,7 +116,7 @@ def simulateTrial(trial_args):
     # setup ---!
     sim = RTACtoolsSimulation()
     sim.caldb = cfg.get('caldb')
-    sim.irf = cfg.get('irf')
+    sim.irf = cfg.get('irf')[0]
     sim.fov = cfg.get('roi')
     sim.e = [cfg.get('emin'), cfg.get('emax')]
     sim.seed = count
