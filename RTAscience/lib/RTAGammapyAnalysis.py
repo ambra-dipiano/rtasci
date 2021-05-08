@@ -43,7 +43,7 @@ def gammapy_config(cfg, target=None, pointing=None, radius=0.2, rbins=20, etrue=
         # ON region and make sure that PSF leakage is corrected
         config.datasets.on_region = dict(frame="icrs", lon=f"{target[0]} deg", lat=f"{target[1]} deg", radius=f"{radius} deg")
         # background
-        config.datasets.background=dict(method="reflected", exclusion=exclusion)
+        config.datasets.background=dict(method="reflected", exclusion=exclusion, parameters={'max_region_numberint': 23})
     # what maps to compute
     config.datasets.map_selection = ['counts', 'exposure', 'background', 'psf', 'edisp']
     # safe mask and IRF
