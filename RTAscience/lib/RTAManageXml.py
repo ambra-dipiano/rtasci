@@ -211,7 +211,7 @@ class ManageXml():
         self.__saveXml()
         return
 
-    # modeify the spectral component of candidate list ---!
+    # modify the spectral component of candidate list ---!
     def modXml(self, overwrite=True):
         '''Modifies the XML model by halving the Prefactor of the spectral model of each subsequent detected candidated.'''
         self.__setModel()
