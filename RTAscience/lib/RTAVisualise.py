@@ -89,7 +89,7 @@ def plotSkymap(file, reg='none', col='green', suffix='none', title='', xlabel='R
   return
 
 # plot residual count map ---!
-def plotResmap(file, reg='none', col='black', suffix='none', title='map redisuals', xlabel='R.A. (deg)', ylabel='Dec (deg)', fontsize=12, show=True, tex=False):
+def plotResmap(file, reg='none', col='black', suffix='none', title='map redisuals', xlabel='R.A. (deg)', ylabel='Dec (deg)', fontsize=12, show=True, tex=False, png='.'):
   '''Plots residual map with Guassian smoothing.'''
 
   with fits.open(file) as hdul:
@@ -172,7 +172,7 @@ def plotResiduals(file, yscale='log', title='spectral residuals', figsize=(10,8)
   return
 
 # flux butterfly diagram ----!
-def plotButterfly(file, flux_pnts=0.0, fluxEn_pnts=0.0, suffix='none', title='flux', fontsize=12, xlabel='Energy (TeV)', ylabel='E $\cdot \\frac{dN}{dE}$ (erg/$cm^2$/s)', show=True, tex=False):
+def plotButterfly(file, flux_pnts=0.0, fluxEn_pnts=0.0, suffix='none', title='flux', fontsize=12, xlabel='Energy (TeV)', ylabel='E $\cdot \\frac{dN}{dE}$ (erg/$cm^2$/s)', show=True, tex=False, png='.'):
   '''Plots a butterfly.'''
 
   data = np.loadtxt(file, delimiter=' ')
