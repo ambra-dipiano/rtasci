@@ -18,7 +18,7 @@ from gammapy.modeling import Fit
 from gammapy.modeling.models import PowerLawSpectralModel, SkyModel, PointSpatialModel
 
 
-def gammapy_config(cfg, target=None, pointing=None, radius=0.2, rbins=20, etrue=[0.02, 300], tbins=30, maxoffset=2.5, fitflux=False, fbins=30, source='GRB', level='info', stack=False, exclusion=None, safe_mask=['aeff-default', 'offset-max'], save=False):
+def gammapy_config(cfg, obs, target=None, pointing=None, radius=0.2, rbins=20, etrue=[0.02, 200], tbins=30, maxoffset=2.5, fitflux=False, fbins=30, source='GRB', level='info', stack=False, exclusion=None, safe_mask=['aeff-default', 'offset-max'], save=False):
     """Wrapper for gammapy configuration class."""
     if target is None and pointing is None:
         raise ValueError("Either target or pointing must be not null.")
@@ -26,16 +26,19 @@ def gammapy_config(cfg, target=None, pointing=None, radius=0.2, rbins=20, etrue=
     config.general.log = {'level': level}
     config.datasets.type = cfg.get('type')
     config.datasets.stack = stack
+    config.observations.datastore = ''
+    config.observations.obs_file = obs
     # 3d analysis or blind
     if cfg.get('type').lower() == "3d" or cfg.get('blind') == True:
+        #print(f"BLIND {int(cfg.get('roi')*2*cfg.get('skyroifrac'))}")
         # type
         config.datasets.type = "3d"
         # geometry of the map for 3d
         config.datasets.geom.wcs.skydir = {'lon': pointing.ra, 'lat': pointing.dec, 'frame': 'icrs'}  
         config.datasets.geom.wcs.fov = {'width': f"{int(cfg.get('roi')*2*cfg.get('skyroifrac'))} deg", 'height': f"{int(cfg.get('roi')*2*cfg.get('skyroifrac'))} deg"}
         config.datasets.geom.wcs.binsize = f"{cfg.get('skypix')} deg"
-        # background
-        config.datasets.background=dict(method="fov_background", exclusion=exclusion)
+        if not cfg.get('blind'):
+            config.datasets.background=dict(method="fov_background", exclusion=exclusion)
     # 1d analysis
     elif cfg.get('type').lower() == "1d":
         # type
@@ -43,7 +46,7 @@ def gammapy_config(cfg, target=None, pointing=None, radius=0.2, rbins=20, etrue=
         # ON region and make sure that PSF leakage is corrected
         config.datasets.on_region = dict(frame="icrs", lon=f"{target[0]} deg", lat=f"{target[1]} deg", radius=f"{radius} deg")
         # background
-        config.datasets.background=dict(method="reflected", exclusion=exclusion, parameters={'max_region_numberint': 23})
+        config.datasets.background=dict(method="reflected", exclusion=exclusion)#, parameters={'max_region_numberint': 23})
     # what maps to compute
     config.datasets.map_selection = ['counts', 'exposure', 'background', 'psf', 'edisp']
     # safe mask and IRF
