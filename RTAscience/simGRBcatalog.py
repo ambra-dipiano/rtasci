@@ -115,8 +115,14 @@ def simulateTrial(trial_args):
     name = f'ebl{count:06d}'
     # setup ---!
     sim = RTACtoolsSimulation()
-    sim.caldb = cfg.get('caldb')
-    sim.irf = cfg.get('irf')[0]
+    if type(cfg.get('caldb')) == list:
+        sim.caldb = cfg.get('caldb')[0]
+    else:
+        sim.caldb = cfg.get('caldb')
+    if type(cfg.get('irf')) == list:
+        sim.irf = cfg.get('irf')[0]
+    else:
+        sim.irf = cfg.get('irf')
     sim.fov = cfg.get('roi')
     sim.e = [cfg.get('emin'), cfg.get('emax')]
     sim.seed = count
