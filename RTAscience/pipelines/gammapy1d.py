@@ -121,7 +121,7 @@ for runid in runids:
                 print(f'Instrument response function: {irf}')  
             erange = check_energy_thresholds(erange=[cfg.get('emin'), cfg.get('emax')], irf=irf)
             # outputs
-            logname = f"{datapath}/outputs/{runid}/{cfg.get('tool')}{cfg.get('type')}_offset{offset}_seed{start_count+1:06d}-{start_count+1+trials:06d}.txt"
+            logname = f"{datapath}/outputs/{runid}/{cfg.get('tool')}{cfg.get('type')}-{caldb}-{irf}-seed{start_count+1:06d}-{start_count+trials:06d}.txt"
             if isfile(logname):
                 os.remove(logname)
             # ------------------------------------------------------ loop trials ---!!!
@@ -235,7 +235,7 @@ for runid in runids:
                             print(f"flux={flux} +/- {flux_err}")
                             print(f"Spectral k0={k0}; gamma={gamma}; e0={e0}")
 
-                        if sigma < 5 or grb.t[0] >= cfg.get('tobs'):
+                        if sigma < 5 or grb.t[1] >= (cfg.get('tobs')+cfg.get('delay')):
                             break
 
                         # save data ---!
@@ -243,7 +243,7 @@ for runid in runids:
                         if args.print.lower() == 'true':
                             print(f"Results: {row}")
                         if not isfile(logname):
-                            hdr = 'runid seed start stop texp sqrt_ts flux flux_err ra dec prefactor index scale oncounts offcounts alpha excess sigma offset delay scaleflux caldb irf pipe\n'
+                            hdr = 'runid seed start stop texp sqrt_ts flux flux_err ra dec prefactor index scale on off alpha excess sigma offset delay scaleflux caldb irf pipe\n'
                             log = open(logname, 'w+')
                             log.write(hdr)
                             log.write(row)

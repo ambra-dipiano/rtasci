@@ -118,7 +118,7 @@ for runid in runids:
                 print(f'Instrument response function: {irf}')  
             erange = check_energy_thresholds(erange=[cfg.get('emin'), cfg.get('emax')], irf=irf)
             # outputs
-            logname = f"{datapath}/outputs/{runid}/{cfg.get('tool')}{cfg.get('type')}_offset{offset}_seed{start_count+1:06d}-{start_count+1+trials:06d}.txt"
+            logname = f"{datapath}/outputs/{runid}/{cfg.get('tool')}{cfg.get('type')}-{caldb}-{irf}-seed{start_count+1:06d}-{start_count+trials:06d}.txt"
             if isfile(logname):
                 os.remove(logname)
             # ------------------------------------------------------ loop trials ---!!!
@@ -220,6 +220,8 @@ for runid in runids:
                             coords = xml.getRaDec()
                             ra = coords[0][0]
                             dec = coords[1][0]
+                            if args.print.lower() == 'true':
+                                print(f'TARGET=[{ra}, {dec}]')
                             # spectral ---!
                             spectra = xml.getSpectral()
                             err = xml.getPrefError()[0]
@@ -234,14 +236,14 @@ for runid in runids:
                             sqrt_ts = np.nan
                             print('Candidate not found.')
 
-                        if sigma < 5 or grb.t[0] >= cfg.get('tobs'):
+                        if sigma < 5 or grb.t[1] >= (cfg.get('tobs')+cfg.get('delay')):
                             break
 
-                        row = f"{runid} {count} {grb.t[0]} {grb.t[1]} {texp} {sqrt_ts} {flux} {flux_err} {ra} {dec} {pref} {index} {pivot} {oncounts} {offcounts} {alpha} {excess} {sigma} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {cfg.get('caldb')} {cfg.get('irf')} ctools1d\n"
+                        row = f"{runid} {count} {grb.t[0]} {grb.t[1]} {texp} {sqrt_ts} {flux} {flux_err} {ra} {dec} {pref} {index} {pivot} {oncounts} {offcounts} {alpha} {excess} {sigma} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {caldb} {irf} ctools1d\n"
                         if args.print.lower() == 'true':
                             print(f"Results: {row}")
                         if not isfile(logname):
-                            hdr = 'runid seed start stop texp sqrt_ts flux flux_err ra dec prefactor index scale oncounts offcounts alpha excess sigma offset delay scaleflux caldb irf pipe\n'
+                            hdr = 'runid seed start stop texp sqrt_ts flux flux_err ra dec prefactor index scale on off alpha excess sigma offset delay scaleflux caldb irf pipe\n'
                             log = open(logname, 'w+')
                             log.write(hdr)
                             log.write(row)
