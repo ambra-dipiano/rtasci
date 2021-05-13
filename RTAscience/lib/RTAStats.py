@@ -132,7 +132,7 @@ def hist1d_rayleigh(x, mean, rayleigh_prms={'loc':0, 'scale':[1]}, threshold=1, 
         sns.distplot(el, bins=nbin, kde=False, hist=hist, fit=rayleigh, norm_hist=True, fit_kws={"color": color[index]}, color=color[index], hist_kws={'alpha':alpha, 'range':[0.0, threshold]}, label=leglabel[index])
         plt.axvline(mean[index], c=color[index], ls=ls[index], lw=lw, label='mean ~ %.3fdeg' %mean[index]) if mean != None else None
         if rayleigh_prms['scale'] != None:
-            plt.axvline(rayleigh_prms['scale'][index], c=color[index], ls='-', lw=w, label='mode ~ %.3fdeg' %rayleigh_prms['scale'][index])
+            plt.axvline(rayleigh_prms['scale'][index], c=color[index], ls='-', lw=lw, label='mode ~ %.3fdeg' %rayleigh_prms['scale'][index])
     plt.title(title, fontsize=fontsize)
     plt.xlabel(xlabel, fontsize=fontsize)
     plt.ylabel(ylabel, fontsize=fontsize)
