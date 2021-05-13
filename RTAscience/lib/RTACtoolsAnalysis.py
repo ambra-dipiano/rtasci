@@ -10,6 +10,7 @@
 import gammalib
 import ctools
 import cscripts
+import os
 import numpy as np
 from astropy.io import fits
 
@@ -57,7 +58,7 @@ class RTACtoolsAnalysis() :
         # condition control ---!
         self.set_debug = False  # set/unset debug mode for ctools ---!
         self.set_log = True  # set/unset logfiles for ctools ---!
-        self.edisp = False  # require enegy dispersion ---!
+        self.edisp = True  # require enegy dispersion ---!
         # data ---!
         self.e = [0.03, 150.0]  # energy range (TeV) ---!
         self.roi = 5  # region of interest (deg) ---!
@@ -423,6 +424,8 @@ class RTACtoolsAnalysis() :
     # ctlike wrapper ---!
     def run_maxlikelihood(self, binned=False, exp=None, bkg=None, psf=None, edisp=False, edispcube=None, fix_spat_for_ts=True):
         '''Wrapper of ctlike.'''
+        if self.edisp:
+            edisp = True
         like = ctools.ctlike()
         like['inobs'] = self.input
         like['inmodel'] = self.model
@@ -536,7 +539,7 @@ class RTACtoolsAnalysis() :
         if not self.__on_ram:
             lc.execute()
         else:
-            ls.run()
+            lc.run()
         return
 
     # cssens wrapper ---!
