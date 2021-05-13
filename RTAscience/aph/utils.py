@@ -28,6 +28,7 @@
 
 import csv
 import math
+import numpy as np
 from astropy.coordinates import SkyCoord, Angle
 from RTAscience.aph.photometry import Photometrics
 from RTAscience.aph.irf import EffectiveArea
@@ -44,7 +45,7 @@ def photometrics_counts(events_list, events_type, pointing, true_coords, region_
 
 def li_ma (n_on, n_off, alpha):
     if n_on <= 0 or n_off <= 0 or alpha == 0:
-        return None
+        return np.nan
     fc = (1 + alpha) / alpha
     fb = n_on / (n_on + n_off)
     f  = fc * fb
@@ -55,6 +56,31 @@ def li_ma (n_on, n_off, alpha):
     second = n_off * math.log(g)
     fullb   = first + second
     return math.sqrt(2) * math.sqrt(fullb)
+
+def get_excess(n_on, n_off, alpha):
+    return n_on - alpha * n_off
+
+def get_excess_error(n_on, n_off):
+    dE = np.sqrt(np.sqrt(n_on)**2 + np.sqrt(n_off)**2)
+    return dE
+
+def li_ma_error(n_on, n_off, alpha):
+    if n_on <= 0 or n_off <= 0 or alpha == 0:
+        return np.nan
+    dE = np.sqrt(n_on**2 + n_off**2)
+    A = n_on / (n_on + n_off)
+    dA = np.abs(A) * np.sqrt((np.sqrt(n_on)/n_on)**2 + (dE/(n_on+n_off)**2))
+    B = n_off / (n_on + n_off)
+    dB = np.abs(B) * np.sqrt((np.sqrt(n_off)/n_off)**2 + (dE/(n_on+n_off)**2))
+    lnA = np.log((alpha+1)/alpha * n_on/(n_on+n_off))
+    dlnA = dA / lnA
+    lnB = np.log((alpha+1)*n_off/(n_on+n_off))
+    dlnB = dB / lnB
+    don = np.abs(n_on*lnA) * np.sqrt((np.sqrt(n_on)/n_on)**2 + (dlnA/lnA)**2)
+    doff = np.abs(n_off*lnB) * np.sqrt((np.sqrt(n_off)/n_off)**2 + (dlnB/lnB)**2)
+    dsum = np.sqrt(don**2 + doff**2)
+    error = 0.5 * np.sqrt(n_on*lnA + n_off*lnB) * dsum/(n_on*lnA + n_off*lnB)
+    return error
 
 def read_timeslices_tsv(filename):
     ts = []
