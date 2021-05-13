@@ -113,7 +113,7 @@ for runid in runids:
     for caldb in caldbs:
         if args.print.lower() == 'true':
             print(f'Calibration database: {caldb}')       
-    # ------------------------------------------------------ loop irf ---!!!
+        # ------------------------------------------------------ loop irf ---!!!
         for irf in irfs:
             if args.print.lower() == 'true':
                 print(f'Instrument response function: {irf}')  
@@ -183,14 +183,12 @@ for runid in runids:
                             prefix = join(grbpath, f'texp{exp}s_')
                             grb.run_selection(prefix=prefix)
 
-                        # on/off ---!
+                         # on/off ---!
                         if '.fits' in selphlist:
-                            onoff = selphlist.replace('.fits', '_cspha.xml').replace('/obs/', '/rta_products/')
                             events_type = 'events_filename'
                         else:
-                            onoff = selphlist.replace('.xml', '_cspha.xml').replace('/obs/', '/rta_products/')
                             events_type = 'events_list'
-                            filenames = ManageXml(event_selected)
+                            filenames = ManageXml(selphlist)
                             run_list = filenames.getRunList()
                             filenames.closeXml()
                             del filenames
@@ -220,7 +218,10 @@ for runid in runids:
                         if args.print.lower() == 'true':
                             print(f'Flux={flux}')
 
-                        if sigma < 5 and cfg.get('lightcurve') and cfg.get('cumulative'):
+                        if sigma < 5 or grb.t[0] >= cfg.get('tobs'):
+                            break
+
+                        elif sigma < 5 and cfg.get('lightcurve'):
                             if exp < max(cfg.get('exposure')):
                                 if args.print.lower() == 'true':
                                     print(f'No significance detection, increase exposure.')
