@@ -14,6 +14,7 @@ import numpy as np
 from astropy.io import fits
 from os.path import join, expandvars
 from scipy import stats
+from scipy.interpolate import interp1d, interp2d
 
 # center of fov from FITS ---!
 def get_pointing(fits_file):
@@ -232,24 +233,24 @@ def compute_phcount(texp, irf, k0, offset=1.638, eTeV=[0.03, 150.0], nbin=1000):
         s += float(ph) # sum dph
     return s
 
-def phm_options(cfg, texp, start, stop, target, pointing, caldb, irf, index=-2.4, bkg_method="reflection", radius=0.2, pixsize=0.05, runid='crab', verbose=0, prefix=''):
+def phm_options(erange, texp, time_int, target, pointing, irf_file, index=-2.4, bkg_method="reflection", radius=0.2, pixsize=0.05, verbose=0, save_off_reg='.'):
     opts = {}
     opts['verbose'] = verbose
-    opts['irf_file'] = join(expandvars('$CTOOLS'), f"share/caldb/data/cta/{caldb}/bcf/{irf}/irf_file.fits")
+    opts['irf_file'] = irf_file
     opts['source_ra'] = target[0]
     opts['source_dec'] = target[1]
     opts['pointing_ra'] = pointing[0]
     opts['pointing_dec'] = pointing[1]
     opts['region_radius'] = radius
     opts['background_method'] = bkg_method
-    opts['save_off_regions'] = f"{expandvars(cfg.get('data'))}/rta_products/{runid}/{prefix}off_regions.reg"
-    opts['energy_min'] = cfg.get('emin')
-    opts['energy_max'] = cfg.get('emax')
+    opts['save_off_regions'] = save_off_reg
+    opts['energy_min'] = erange[0]
+    opts['energy_max'] = erange[1]
     opts['pixel_size'] = pixsize
-    opts['begin_time'] = start
-    opts['end_time'] = stop
+    opts['begin_time'] = time_int[0]
+    opts['end_time'] = time_int[1]
     opts['step_time'] = texp
-    opts['power_law_index'] = index
+    opts['power_law_index'] = -np.abs(index)
     return opts
 
 # check energy thresholds agains irf

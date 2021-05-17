@@ -18,7 +18,7 @@ from gammapy.modeling import Fit
 from gammapy.modeling.models import PowerLawSpectralModel, SkyModel, PointSpatialModel
 
 
-def gammapy_config(cfg, obs, target=None, pointing=None, radius=0.2, rbins=20, etrue=[0.02, 200], tbins=30, maxoffset=2.5, fitflux=False, fbins=30, source='GRB', level='info', stack=False, exclusion=None, safe_mask=['aeff-default', 'offset-max'], save=False):
+def gammapy_config(cfg, obs, target=None, pointing=None, radius=0.2, rbins=20, etrue=[0.02, 200], tbins=30, maxoffset=2.5, fitflux=False, fbins=30, source='GRB', level='info', stack=False, exclusion=None, safe_mask=['aeff-default', 'offset-max'], save=False, blind=False):
     """Wrapper for gammapy configuration class."""
     if target is None and pointing is None:
         raise ValueError("Either target or pointing must be not null.")
@@ -67,12 +67,12 @@ def gammapy_config(cfg, obs, target=None, pointing=None, radius=0.2, rbins=20, e
         config.write("config1d.yaml", overwrite=True)
     return config
 
-def set_model(target, source='Crab', freeze_spc=['index'], freeze_spt=['lon_0', 'lat_0'], default=True):
+def set_model(target, source='Crab', freeze_spc=['index'], freeze_spt=['lon_0', 'lat_0'], default=True, index=2.4):
     """Wrapper to create gammapy model."""
     target = SkyCoord(target[0], target[1], unit='deg', frame='icrs')
     spatial_model = PointSpatialModel(lon_0=target.ra, lat_0=target.dec, frame="icrs")
     if default:
-        spectral_model = PowerLawSpectralModel(index=2.4, amplitude="5.7e-16 cm-2 s-1 MeV-1", reference="1e6 MeV")
+        spectral_model = PowerLawSpectralModel(index=index, amplitude="5.7e-16 cm-2 s-1 MeV-1", reference="1e6 MeV")
     else:
         raise ValueError('Option default=False not implemented yet.')
     for prm in freeze_spt:
