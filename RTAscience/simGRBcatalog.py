@@ -128,6 +128,8 @@ def simulateTrial(trial_args):
     sim.seed = count
     sim.set_ebl = cfg.get('set_ebl')
     sim.pointing = pointing
+    if args.print.lower() == 'true':
+        print(f'Pointing = {sim.pointing} s')
     sim.tmax = tmax
 
     # get time grid ---!
