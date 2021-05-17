@@ -24,6 +24,7 @@ parser.add_argument('--off', type=str, default='gw', help='offset')
 parser.add_argument('--flux', type=float, default=1, help='flux scaling factor')
 parser.add_argument('--env', type=str, default='scitools', help='environment to activate')
 parser.add_argument('--pipe', type=str, default='pipe', help='pipeline to run')
+parser.add_argument('--print', type=str, default='false', help='print checks and outputs')
 args = parser.parse_args()
 
 #print(args)
@@ -63,7 +64,7 @@ for i in range(int(args.tt/args.tn)):
         f.write(f'\nsource activate {args.env}')
         f.write('\n\texport DATA=/data01/homes/cta/gammapy_integration/DATA/')
         if args.pipe.lower() == 'pipe':
-            f.write(f'\n\tpython rtapipe.py -f {yml}\n')
+            f.write(f'\n\tpython rtapipe.py -f {yml} --print {args.print.lower()}\n')
         elif args.pipe.lower() == 'wilks':
             f.write(f'\n\tpython emptyfields.py -f {yml}\n')
 
