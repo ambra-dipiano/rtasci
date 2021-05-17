@@ -196,7 +196,7 @@ for runid in runids:
                         observation.fixed_pointing_info
 
                         # initialise gammapy configuration ---!
-                        config = gammapy_config(cfg=cfg, target=target, obs=selphlist)
+                        config = gammapy_config(cfg=cfg, target=target, obs=selphlist, blind=cfg.get('blind'))
                         # reduce dataset ---!
                         grb2 = Analysis(config)
                         grb2.observations = observations
@@ -213,9 +213,11 @@ for runid in runids:
                             print(f"on = {oncounts}; off={offcounts}; excess={excess}; alpha={alpha}; sigma={sigma}")
 
                         if sigma < 5:
+                            if args.print.lower() == 'true':
+                                print("Sigma < 5 => break")  
                             break
                         data = grb2.datasets.stack_reduce(name="stacked")
-                        model = set_model(default=True, target=target, source='GRB')
+                        model = set_model(default=True, target=target, source='GRB', index=cfg.get('index'))
                         data.models = model[0]
                         # fit ---!
                         fit = Fit([data])

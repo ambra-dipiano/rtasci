@@ -202,13 +202,13 @@ for runid in runids:
                             print(f'Photometry on={oncounts} off={offcounts} ex={excess} a={alpha}')
                             print('Li&Ma significance:', sigma)
                         # fix parameters
-                        xml = ManageXml(onoff)
+                        onoff_model = onoff.replace('.xml','_model.xml')
+                        xml = ManageXml(onoff_model)
                         xml.setTsTrue() 
                         xml.parametersFreeFixed(src_free=['Prefactor'], bkg_free=[])
-                        xml.setModelParameters(parameters=['RA', 'DEC'], values=target)
+                        xml.setModelParameters(parameters=['RA', 'DEC', 'Index'], values=[target[0], target[1], cfg.get('index')])
                         xml.closeXml() 
                         # fit ---!
-                        onoff_model = onoff.replace('.xml','_model.xml')
                         grb.input = onoff
                         grb.model = onoff_model
                         grb.output = fit
@@ -239,7 +239,7 @@ for runid in runids:
                         if sigma < 5 or grb.t[1] >= (cfg.get('tobs')+cfg.get('delay')):
                             break
 
-                        row = f"{runid} {count} {grb.t[0]} {grb.t[1]} {texp} {sqrt_ts} {flux} {flux_err} {ra} {dec} {pref} {index} {pivot} {oncounts} {offcounts} {alpha} {excess} {sigma} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {caldb} {irf} ctools1d\n"
+                        row = f"{runid} {count} {grb.t[0]} {grb.t[1]} {texp} {sqrt_ts} {flux} {flux_err} {ra} {dec} {pref} {np.abs(index)} {pivot} {oncounts} {offcounts} {alpha} {excess} {sigma} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {caldb} {irf} ctools1d\n"
                         if args.print.lower() == 'true':
                             print(f"Results: {row}")
                         if not isfile(logname):
