@@ -171,8 +171,6 @@ for runid in runids:
                         if args.print.lower() == 'true':
                             print(f"Selection t = {grb.t} s")
                         texp = grb.t[1] - grb.t[0]
-                        if texp != exp:
-                            raise ValueError("exp != texp")
                         if args.print.lower() == 'true':
                             print(f"Exposure = {texp} s")
                         grb.input = phlist
