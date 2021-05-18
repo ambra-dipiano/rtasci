@@ -148,7 +148,7 @@ for runid in runids:
                 for exp in cfg.get('exposure'):   
                     if cfg.get('cumulative'):
                         times = increase_exposure(start=exp, stop=cfg.get('tobs'), function='linear')
-                    if cfg.get('lightcurve'):
+                    elif cfg.get('lightcurve'):
                         times = lightcurve_base_binning(start=cfg.get('delay'), stop=cfg.get('tobs'), exposure=exp)
                     else:
                         times = exp

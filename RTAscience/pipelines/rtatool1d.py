@@ -146,7 +146,7 @@ for runid in runids:
                 for exp in cfg.get('exposure'):   
                     if cfg.get('cumulative'):
                         times = increase_exposure(start=exp, stop=cfg.get('tobs'), function='linear')
-                    if cfg.get('lightcurve'):
+                    elif cfg.get('lightcurve'):
                         times = lightcurve_base_binning(start=cfg.get('delay'), stop=cfg.get('tobs'), exposure=exp)
                     else:
                         times = exp
@@ -198,7 +198,7 @@ for runid in runids:
                         
                         # aperture photometry ---!
                         phm = Photometrics({events_type: selphlist})
-                        opts = phm_options(erange=grb.e, texp=texp, time_int=grb.t, target=target, pointing=pointing, index=cfg.get('index'), irf=irf, caldb=caldb, save_off_reg=f"{expandvars(cfg.get('data'))}/rta_products/{runid}/texp{exp}s_{name}_off_regions.reg", irf_file=join(expandvars('$CTOOLS'), f"share/caldb/data/cta/{caldb}/bcf/{irf}/irf_file.fits"))
+                        opts = phm_options(erange=grb.e, texp=texp, time_int=grb.t, target=target, pointing=pointing, index=cfg.get('index'), save_off_reg=f"{expandvars(cfg.get('data'))}/rta_products/{runid}/texp{exp}s_{name}_off_regions.reg", irf_file=join(expandvars('$CTOOLS'), f"share/caldb/data/cta/{caldb}/bcf/{irf}/irf_file.fits"))
                         off_regions = find_off_regions(phm, opts['background_method'], target, pointing, opts['region_radius'], verbose=opts['verbose'], save=opts['save_off_regions'])
                         oncounts, offcounts, alpha, excess, sigma, err_note = counting(phm, target, opts['region_radius'], off_regions, e_min=opts['energy_min'], e_max=opts['energy_max'], t_min=opts['begin_time'], t_max=opts['end_time'], draconian=False)
                         if args.print.lower() == 'true':
