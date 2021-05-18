@@ -90,6 +90,8 @@ for runid in runids:
     # true coords ---!
 
     target = get_pointing(f"{os.path.expandvars(cfg.get('catalog'))}/{runid}.fits")
+    if args.print.lower() == 'true':
+        print(f'Target true = {target} deg')
     # get alert pointing
     if type(cfg.get('offset')) == str and cfg.get('offset').lower() == 'gw':
         mergerpath = os.path.expandvars(cfg.get('merger'))
@@ -108,6 +110,8 @@ for runid in runids:
         else:
             pointing[0] += 0.0
             pointing[1] += cfg.get('offset')
+    if args.print.lower() == 'true':
+        print(f'Pointing = {pointing} deg')
 
     # ------------------------------------------------------ loop caldb ---!!!
     for caldb in caldbs:
@@ -146,10 +150,11 @@ for runid in runids:
                 for exp in cfg.get('exposure'):   
                     if cfg.get('cumulative'):
                         times = increase_exposure(start=exp, stop=cfg.get('tobs'), function='linear')
-                    if cfg.get('lightcurve'):
+                    elif cfg.get('lightcurve'):
+                        print('here')
                         times = lightcurve_base_binning(start=cfg.get('delay'), stop=cfg.get('tobs'), exposure=exp)
                     else:
-                        times = exp
+                        times = [exp]
                     if args.print.lower() == 'true':
                         print(f"Time selections = {times} s")
 
@@ -171,8 +176,6 @@ for runid in runids:
                         if args.print.lower() == 'true':
                             print(f"Selection t = {grb.t} s")
                         texp = grb.t[1] - grb.t[0]
-                        if texp != exp:
-                            raise ValueError("exp != texp")
                         if args.print.lower() == 'true':
                             print(f"Exposure = {texp} s")
                         grb.input = phlist
@@ -228,7 +231,7 @@ for runid in runids:
                             target = xml.getRaDec()
                             ra = target[0][0]
                             dec = target[1][0]
-                            offset = SkyCoord(ra=ra, dec=dec, unit='deg', frame='icrs').separation(SkyCoord(ra=pointing[0], dec=pointing[1], unit='deg', frame='icrs'))
+                            offset = SkyCoord(ra=ra, dec=dec, unit='deg', frame='icrs').separation(SkyCoord(ra=pointing[0], dec=pointing[1], unit='deg', frame='icrs')).deg
                             target = (ra, dec)
                             if args.print.lower() == 'true':
                                 print(f'Target = [{ra}, {dec}]')
@@ -249,7 +252,7 @@ for runid in runids:
 
                             # aperture photometry ---!
                             phm = Photometrics({events_type: selphlist})
-                            opts = phm_options(cfg, texp=texp, start=grb.t[0], stop=grb.t[1], target=target, pointing=pointing, runid=runid, irf=irf, caldb=caldb, prefix=f"texp{exp}s_{name}_")
+                            opts = phm_options(erange=grb.e, texp=texp, time_int=grb.t, target=target, pointing=pointing, index=-2.1, save_off_reg=f"{expandvars(cfg.get('data'))}/rta_products/{runid}/texp{exp}s_{name}_off_regions.reg", irf_file=join(expandvars('$CTOOLS'), f"share/caldb/data/cta/{caldb}/bcf/{irf}/irf_file.fits"))
                             off_regions = find_off_regions(phm, opts['background_method'], target, pointing, opts['region_radius'], verbose=opts['verbose'], save=opts['save_off_regions'])
                             on, off, alpha, excess, sigma, err_note = counting(phm, target, opts['region_radius'], off_regions, e_min=opts['energy_min'], e_max=opts['energy_max'], t_min=opts['begin_time'], t_max=opts['end_time'], draconian=False)
                             if args.print.lower() == 'true':
@@ -261,7 +264,7 @@ for runid in runids:
                                 print('No candidates found.')   
                             ra, dec, on, off, alpha, excess, sigma, offset = np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan , np.nan
 
-                        if sigma < 5 or offset.deg > cfg.get('roi')-0.5 or grb.t[1] >= (cfg.get('tobs')+cfg.get('delay')):
+                        if sigma < 5 or offset > cfg.get('roi')-0.5 or grb.t[1] >= (cfg.get('tobs')+cfg.get('delay')):
                             break
 
                         else:
