@@ -235,7 +235,7 @@ for runid in runids:
                             print(f"flux={flux} +/- {flux_err}")
                             print(f"Spectral k0={k0}; gamma={gamma}; e0={e0}")
 
-                        if sigma < 5 or grb.t[1] >= (cfg.get('tobs')+cfg.get('delay')):
+                        if sigma < 5 or grb.t[1] > (cfg.get('tobs')+cfg.get('delay')):
                             break
 
                         # save data ---!

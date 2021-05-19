@@ -234,7 +234,7 @@ for runid in runids:
                             sqrt_ts = np.nan
                             print('Candidate not found.')
 
-                        if sigma < 5 or grb.t[1] >= (cfg.get('tobs')+cfg.get('delay')):
+                        if sigma < 5 or grb.t[1] > (cfg.get('tobs')+cfg.get('delay')):
                             break
 
                         row = f"{runid} {count} {grb.t[0]} {grb.t[1]} {texp} {sqrt_ts} {flux} {flux_err} {ra} {dec} {pref} {np.abs(index)} {pivot} {oncounts} {offcounts} {alpha} {excess} {sigma} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {caldb} {irf} ctools1d\n"

@@ -216,7 +216,7 @@ for runid in runids:
                         if args.print.lower() == 'true':
                             print(f'Flux={flux}')
 
-                        if sigma < 5 or grb.t[1] >= (cfg.get('tobs')+cfg.get('delay')):
+                        if sigma < 5 or grb.t[1] > (cfg.get('tobs')+cfg.get('delay')):
                             break
 
                         elif sigma < 5 and cfg.get('lightcurve'):

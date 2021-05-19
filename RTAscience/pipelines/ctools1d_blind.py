@@ -6,7 +6,8 @@
 # Authors:
 # Ambra Di Piano <ambra.dipiano@inaf.it>
 # *******************************************************************************
-
+import time
+tstamp = time.time()
 import numpy as np
 import os
 import sys
@@ -18,6 +19,8 @@ from RTAscience.lib.RTAUtils import *
 from RTAscience.cfg.Config import Config
 from RTAscience.aph.utils import *
 from astropy.coordinates import SkyCoord
+
+runtime = time.time() - tstamp
 
 parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
 parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
@@ -160,6 +163,7 @@ for runid in runids:
 
                     # ---------------------------------------------------------- loop binning ---!!!
                     for t in times:
+                        tcpu = time.time()
                         if t == len(times) and cfg.get('lightcurve'):
                             break
                         # selection ---!
@@ -264,7 +268,7 @@ for runid in runids:
                                 print('No candidates found.')   
                             ra, dec, on, off, alpha, excess, sigma, offset = np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan , np.nan
 
-                        if sigma < 5 or offset > cfg.get('roi')-0.5 or grb.t[1] >= (cfg.get('tobs')+cfg.get('delay')):
+                        if sigma < 5 or offset > cfg.get('roi')-0.5 or grb.t[1] > (cfg.get('tobs')+cfg.get('delay')):
                             break
 
                         else:
@@ -279,7 +283,7 @@ for runid in runids:
                                 print(f'Flux={flux}')
 
                         if sigma < 5 and cfg.get('lightcurve'):
-                            if exp < max(cfg.get('exposure')) or grb.t[0] >= cfg.get('tobs'):
+                            if exp < max(cfg.get('exposure')) or grb.t[0] > cfg.get('tobs'):
                                 if args.print.lower() == 'true':
                                     print(f'No significant detection, increase exposure.')
                                     break
@@ -288,11 +292,12 @@ for runid in runids:
 
                         # save results ---!
                         k0, e0, flux_err, sqrt_ts = np.nan, np.nan, np.nan, np.nan
-                        row = f"{runid} {count} {grb.t[0]} {grb.t[1]} {grb.t[1]-grb.t[-0]} {sqrt_ts} {flux} {flux_err} {ra} {dec} {k0} {gamma} {e0} {on} {off} {alpha} {excess} {sigma} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {caldb} {irf} ctools1d_blind\n"
+                        timing = runtime + time.time() - tcpu
+                        row = f"{runid} {count} {grb.t[0]} {grb.t[1]} {grb.t[1]-grb.t[-0]} {sqrt_ts} {flux} {flux_err} {ra} {dec} {k0} {gamma} {e0} {on} {off} {alpha} {excess} {sigma} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {caldb} {irf} ctools1d_blind {runtime}\n"
                         if args.print.lower() == 'true':
                             print(f"Results: {row}")
                         if not isfile(logname):
-                            hdr = 'runid seed start stop texp sqrt_ts flux flux_err ra dec prefactor index scale on off alpha excess sigma offset delay scaleflux caldb irf pipe\n'
+                            hdr = 'runid seed start stop texp sqrt_ts flux flux_err ra dec prefactor index scale on off alpha excess sigma offset delay scaleflux caldb irf pipe runtime\n'
                             log = open(logname, 'w+')
                             log.write(hdr)
                             log.write(row)
