@@ -147,7 +147,7 @@ def simulateTrial(trial_args):
         event_bins.insert(0, bkg)
         sim.t = [0, cfg.get('onset')]
         if args.print.lower() == 'true':
-            print(f"GTI (bkg) = {sim.t)} s")
+            print(f"GTI (bkg) = {sim.t} s")
         sim.model = bkg_model
         sim.output = bkg
         sim.run_simulation()
