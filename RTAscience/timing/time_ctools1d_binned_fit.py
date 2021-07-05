@@ -10,22 +10,22 @@
 import time
 import sys
 import os
-import RTAscience.lib.RTACtoolsAnalysis
 texp = sys.argv[1]
 first = sys.argv[2]
 
 # start timing
 t = time.time()
 clock0 = time.time()
-from lib.RTACtoolsAnalysis import RTACtoolsAnalysis
-from lib.RTAUtils import *
-from lib.RTAManageXml import ManageXml
+from RTAscience.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
+from RTAscience.lib.RTAUtils import *
+from RTAscience.lib.RTAManageXml import ManageXml
 timport = time.time() - t
 print(f'Imports : {timport} s\n')
 
 t = time.time()
-rootpath = str(os.path.dirname(os.path.abspath(__file__))).replace('cta-sag-sci', '')
-obspath = f'{rootpath}/DATA/selections/crab/'
+edisp = True
+rootpath = "/data01/homes/cta/gammapy_integration"
+obspath = f'{rootpath}/DATA/obs/crab/'
 rtapath = f'{rootpath}/DATA/rta_products/crab/'
 modelpath = f'{rootpath}/DATA/models/'
 filename = f'{obspath}crab_offax_texp{texp}s_n01.fits'
@@ -54,12 +54,14 @@ analysis.nthreads = 1
 analysis.caldb = 'prod3b-v2'
 analysis.irf = 'South_z20_0.5h'
 analysis.e = [0.05, 20]
+analysis.t = [0, texp]
+analysis.roi = 5
 analysis.input = filename
 analysis.model = model
 analysis.src_name = 'Crab'
 analysis.target = [target[0][0], target[1][0]]
 analysis.output = onoff_obs
-analysis.run_onoff(prefix=onoff_obs.replace('.xml',''), ebins=10)
+analysis.run_onoff(prefix=onoff_obs.replace('.xml',''), ebins=30, etruemin=0.03, etruemax=30, etruebins=40, ebins_alg='LOG', maxoffset=2.5)
 tonoff = time.time() - t
 print(f'Onoff: {tonoff} s\n')
 
@@ -68,7 +70,7 @@ t = time.time()
 analysis.input = onoff_obs
 analysis.model = onoff_model
 analysis.output = fitname
-analysis.run_maxlikelihood()
+analysis.run_maxlikelihood(edisp=edisp)
 tfit = time.time() - t
 print(f'Fitting: {tfit} s\n')
 
@@ -88,6 +90,7 @@ t = time.time()
 spectra = results.getSpectral()
 index, pref, pivot = spectra[0][0], spectra[1][0], spectra[2][0]
 err = results.getPrefError()[0]
+print(analysis.e)
 phflux = phflux_powerlaw(index, pref, pivot, analysis.e, unit='TeV')
 phflux_err = phflux_powerlaw(index, err, pivot, analysis.e, unit='TeV')
 print(f'PH-FLUX {phflux} +/- {phflux_err}\n')
@@ -99,13 +102,16 @@ print(f'Total time: {ttotal} s\n')
 print('\n\n-----------------------------------------------------\n\n')
 
 logname = f'{rootpath}/DATA/outputs/crab/ctools1d_binned_fit.csv'
+row = f'{texp} {np.sqrt(ts)} {phflux} {phflux_err} {ttotal} {timport} {tsetup} {tmodel} {tonoff} {tfit} {tstat} {tflux}\n'
 if first == 'True':
     hdr = 'texp sqrt_ts flux flux_err ttotal timport tsetup tmodel tonoff tfit tstat tflux\n'
     log = open(logname, 'w+')
     log.write(hdr)
-    log.write(f'{texp} {np.sqrt(ts)} {phflux} {phflux_err} {ttotal} {timport} {tsetup} {tmodel} {tonoff} {tfit} {tstat} {tflux}\n')
+    log.write(row)
     log.close()
 else:
     log = open(logname, 'a')
-    log.write(f'{texp} {np.sqrt(ts)} {phflux} {phflux_err} {ttotal} {timport} {tsetup} {tmodel} {tonoff} {tfit} {tstat} {tflux}\n')
+    log.write(row)
     log.close()
+
+print(row)

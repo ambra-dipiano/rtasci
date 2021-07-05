@@ -59,7 +59,7 @@ class ManageXml():
         '''Returns TS values of all sources in library.'''
         for src in self.root.findall('source'):
             if highest == None:
-                if src.attrib['name'] != 'Background' and src.attrib['name'] != 'CTABackgroundModel':
+                if 'Background' not in src.attrib['name']:
                     tsv = float(src.attrib['ts'])
                     self.tsv_list.append(tsv)
             else:
@@ -74,7 +74,7 @@ class ManageXml():
         ra_list, dec_list = ([] for i in range(2))
         for src in self.root.findall('source'):
             if highest == None:
-                if src.attrib['name'] != 'Background' and src.attrib['name'] != 'CTABackgroundModel':
+                if 'Background' not in src.attrib['name']:
                     ra = float(src.find('spatialModel/parameter[@name="RA"]').attrib['value'])
                     dec = float(src.find('spatialModel/parameter[@name="DEC"]').attrib['value'])
                     ra_list.append(ra)
@@ -94,7 +94,7 @@ class ManageXml():
         ra_list, dec_list = ([] for i in range(2))
         for src in self.root.findall('source'):
             if highest == None:
-                if src.attrib['name'] != 'Background' and src.attrib['name'] != 'CTABackgroundModel':
+                if 'Background' not in src.attrib['name']:
                     ra = float(src.find('spatialModel/parameter[@name="RA"]').attrib['value'])
                     dec = float(src.find('spatialModel/parameter[@name="DEC"]').attrib['value'])
                     ra_list.append(ra)
@@ -115,7 +115,7 @@ class ManageXml():
         if self.if_cut is True :
             cutoff_list = []
         for src in self.root.findall('source'):
-            if src.attrib['name'] != 'Background' and src.attrib['name'] != 'CTABackgroundModel':
+            if 'Background' not in src.attrib['name']:
                 if highest == None:
                     index = float(src.find('spectrum/parameter[@name="Index"]').attrib['value']) * float(
                         src.find('spectrum/parameter[@name="Index"]').attrib['scale'])
@@ -157,7 +157,7 @@ class ManageXml():
         err_list = []
         for src in self.root.findall('source'):
             if highest == None:
-                if src.attrib['name'] != 'Background' and src.attrib['name'] != 'CTABackgroundModel':
+                if 'Background' not in src.attrib['name']:
                     err = float(src.find('spectrum/parameter[@name="Prefactor"]').attrib['error']) * float(
                         src.find('spectrum/parameter[@name="Prefactor"]').attrib['scale'])
                     err_list.append(err)
@@ -198,7 +198,7 @@ class ManageXml():
     def setTsTrue(self):
         '''Sets tscalc true.'''
         for src in self.root.findall('source'):
-            if src.attrib['name'] != 'Background' and src.attrib['name'] != 'CTABackgroundModel':
+            if 'Background' not in src.attrib['name']:
                 src.set('tscalc', '1')
         self.__saveXml()
         return
@@ -206,12 +206,12 @@ class ManageXml():
     def setInstrument(self, instrument='CTA'):
         '''Sets Instrument in the XML model.'''
         for src in self.root.findall('source'):
-            if src.attrib['name'] != 'Background' and src.attrib['name'] != 'CTABackgroundModel':
+            if 'Background' not in src.attrib['name']:
                 src.set('instrument', instrument)
         self.__saveXml()
         return
 
-    # modeify the spectral component of candidate list ---!
+    # modify the spectral component of candidate list ---!
     def modXml(self, overwrite=True):
         '''Modifies the XML model by halving the Prefactor of the spectral model of each subsequent detected candidated.'''
         self.__setModel()
@@ -266,7 +266,7 @@ class ManageXml():
     def parametersFreeFixed(self, src_free=['Prefactor'], bkg_free=['Prefactor', 'Index']):
         '''Frees selected parameters and fixed all others, for all sources in library.'''
         for src in self.root.findall('source'):
-            if src.attrib['name'] != 'Background' and src.attrib['name'] != 'CTABackgroundModel':
+            if 'Background' not in src.attrib['name']:
                 for prm in src.findall('*/parameter'):
                     if prm.attrib['name'] not in src_free:
                         prm.set('free', '0')
@@ -309,14 +309,16 @@ class ManageXml():
             filenames.append(obs.attrib['file'])
         return filenames
 
-    def setModelParameters(self, source, parameters=(), values=()):
+    def setModelParameters(self, parameters=(), values=(), source=None):
         '''Sets values of selected model parameters.'''
         parameters = tuple(parameters)
         values = tuple(values)
         for src in self.root.findall('source'):
-            if src.attrib['name'] != 'Background' and src.attrib['name'] != 'CTABackgroundModel':
-                src.set('name', source)
+            if 'Background' not in src.attrib['name']:
+                if source != None:
+                    src.set('name', source)
                 for i, prm in enumerate(parameters):
-                    src.find('*/parameter[@name="%s"]' % prm).set('value', str(values[i]))
+                    p = src.find('*/parameter[@name="%s"]' % prm)
+                    p.set('value', str(values[i]))
         self.__saveXml()
         return

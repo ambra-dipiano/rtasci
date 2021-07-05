@@ -17,15 +17,15 @@ first = sys.argv[2]
 t = time.time()
 clock0 = time.time()
 import numpy as np
-from lib.RTACtoolsAnalysis import RTACtoolsAnalysis
-from lib.RTAUtils import phflux_powerlaw
-from lib.RTAManageXml import ManageXml
+from RTAscience.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
+from RTAscience.lib.RTAUtils import phflux_powerlaw
+from RTAscience.lib.RTAManageXml import ManageXml
 timport = time.time() - t
 print(f'Imports : {timport} s\n')
 
 t = time.time()
-rootpath = str(os.path.dirname(os.path.abspath(__file__))).replace('cta-sag-sci', '')
-obspath = f'{rootpath}/DATA/selections/crab/'
+rootpath = "/data01/homes/cta/gammapy_integration"
+obspath = f'{rootpath}/DATA/obs/crab/'
 rtapath = f'{rootpath}/DATA/rta_products/crab/'
 filename = f'{obspath}crab_offax_texp{texp}s_n01.fits'
 skyname = filename.replace(obspath,rtapath).replace('.fits', '_skymap.fits')
@@ -42,6 +42,8 @@ analysis.nthreads = 1
 analysis.caldb = 'prod3b-v2'
 analysis.irf = 'South_z20_0.5h'
 analysis.e = [0.05, 20]
+analysis.t = [0, texp]
+analysis.roi = 5
 analysis.input = filename
 analysis.output = skyname
 analysis.run_skymap()
@@ -108,13 +110,16 @@ print(f'Total time: {ttotal} s\n')
 print('\n\n-----------------------------------------------------\n\n')
 
 logname = f'{rootpath}/DATA/outputs/crab/ctools3d_blindfit.csv'
+row = f'{texp} {np.sqrt(ts)} {phflux} {phflux_err} {ra} {dec} {ttotal} {timport} {tsetup} {tsky} {tblind} {tmodel} {tfit} {tstat} {tflux}\n'
 if first == 'True':
     hdr = 'texp sqrt_ts flux flux_err ra dec ttotal timport tsetup tsky tblind tmodel tfit tstat tflux\n'
     log = open(logname, 'w+')
     log.write(hdr)
-    log.write(f'{texp} {np.sqrt(ts)} {phflux} {phflux_err} {ra} {dec} {ttotal} {timport} {tsetup} {tsky} {tblind} {tmodel} {tfit} {tstat} {tflux}\n')
+    log.write(row)
     log.close()
 else:
     log = open(logname, 'a')
-    log.write(f'{texp} {np.sqrt(ts)} {phflux} {phflux_err} {ra} {dec} {ttotal} {timport} {tsetup} {tsky} {tblind} {tmodel} {tfit} {tstat} {tflux}\n')
+    log.write(row)
     log.close()
+
+print(row)

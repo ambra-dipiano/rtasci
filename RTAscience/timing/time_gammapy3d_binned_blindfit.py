@@ -34,7 +34,7 @@ rootpath = str(os.path.dirname(os.path.abspath(__file__))).replace('cta-sag-sci/
 print(rootpath)
 caldb = f'{rootpath}/caldb/data/cta/prod3b-v2/bcf/South_z20_0.5h/irf_file.fits'
 irfs = load_cta_irfs(caldb)
-filename = f'{rootpath}/DATA/selections/crab/crab_offax_texp{texp}s_n01.fits'
+filename = f'{rootpath}/DATA/obs/crab/crab_offax_texp{texp}s_n01.fits'
 obs_id = 1
 print(f'Fits: {filename.replace(rootpath, "")}\n')
 tsetup = time.time() - t
@@ -72,14 +72,14 @@ config_3d.datasets.type = '3d'  # Analysis type is 3D
 config_3d.datasets.stack = False  # We keep track of datasets in all bunches
 # geometry of the map for 3d
 config_3d.datasets.geom.wcs.skydir = {'lon': pointing.ra, 'lat': pointing.dec, 'frame': 'icrs'}  
-config_3d.datasets.geom.wcs.fov = {'width': '6 deg', 'height': '6 deg'}
+config_3d.datasets.geom.wcs.fov = {'width': '10 deg', 'height': '10 deg'}
 config_3d.datasets.geom.wcs.binsize = '0.02 deg'
 # The FoV radius to use for cutouts
 config_3d.datasets.geom.selection.offset_max = 2.5 * u.deg
 # reconstructed energy axis for the counts map 
-config_3d.datasets.geom.axes.energy = dict(min= "0.05 TeV", max="10 TeV", nbins=10)
+config_3d.datasets.geom.axes.energy = dict(min= "0.05 TeV", max="20 TeV", nbins=30)
 # true energy axis for the IRF maps (should always be wider range and larger nbins)
-config_3d.datasets.geom.axes.energy_true = dict(min= "0.03 TeV", max="30 TeV", nbins=30)
+config_3d.datasets.geom.axes.energy_true = dict(min= "0.03 TeV", max="30 TeV", nbins=40)
 # backgroun
 config_3d.datasets.background = {'method': 'fov_background', 'exclusion': None}
 # safe mask from IRF and max offset
@@ -107,7 +107,7 @@ t = time.time()
 stacked_3d = analysis_3d.datasets.stack_reduce(name="stacked_3d")
 estimator = ExcessMapEstimator(correlation_radius='0.1 deg', selection_optional=[])
 maps = estimator.run(stacked_3d)
-hotspots_table = find_peaks(maps["sqrt_ts"].get_image_by_idx((0,)), threshold=9, min_distance='0.5 deg')
+hotspots_table = find_peaks(maps["sqrt_ts"].get_image_by_idx((0,)), threshold=3, min_distance='0.5 deg')
 try:
     hotspots = SkyCoord(hotspots_table["ra"], hotspots_table["dec"])
     ra = hotspots.ra[0].deg
@@ -130,7 +130,7 @@ print(f'Statistics: {tstat} s\n')
 # modelling
 t = time.time()
 spatial_model = PointSpatialModel(lon_0=target.ra, lat_0=target.dec, frame="icrs")
-spectral_model = PowerLawSpectralModel(index=2.3, amplitude=2e-12 * u.Unit("1 / (cm2 s TeV)"), reference=1 * u.TeV)
+spectral_model = PowerLawSpectralModel(index=2.48, amplitude=2e-12 * u.Unit("1 / (cm2 s TeV)"), reference=1 * u.TeV)
 spectral_model.parameters['index'].frozen = True
 spatial_model.parameters['lon_0'].frozen = True
 spatial_model.parameters['lat_0'].frozen = True
@@ -161,13 +161,16 @@ print(f'Total time: {ttotal} s\n')
 print('\n\n-----------------------------------------------------\n\n')
 
 logname = f'{rootpath}/DATA/outputs/crab/gammapy3d_binned_blindfit.csv'
+row = f'{texp} {stats["sqrt_ts"][0]} {phflux_err.value[0]} {phflux_err.value[1]} {ra} {dec} {ttotal} {timport} {tsetup} {tconf} {tred} {tblind} {tstat} {tmodel} {tfit} {tflux}\n'
 if first == 'True':
     hdr = 'texp sqrt_ts flux flux_err ra dec ttotal timport tsetup tobs tconf tred tblind tstat tmodel tfit tflux\n'
     log = open(logname, 'w+')
     log.write(hdr)
-    log.write(f'{texp} {stats["sqrt_ts"][0]} {phflux_err.value[0]} {phflux_err.value[1]} {ra} {dec} {ttotal} {timport} {tsetup} {tconf} {tred} {tblind} {tstat} {tmodel} {tfit} {tflux}\n')
+    log.write(row)
     log.close()
 else:
     log = open(logname, 'a')
-    log.write(f'{texp} {stats["sqrt_ts"][0]} {phflux_err.value[0]} {phflux_err.value[1]} {ra} {dec} {ttotal} {timport} {tsetup} {tconf} {tred} {tblind} {tstat} {tmodel} {tfit} {tflux}\n')
+    log.write(row)
     log.close()
+
+print(row)

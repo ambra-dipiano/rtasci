@@ -11,18 +11,22 @@ import os
 import yaml
 
 class ConfigException(Exception):
+    """Alert for exception."""
     def __init__(self, message):
         super().__init__(message)
 
 class BadConfiguration(ConfigException):
+    """Alert for bad configuration."""
     def __init__(self, message):
         super().__init__(message)
 
 class ConfigParamNotFound(ConfigException):
+    """Alert when parameter is not found."""
     def __init__(self, message):
         super().__init__(message)
 
 class Config:
+    """Configure pipeline."""
     def __init__(self, cfgfile):
         configuration = open(cfgfile)
         self.cfg = yaml.load(configuration, Loader=yaml.FullLoader)
@@ -30,7 +34,7 @@ class Config:
             'sections' : ['setup', 'simulation', 'analysis', 'options', 'path'],
             'setup' : ['simtype', 'runid', 'trials', 'start_count', 'scalefluxfactor'],
             'simulation' : ['caldb', 'irf', 'tobs', 'onset', 'emin', 'emax', 'roi', 'delay', 'offset', 'nruns'],
-            'analysis' : ['maxsrc', 'skypix', 'skyroifrac', 'smooth', 'tool', 'type', 'blind', 'binned', 'exposure', 'usepnt', 'sgmthresh'],
+            'analysis' : ['maxsrc', 'skypix', 'skyroifrac', 'smooth', 'tool', 'type', 'blind', 'binned', 'exposure', 'usepnt', 'sgmthresh', 'cumulative', 'lightcurve', 'index'],
             'options' : ['set_ebl', 'extract_data', 'plotsky'],
             'path' : ['data', 'ebl', 'model', 'catalog']
         }
@@ -83,7 +87,7 @@ class Config:
         
         # Add validations here
         
-        simTypeValues = ['grb', 'bkg', 'skip', 'wobble']
+        simTypeValues = ['grb', 'bkg', 'skip', 'wobble', 'wilks']
         if sectionDict['simtype'] not in simTypeValues:
             raise BadConfiguration(f'simtype={sectionDict["simtype"]} is not supported. Available values: {simTypeValues}')
 
@@ -131,7 +135,7 @@ class Config:
 
         # Add other validations here....
         # ....        
-        toolTypeValues = ['ctools', 'gammapy', 'rtatool']
+        toolTypeValues = ['ctools', 'gammapy', 'rtatool', 'skip']
         if sectionDict['tool'] not in toolTypeValues:
             raise BadConfiguration(f'tool={sectionDict["tool"]} is not supported. Available values: {toolTypeValues}')
         typeValues = ['1d', '3d']

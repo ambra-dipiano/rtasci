@@ -33,7 +33,7 @@ t = time.time()
 rootpath = str(os.path.dirname(os.path.abspath(__file__))).replace('cta-sag-sci/RTAscience/timing', '')
 caldb = f'{rootpath}/caldb/data/cta/prod3b-v2/bcf/South_z20_0.5h/irf_file.fits'
 irfs = load_cta_irfs(caldb)
-filename = f'{rootpath}/DATA/selections/crab/crab_offax_texp{texp}s_n01.fits'
+filename = f'{rootpath}/DATA/selections/crab/crab_offax{texp}s_n01.fits'
 obs_id = 1
 print(f'Fits: {filename.replace(rootpath, "")}\n')
 tsetup = time.time() - t
@@ -74,7 +74,7 @@ config_3d.datasets.geom.wcs.skydir = {'lon': pointing.ra, 'lat': pointing.dec, '
 config_3d.datasets.geom.wcs.fov = {'width': '6 deg', 'height': '6 deg'}
 config_3d.datasets.geom.wcs.binsize = '0.02 deg'
 # The FoV radius to use for cutouts
-config_3d.datasets.geom.selection.offset_max = 2.5 * u.deg
+config_3d.datasets.geom.selection.offset_max = 5 * u.deg
 # reconstructed energy axis for the counts map 
 config_3d.datasets.geom.axes.energy = dict(min= "0.05 TeV", max="10 TeV", nbins=1)
 # true energy axis for the IRF maps (should always be wider range and larger nbins)
@@ -109,6 +109,7 @@ maps = estimator.run(stacked_3d)
 hotspots_table = find_peaks(maps["sqrt_ts"].get_image_by_idx((0,)), threshold=9, min_distance='0.5 deg')
 try:
     hotspots = SkyCoord(hotspots_table["ra"], hotspots_table["dec"])
+    print(hotspots)
     ra = hotspots.ra[0].deg
     dec = hotspots.dec[0].deg
 except KeyError:
@@ -159,7 +160,7 @@ ttotal = time.time() - clock0
 print(f'Total time: {ttotal} s\n')
 print('\n\n-----------------------------------------------------\n\n')
 
-logname = f'{rootpath}/DATA/outputs/crab/gammapy3d_blindfit.csv'
+logname = f'{rootpath}/DATA/outputs/crab/prova.csv'
 if first == 'True':
     hdr = 'texp sqrt_ts flux flux_err ra dec ttotal timport tsetup tobs tconf tred tblind tstat tmodel tfit tflux\n'
     log = open(logname, 'w+')

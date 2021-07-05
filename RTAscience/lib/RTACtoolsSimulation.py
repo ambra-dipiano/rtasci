@@ -17,7 +17,6 @@ import pandas as pd
 from astropy.io import fits
 from astropy.table import Table, vstack
 from scipy.interpolate import interp1d
-from RTAscience.lib.RTACtoolsBase import RTACtoolsBase
 
 # create observation list with gammalib ---!
 def make_obslist(obslist, items, names, instruments='CTA'):
@@ -37,7 +36,7 @@ def make_obslist(obslist, items, names, instruments='CTA'):
     del xml
     return 
 
-class RTACtoolsSimulation(RTACtoolsBase):
+class RTACtoolsSimulation():
     '''
     This class allows to: 1) compute the EBL absorption from a csv data table and add it to the template; 2) extract spectra, lightcuves and time slices from the template (the flux values can also be normalised by a factor); 3) merge bins of the template simulation in a single photon list; 4) perform simulations using ctoobssim from ctools software package.
     '''
@@ -45,7 +44,8 @@ class RTACtoolsSimulation(RTACtoolsBase):
         # files fields ---!
         self.model, self.template, self.table = (str() for i in range(3))
         self.output, self.input = (str() for i in range(2))
-
+        self.caldb = 'prod2'  # caldb (str) ---!
+        self.irf = 'South_0.5h'  # irf (Str) ---!
         # condition control ---!
         self.set_ebl = True  # set/unset EBL absorption feature ---!
         self.extract_spectrum = False  # set/unset spectra extraction feature ---!
@@ -54,6 +54,8 @@ class RTACtoolsSimulation(RTACtoolsBase):
         self.set_debug = False  # set/unset debug mode for ctools ---!
         self.set_log = True  # set/unset logfiles for ctools ---!
         # data ---!
+        self.e = [0.03, 150.0]  # energy range (TeV) ---!
+        self.fov = 5  # region of interest (deg) ---!
         self.tmax = 1800  # maximum exposure time needed (s) ---!
         self.t = [0, 1800]  # time range (s/MJD) ---!
         self.pointing = [83.63, 22.01]  # RA/DEC or GLON/GLAT (deg) ---!
@@ -127,6 +129,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
         df = self.__openCSV()
         cols = list(df.columns)
         self.__time = np.append(0, np.array(df[cols[1]]))
+        #self.__time = np.array(df[cols[1]])
         bin_start = 0
         bin_stop = 1
         for i in range(len(self.__time)):
@@ -353,7 +356,7 @@ class RTACtoolsSimulation(RTACtoolsBase):
             sim["startindex"] = startindex
         sim["ra"] = self.pointing[0]
         sim["dec"] = self.pointing[1]
-        sim["rad"] = self.roi
+        sim["rad"] = self.fov
         sim["tmin"] = self.t[0]
         sim["tmax"] = self.t[1]
         sim["emin"] = self.e[0]
@@ -497,15 +500,28 @@ class RTACtoolsSimulation(RTACtoolsBase):
     # shift times in template simulation to append background before burst ---!
     def shiftTemplateTime(self, phlist, time_shift):
         '''Shifts events in time.'''
+        raise Warning('This method is being fixed.')
         if phlist is str():
             phlist = list(phlist)
-        for file in phlist:
-            with fits.open(file, mode='update') as hdul:
+        for f in phlist:
+            print(f)
+            with fits.open(f, mode='update') as hdul:
+                # update header ---!
+                hdul[1].header['TSTART'] += time_shift
+                hdul[1].header['TSTOP'] += time_shift 
+                # handle date format to add seconds ---!
+                #hdul[1].header['DATE-OBS'] += 
+                #hdul[1].header['TIME-OBS'] +=  
+                #hdul[1].header['DATE-END'] +=  
+                #hdul[1].header['TIME-END'] += 
+                # update GTI ---!
                 hdul[2].data[0][0] += time_shift
                 hdul[2].data[0][1] += time_shift
-                times = hdul[1].data.field('TIME')
-                for i, t, in enumerate(times):
-                    hdul[1].data.field('TIME')[i] = t + time_shift
+                # shift events ---!
+                if len(hdul[1].data) > 0:
+                    times = hdul[1].data.field('TIME')
+                    for i, t, in enumerate(times):
+                        hdul[1].data.field('TIME')[i] = t + time_shift
                 hdul.flush()
         return
 

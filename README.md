@@ -1,4 +1,4 @@
-### Environment **
+### **Environment** **
 
 To create a virtual environment with all required dependencies:
 
@@ -8,12 +8,27 @@ conda env create --name <envname> --file=environment.yaml
 
 Note that you should already have anaconda installed: https://www.anaconda.com/
 
-### Calibration database
+## **RTAscience**
+All code is found in this directory, you can setup the source code as follows:
+
+```bash
+python setup.py develop
+```
+
+**Sub-directories:**
+
+cfg -> configuration class and configuration files
+lib -> classes
+misc -> miscellaneous scripts
+thesis -> version of the pipeline from my thesis project
+timing -> scripts to compare tools and techniques
+
+### **Calibration database**
 
 To complete the environment be sure to download and install the correct IRFs (only prod2 comes with ctools installation). Public ones can be found here: https://www.cta-observatory.org/science/cta-performance/
 
 
-### Configuration file
+### **Configuration file**
 
 Under cfg you can find an example of configuration file. Description of each parameter is commented within. This file will serve as input when running the code. 
 
@@ -57,7 +72,7 @@ Those with * are required only if offset = gw!
 
     
 
-### CALDB degradation
+### **CALDB degradation**
 Be sure to have your calibration database installed under $CTOOLS/share. You can pass a single CALDB or a list, the degraded version will placed along side the nominal one. It will have the same suffix, replacing "prod" with "degr" (i.e., prod2 --> degr2).
 
 ```bash
@@ -99,6 +114,18 @@ For more options on the above you can type:
 python scriptName.py -h
 ```
 
+### Others
+To simulate a single run you can alternatively use
+
+```bash
+python simGRB.py -f cfg/config.yaml
+```
+
+To simulate a wobble observation (only crab simulations are currently allowed) you can use:
+
+```bash
+python simWobble.py -f cfg/config.yaml
+```
 
 <HR>
 [**] subsceptible to changes 

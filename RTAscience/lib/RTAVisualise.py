@@ -23,6 +23,7 @@ from astropy import units as u
 from astropy.wcs import WCS
 from astropy.io import fits
 from astropy.utils.data import get_pkg_data_filename
+from scipy.interpolate import interp1d
 
 
 # handle DS9 regiond (wip) ---!
@@ -38,7 +39,7 @@ def checkPath(png):
   return png
 
 # plot sky map ---!
-def plotSkymap(file, reg='none', col='green', suffix='none', title='skymap', xlabel='R.A. (deg)', ylabel='Dec (deg)', fontsize=20, figsize=(10, 8), rotation=0, show=False, sns_style=False, usetex=False, png=None):
+def plotSkymap(file, reg='none', col='green', suffix='none', title='', xlabel='R.A. (deg)', ylabel='Dec (deg)', fontsize=25, figsize=(8, 6), rotation=0, show=False, sns_style=False, usetex=False, png=None):
   '''Plots skymap with Gaussian smoothing.'''
   with fits.open(file) as hdul:
     wcs = WCS(hdul[0].header)
@@ -74,22 +75,22 @@ def plotSkymap(file, reg='none', col='green', suffix='none', title='skymap', xla
   plt.ylabel(ylabel, fontsize=fontsize)
   plt.title(title, fontsize=fontsize)
   plt.tick_params(axis='both', labelsize=fontsize)
-  cbar = plt.colorbar().set_label('cts', fontsize=fontsize)
-  plt.tight_layout()
+  cbar = plt.colorbar().set_label('counts', fontsize=fontsize)
+  fig.set_tight_layout(True)
   # save fig ---!
   head, tail = os.path.split(file)
   png = checkPath(png)
   if suffix != 'none':
-    plt.savefig(join(png, tail.replace('.fits', '_%s.png' % suffix)))
+    fig.savefig(join(png, tail.replace('.fits', '_%s.png' % suffix)), bbox_inches='tight')
   else:
-    plt.savefig(join(png, tail.replace('.fits', '.png')))
+    fig.savefig(join(png, tail.replace('.fits', '.png')), bbox_inches='tight')
   # show fig ---!
   plt.show() if show else None
   plt.close()
   return
 
 # plot residual count map ---!
-def plotResmap(file, reg='none', col='black', suffix='none', title='map redisuals', xlabel='R.A. (deg)', ylabel='Dec (deg)', fontsize=12, show=True, tex=False):
+def plotResmap(file, reg='none', col='black', suffix='none', title='map redisuals', xlabel='R.A. (deg)', ylabel='Dec (deg)', fontsize=12, show=True, tex=False, png='.'):
   '''Plots residual map with Guassian smoothing.'''
 
   with fits.open(file) as hdul:
@@ -172,7 +173,7 @@ def plotResiduals(file, yscale='log', title='spectral residuals', figsize=(10,8)
   return
 
 # flux butterfly diagram ----!
-def plotButterfly(file, flux_pnts=0.0, fluxEn_pnts=0.0, suffix='none', title='flux', fontsize=12, xlabel='Energy (TeV)', ylabel='E $\cdot \\frac{dN}{dE}$ (erg/$cm^2$/s)', show=True, tex=False):
+def plotButterfly(file, flux_pnts=0.0, fluxEn_pnts=0.0, suffix='none', title='flux', fontsize=12, xlabel='Energy (TeV)', ylabel='E $\cdot \\frac{dN}{dE}$ (erg/$cm^2$/s)', show=True, tex=False, png='.'):
   '''Plots a butterfly.'''
 
   data = np.loadtxt(file, delimiter=' ')
@@ -547,3 +548,136 @@ def plotLightCurve(flux, t1, uplims, t2, xerr, yerr, filename, temp_t, temp_f, c
   fig.savefig(filename)
   plt.close()
   return
+
+def plot_template_lc(runid, erange=(0.04, 150), path='/home/ambra/Desktop/CTA/projects/DATA/templates/grb_afterglow/GammaCatalogV1.0'):
+
+  with fits.open(join(path, runid)) as hdul:
+    energy=np.array(hdul[1].data)
+    # timebins [s]
+    time=np.array(hdul[2].data)
+    # spectra [fotoni/GeV/cm^2/s]
+    spectra=np.array(hdul[3].data)
+    # ebl [fotoni/GeV/cm^2/s]
+    ebl=np.array(hdul[4].data)
+  Nt=len(time)
+  Ne=len(energy)
+  # TIME GRID ---!
+  t=[0.0 for x in range(Nt+1)]
+  for i in range(Nt-1):
+      t[i+1]=time[i][0]+(time[i+1][0]-time[i][0])/2
+  # last bin
+  t[Nt]=time[Nt-1][0]+(time[Nt-1][0]-t[Nt-1])
+  # ENERGY GRID ---!
+  en=[1.0 for x in range(Ne+1)]
+  for i in range(Ne-1):
+      en[i+1]=energy[i][0]+(energy[i+1][0]-energy[i][0])/2
+  # last bin
+  en[Ne]=energy[Ne-1][0]+(energy[Ne-1][0]-en[Ne-1])
+  # instrument range
+  inst = (min(en, key=lambda x:abs(x-erange[0]*1e3)), min(en, key=lambda x:abs(x-erange[1]*1e3)))
+  print(inst)
+  # FLUX SPECTRA ---!
+  f, f2 = [], []
+  for i in range(Nt):
+      f.append(0.0)
+      f2.append(0.0)
+      for j in range(Ne):
+          if en[j] <= erange[1]*1e3 and en[j] >= erange[0]*1e3:          
+          #if en[j] <= inst[1] and en[j] >= inst[0]:
+              f[i]=f[i]+spectra[i][j]*(en[j+1]-en[j])
+              f2[i]=f2[i]+ebl[i][j]*(en[j+1]-en[j])
+  return time, f, f2
+
+def plot_template_spectra(runid, time=(0.0, 800), erange=(0.03, 150), path='/home/ambra/Desktop/CTA/projects/DATA/templates/grb_afterglow/GammaCatalogV1.0'):
+
+  with fits.open(join(path, runid)) as hdul:
+    energy=np.array(hdul[1].data)
+    # timebins [s]
+    time=np.array(hdul[2].data)
+    # spectra [fotoni/GeV/cm^2/s]
+    spectra=np.array(hdul[3].data)
+    # ebl [fotoni/GeV/cm^2/s]
+    ebl=np.array(hdul[4].data)
+  Nt=len(time)
+  Ne=len(energy)
+  # TIME GRID ---!
+  t=[0.0 for x in range(Nt+1)]
+  for i in range(Nt-1):
+      t[i+1]=time[i][0]+(time[i+1][0]-time[i][0])/2
+  # last bin
+  t[Nt]=time[Nt-1][0]+(time[Nt-1][0]-t[Nt-1])
+  # ENERGY GRID ---!
+  en=[1.0 for x in range(Ne+1)]
+  for i in range(Ne-1):
+      en[i+1]=energy[i][0]+(energy[i+1][0]-energy[i][0])/2
+  # last bin
+  en[Ne]=energy[Ne-1][0]+(energy[Ne-1][0]-en[Ne-1])
+  # instrument range
+  inst = (min(en, key=lambda x:abs(x-erange[0]*1e3)), min(en, key=lambda x:abs(x-erange[1]*1e3)))
+  # FLUX SPECTRA ---!
+  f, f2 = [], []
+  for i in range(Nt):
+      f.append(0.0)
+      f2.append(0.0)
+      for j in range(Ne):
+          if en[j] <= inst[1] and en[j] >= inst[0]:
+              f[i]=f[i]+spectra[i][j]*(en[j+1]-en[j])
+              f2[i]=f2[i]+ebl[i][j]*(en[j+1]-en[j])
+  return time, f, f2
+
+def plot_template_lc_interp(runid, erange=(0.04, 150), path='/home/ambra/Desktop/CTA/projects/DATA/templates/grb_afterglow/GammaCatalogV1.0'):
+
+  with fits.open(join(path, runid)) as hdul:
+    energy=np.array(hdul[1].data)
+    # timebins [s]
+    time=np.array(hdul[2].data)
+    # spectra [fotoni/GeV/cm^2/s]
+    spectra=np.array(hdul[3].data)
+    # ebl [fotoni/GeV/cm^2/s]
+    ebl=np.array(hdul[4].data)
+  Nt=len(time)
+  Ne=len(energy)
+  # TIME GRID ---!
+  t=[0.0 for x in range(Nt+1)]
+  for i in range(Nt-1):
+      t[i+1]=time[i][0]+(time[i+1][0]-time[i][0])/2
+  # last bin
+  t[Nt]=time[Nt-1][0]+(time[Nt-1][0]-t[Nt-1])
+  # ENERGY GRID ---!
+  en=[1.0 for x in range(Ne+1)]
+  for i in range(Ne-1):
+      en[i+1]=energy[i][0]+(energy[i+1][0]-energy[i][0])/2
+  # last bin
+  en[Ne]=energy[Ne-1][0]+(energy[Ne-1][0]-en[Ne-1])
+  # instrument range
+  x, y = [], []
+  xcta, ycta = [], []
+  fcta = []
+  for i in range(Nt):
+    xcta.append(erange[0])
+    for j in range(Ne):
+      x.append(en[j])
+      y.append(ebl[i][j])
+      if en[j] <= erange[1] and en[j] >= erange[0]:
+        xcta.append(en[j])
+        ycta.append(ebl[i][j])
+    xcta.append(erange[1])
+
+    efunc = interp1d(x, y, kind='linear', fill_value='extrapolate')
+    ycta.insert(0, float(efunc(xcta[0])))
+    ycta.append(float(efunc(xcta[1])))
+  
+    fcta.append(0.0)
+    edge = True
+    for j in range(Ne):
+      # CTA
+      if en[j] <= erange[1] and en[j] >= erange[0]:
+        if fcta[i] == 0.0:
+          fcta[i]=fcta[i]+ycta[0]*(en[j]-erange[0])
+        else:
+          fcta[i]=fcta[i]+ebl[i][j]*(en[j+1]-en[j])
+      elif edge:
+        fcta[i]=fcta[i]+ycta[-1]*(erange[1]-en[j])
+        edge = False
+
+  return time, fcta

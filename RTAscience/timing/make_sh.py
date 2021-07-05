@@ -20,8 +20,8 @@ else:
     N = 10
 
 rootpath = str(os.path.dirname(os.path.abspath(__file__)))
-pypath = f'{rootpath}/timing'
-jobpath = f'{rootpath}/jobs'
+pypath = f'{rootpath}'
+jobpath = f"{rootpath.replace('timing', 'jobs')}"
 scripts = [f for f in listdir(pypath) if isfile(join(pypath, f)) and 'time_' in f]
 
 print(scripts)

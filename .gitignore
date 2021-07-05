@@ -1,9 +1,9 @@
 # files
 slurm*
-test_*
-testing/*
 config.yaml
-adptest*
+*.xml
+env.sh
+loadenv.sh
 RTAscience/cfg/*.yml
 RTAscience/paper/*
 RTAscience/cfg/*.sh
@@ -19,24 +19,33 @@ RTAscience/datamerger.py
 RTAscience/thesis/config.xml
 RTAscience/thesis/wilks.xml
 RTAscience/thesis/rta-test
+RTAscience/misc/notebooks
+RTAscience/misc/notebooks/*ipynb
 env.sh
 loadenv.sh
-RTAscience/misc/notebooks/compar*
-RTAscience/misc/notebooks/check*
+RTAscience/misc/rmfiles.py
+RTAscience/test*
 
 # folders
 .*/
 ./
 /.
-!RTAscience/cfg/
-RTAscience/lib/old*
-RTAscience/lib/__pycache__/*
-RTAscience/notebooks
-RTAscience/jnotebooks
-phd
-
 __pycache__
 *.egg-info
 .vscode
 dist/
 build/
+adptest*
+test_*
+testing/*
+phd
+RTAscience/lib/old*
+RTAscience/lib/__pycache__/*
+RTAscience/notebooks
+RTAscience/jnotebooks
+!RTAscience/aph
+RTAscience/adpthesis
+
+# exceptions
+!RTAscience/cfg/
+

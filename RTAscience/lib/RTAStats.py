@@ -27,7 +27,7 @@ from scipy.ndimage.filters import gaussian_filter
 extra = Rectangle((0, 0), 1, 1, fc="w", fill=False, edgecolor='none', linewidth=0)
 extra2 = Line2D([0], [0], ls='-.', color='k', lw='1')
 
-def hist1d(x, mean, true=None, nbin=20, hist=True, fit=True, fontsize=20, color='b', xscale='linear', figsize=(15,12), rotation=0, alpha=0.5, lw=3, ls=('--', '-.', ':'), title='gaussian fit', ax_thresh=None, xlabel='x', ylabel='y', leglabel='data', filename='hist1d_gauss.png', usetex=False, sns_style=False, show=True):
+def hist1d(x, mean, true=None, nbin=20, hist=True, fit=True, fontsize=20, color='b', xscale='linear', figsize=(15,12), rotation=0, alpha=0.5, lw=3, ls=('--', '-.', ':'), title='gaussian fit', yscale='linear', ax_thresh=None, xlabel='x', ylabel='y', leglabel='data', filename='hist1d_gauss.png', usetex=False, sns_style=False, show=True):
     '''Generate multiple 1d histogram in a single plot. Optionally, only the histogram or the fit can be visualised.'''
 
     fig = plt.figure(figsize=figsize)
@@ -35,7 +35,7 @@ def hist1d(x, mean, true=None, nbin=20, hist=True, fit=True, fontsize=20, color=
         plt.rc('text', usetex=usetex)
     sns.set() if sns_style else None
 
-    ax = plt.subplot(111, xscale=xscale)
+    ax = plt.subplot(111, xscale=xscale, yscale=yscale)
     plt.xticks(fontsize=fontsize, rotation=rotation)
     plt.yticks(fontsize=fontsize, rotation=rotation)
     for index, el in enumerate(x):
@@ -47,8 +47,10 @@ def hist1d(x, mean, true=None, nbin=20, hist=True, fit=True, fontsize=20, color=
                 plt.axvline(mean[index], c=color[index], ls=ls[index], lw=lw, label=leglabel[index]) 
         else:
             sns.distplot(el, bins=nbin, kde=False, hist=hist, fit=None, norm_hist=True, color=color[index], hist_kws={'alpha':alpha}, label=leglabel[index])
-    if true != None:
-        plt.axvline(true, c='k', ls='-', lw=lw, label='true ~ %.1E' %true)
+        if true != None and type(true) == list:
+            plt.axvline(true[index], c='k', ls=ls[index], lw=lw, label=f'{leglabel[index]} (expected)')
+    if true != None and type(true) == float:
+        plt.axvline(true, c='k', ls='-', lw=lw, label=f'expected')
     plt.title(title, fontsize=fontsize)
     plt.xlabel(xlabel, fontsize=fontsize)
     plt.ylabel(ylabel, fontsize=fontsize)
@@ -130,7 +132,7 @@ def hist1d_rayleigh(x, mean, rayleigh_prms={'loc':0, 'scale':[1]}, threshold=1, 
         sns.distplot(el, bins=nbin, kde=False, hist=hist, fit=rayleigh, norm_hist=True, fit_kws={"color": color[index]}, color=color[index], hist_kws={'alpha':alpha, 'range':[0.0, threshold]}, label=leglabel[index])
         plt.axvline(mean[index], c=color[index], ls=ls[index], lw=lw, label='mean ~ %.3fdeg' %mean[index]) if mean != None else None
         if rayleigh_prms['scale'] != None:
-            plt.axvline(rayleigh_prms['scale'][index], c=color[index], ls='-', lw=w, label='mode ~ %.3fdeg' %rayleigh_prms['scale'][index])
+            plt.axvline(rayleigh_prms['scale'][index], c=color[index], ls='-', lw=lw, label='mode ~ %.3fdeg' %rayleigh_prms['scale'][index])
     plt.title(title, fontsize=fontsize)
     plt.xlabel(xlabel, fontsize=fontsize)
     plt.ylabel(ylabel, fontsize=fontsize)
@@ -244,14 +246,14 @@ def hist2d_rayleigh_CI(x, y, nbin=None, width=None, rayleigh_prms={'loc':0, 'sca
         h = plt.hist2d(x, y, bins=nbin, cmap=cmap, range=[[xcentre - threshold, xcentre + threshold], [ycentre - threshold, ycentre + threshold]])
         plt.colorbar(h[3], ax=ax).set_label('counts', fontsize=fontsize)
     else:
-        h, xedges, yedges = np.histogram2d(x, y, bins=nbin, range=[[xcentre - threshold, xcentre + threshold], [ycentre - threshold, ycentre + threshold]])
+        h, edges = np.histogram2d(x, y, bins=nbin, range=[[xcentre - threshold, xcentre + threshold], [ycentre - threshold, ycentre + threshold]])
         h = h.T
         im = plt.imshow(h, interpolation=interp, cmap=cmap, extent=[xcentre - threshold, xcentre + threshold, ycentre - threshold, ycentre + threshold])
         plt.colorbar(im, ax=ax).set_label('counts', fontsize=fontsize)
     plt.xticks(fontsize=fontsize, rotation=rotation)
     plt.yticks(fontsize=fontsize, rotation=rotation)
     plt.scatter(xcentre, ycentre, c='w', marker='*', s=ms)
-    plt.plot([], [], c='none', label='Reyleigh')
+    plt.plot([], [], c='none', label='Rayleigh')
     for i in range(len(probs)):
         plt.plot([], [], c=colors[i], ls=ls[i], label='%.2f' % (probs[i] * 100) + '%')
         r = stats.rayleigh.ppf(q=probs[i], loc=rayleigh_prms['loc'], scale=rayleigh_prms['scale'])
@@ -549,6 +551,12 @@ def p_values(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=
                 h[i] += 1
     p = h/trials
     yerr = np.sqrt(h)/trials
+
+    from scipy.interpolate import interp1d
+
+    f = interp1d(p, cbin, fill_value = "extrapolate", kind='linear')
+    ts = f(3e-7)
+    print(f'TS(5sgm) == {ts}')
 
     x2 = np.arange(min(x), max(x)+5, 1)
     plt.errorbar(cbin[0], p[0], yerr=yerr[0], xerr=xerr[0], fmt='k+', markersize=5)

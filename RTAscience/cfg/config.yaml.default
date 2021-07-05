@@ -32,6 +32,9 @@ analysis:
   blind: yes                    # requires blind-search (bool)
   tool: ctools                  # which science tool (str) 
   type: 3d                      # 1d on/off or 3d full-fov (str)
+  cumulative:                   # select events with cumulative exposure time (bool)
+  lightcurve:                   # select events to compute lightcurves with fixed time window (bool)
+  index:                        # frozen photon index for fitting the PL model (float)
 
 options:
   set_ebl:                      # if True uses EBL absorbed spectra (bool)

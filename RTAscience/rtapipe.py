@@ -1,3 +1,12 @@
+# *******************************************************************************
+# Copyright (C) 2020 INAF
+#
+# This software is distributed under the terms of the BSD-3-Clause license
+#
+# Authors:
+# Ambra Di Piano <ambra.dipiano@inaf.it>
+# *******************************************************************************
+
 import yaml
 import sys
 import os
@@ -24,6 +33,9 @@ if cfg.get('simtype').lower() == 'grb':
     os.system(f'python3 simGRBcatalog.py -f {args.cfgfile} --merge {args.merge.lower()} --remove {args.remove.lower()} --print {args.print.lower()}')
 elif cfg.get('simtype').lower() == 'bkg':
     print('\nComputing BKG-ONLY simulations is work in progress\n')
+elif cfg.get('simtype').lower() == 'wilks':
+    print("\nRun empty fields simulation + analysis")
+    os.system(f"python3 emptyfields.py -f {args.cfgfile} --remove {args.remove.lower()} --print {args.print.lower()}")
 elif cfg.get('simtype').lower() == 'skip':
     pass
 else:
@@ -32,17 +44,17 @@ else:
 # analysis
 if cfg.get('tool') not in ('ctools', 'gammapy', 'rtatool'):
     raise ValueError('Invalit "tool" selection.')
-elif cfg.get('tool') != 'ctools':
-    raise ValueError('Option not yet implemented.')
-elif cfg.get('tool') == 'ctools':
+else:
     print(f'\nRun analysis...\n')
-    pipeline = f"{cfg.get('tool')}{cfg.get('type')}_"
-    if cfg.get('binned'):
-        pipeline += 'binned_'
+    pipeline = f"{cfg.get('tool')}{cfg.get('type')}"
     if cfg.get('blind'):
-        pipeline += 'blind'
-    pipeline += 'fit.py'
+        pipeline += '_blind'
+    if not cfg.get('binned'):
+        pipeline += '_unbinned'
+    pipeline += '.py'
     print(f'Pipeline: {pipeline}')
     os.system(f"python3 pipelines/{pipeline} -f {args.cfgfile} --merge {args.merge.lower()} --remove {args.remove.lower()} --print {args.print.lower()}")
 
+if "_trials" in args.cfgfile:
+    os.system(f"rm {args.cfgfile}")
 print('\n\nExit\n\n')
