@@ -246,7 +246,7 @@ def hist2d_rayleigh_CI(x, y, nbin=None, width=None, rayleigh_prms={'loc':0, 'sca
         h = plt.hist2d(x, y, bins=nbin, cmap=cmap, range=[[xcentre - threshold, xcentre + threshold], [ycentre - threshold, ycentre + threshold]])
         plt.colorbar(h[3], ax=ax).set_label('counts', fontsize=fontsize)
     else:
-        h, xedges, yedges = np.histogram2d(x, y, bins=nbin, range=[[xcentre - threshold, xcentre + threshold], [ycentre - threshold, ycentre + threshold]])
+        h, edges = np.histogram2d(x, y, bins=nbin, range=[[xcentre - threshold, xcentre + threshold], [ycentre - threshold, ycentre + threshold]])
         h = h.T
         im = plt.imshow(h, interpolation=interp, cmap=cmap, extent=[xcentre - threshold, xcentre + threshold, ycentre - threshold, ycentre + threshold])
         plt.colorbar(im, ax=ax).set_label('counts', fontsize=fontsize)

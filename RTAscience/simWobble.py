@@ -10,8 +10,8 @@
 import os
 import argparse
 import numpy as np
-from lib.RTACtoolsSimulation import RTACtoolsSimulation, make_obslist
-from lib.RTAUtils import wobble_pointing
+from RTAscience.lib.RTACtoolsSimulation import RTACtoolsSimulation, make_obslist
+from RTAscience.lib.RTAUtils import wobble_pointing
 from RTAscience.cfg.Config import Config
 from os.path import join, isfile, isdir, expandvars
 
