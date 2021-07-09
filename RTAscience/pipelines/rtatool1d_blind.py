@@ -69,9 +69,6 @@ if not isdir(f"{datapath}/rta_products"):
 if not isdir(f"{datapath}/skymaps"):
     os.mkdir(f"{datapath}/skymaps")
 
-# load irf
-irf = load_cta_irfs(f"{expandvars('$CTOOLS')}/share/caldb/data/cta/{cfg.get('caldb')}/bcf/{cfg.get('irf')}/irf_file.fits")
-obs_id = 1
 
 # ------------------------------------------------------ loop runid --- !!!
 for runid in runids:
@@ -148,6 +145,9 @@ for runid in runids:
             print(f"Time selections = {times} s")
         # selection ---!
         for texp in times:
+            # load irf
+            irf = load_cta_irfs(f"{expandvars('$CTOOLS')}/share/caldb/data/cta/{cfg.get('caldb')}/bcf/{cfg.get('irf')}/irf_file.fits")
+            obs_id = count
             if args.print.lower() == 'true':
                 print(f"Exposure = {texp} s")
             selphlist = phlist.replace(f'{name}', f'texp{texp}s_{name}')
@@ -172,15 +172,47 @@ for runid in runids:
             # load the event list
             events = EventList.read(selphlist, hdu='EVENTS')
             gti = GTI.read(selphlist, hdu='GTI')
-            pointing = events.pointing_radec
-            observation = Observation.create(pointing=pointing, obs_id=f'{obs_id:02d}', tstart=gti.table['START'] * u.s, tstop=gti.table['STOP'] * u.s, irfs=irf, reference_time=gti.time_ref)
+            point = events.pointing_radec
+            observation = Observation.create(pointing=point, obs_id=f'{obs_id:02d}', tstart=gti.table['START'] * u.s, tstop=gti.table['STOP'] * u.s, irfs=irf, reference_time=gti.time_ref)
             observation._events = events
             observations = Observations() 
             observations.append(observation)
             observation.fixed_pointing_info
             # initialise gammapy configuration ---!
-            config = gammapy_config(cfg=cfg, pointing=pointing)
-            pointing = (pointing.ra.value, pointing.dec.value)
+            #config = gammapy_config(cfg=cfg, obs=selphlist, pointing=point)
+            #
+            config = AnalysisConfig()
+            config.observations.datastore = ""
+
+            config.datasets.type = "3d"  # Analysis type is 3D
+            config.datasets.stack = False  # We keep track of datasets in all bunches
+
+            config.datasets.geom.wcs.skydir = {
+                "lon": point.ra,
+                "lat": point.dec,
+                "frame": "icrs",
+            }  
+            config.datasets.geom.wcs.fov = {"width": "10 deg", "height": "10 deg"}
+            config.datasets.geom.wcs.binsize = "0.02 deg"
+
+            # The FoV radius to use for cutouts
+            config.datasets.background.method="fov_background"
+            #config.datasets.background.exclusion=None
+            config.datasets.geom.selection.offset_max = 2.5 * u.deg
+            config.datasets.safe_mask.methods = ["aeff-default", "offset-max"]
+
+            # We now fix the energy axis for the counts map - (the reconstructed energy binning)
+            config.datasets.geom.axes.energy.min = "0.04 TeV"
+            config.datasets.geom.axes.energy.max = "150 TeV"
+            config.datasets.geom.axes.energy.nbins = 20
+
+            # We now fix the energy axis for the IRF maps (exposure, etc) - (the true enery binning)
+            config.datasets.geom.axes.energy_true.min = "0.02 TeV"
+            config.datasets.geom.axes.energy_true.max = "200 TeV"
+            config.datasets.geom.axes.energy_true.nbins = 30
+
+
+
             # reduce dataset ---!
             grb2 = Analysis(config)
             grb2.observations = observations
@@ -191,13 +223,15 @@ for runid in runids:
             hotspots_table = find_peaks(maps["sqrt_ts"].get_image_by_idx((0,)), threshold=cfg.get('sgmthresh'), min_distance='0.5 deg')
             try:
                 hotspots = SkyCoord(hotspots_table["ra"], hotspots_table["dec"])
+                print(hotspots)
                 ra_gammapy = hotspots.ra[0].deg
                 dec_gammapy = hotspots.dec[0].deg
                 if args.print.lower() == 'true':
-                    print(f'Target = [{ra_gammapy}, {dec_gammapy}]')           
+                    print(f'Target GAMMAPY = [{ra_gammapy}, {dec_gammapy}]')      
+
                 # aperture photometry ---!
                 phm = Photometrics({events_type: selphlist})
-                opts = phm_options(cfg, texp=texp, start=grb.t[0], stop=grb.t[1], target=(ra_gammapy, dec_gammapy), pointing=pointing, runid=runid, prefix=f"texp{texp}s_{name}_")
+                opts = phm_options(cfg, texp=texp, start=grb.t[0], stop=grb.t[1], caldb=cfg.get('caldb'), irf=cfg.get('irf'), target=(ra_gammapy, dec_gammapy), pointing=pointing, runid=runid, prefix=f"texp{texp}s_{name}_")
                 off_regions = find_off_regions(phm, opts['background_method'], (ra_gammapy, dec_gammapy), pointing, opts['region_radius'], verbose=opts['verbose'], save=opts['save_off_regions'])
                 on_gammapy, off_gammapy, a_gammapy, exc_gammapy, sigma_gammapy, err_note = counting(phm, target, opts['region_radius'], off_regions, e_min=opts['energy_min'], e_max=opts['energy_max'], t_min=opts['begin_time'], t_max=opts['end_time'], draconian=False)
                 if args.print.lower() == 'true':
@@ -228,7 +262,7 @@ for runid in runids:
                 ra_ctools = coords[0][0]
                 dec_ctools = coords[1][0]
                 if args.print.lower() == 'true':
-                    print(f'Target = [{ra_ctools}, {dec_ctools}]')
+                    print(f'Target CTOOLS = [{ra_ctools}, {dec_ctools}]')
                 # on/off ---!
                 if '.fits' in selphlist:
                     onoff = selphlist.replace('.fits', '_cspha.xml').replace('/obs/', '/rta_products/')
@@ -236,7 +270,7 @@ for runid in runids:
                 else:
                     onoff = selphlist.replace('.xml', '_cspha.xml').replace('/obs/', '/rta_products/')
                     events_type = 'events_list'
-                    filenames = ManageXml(event_selected)
+                    filenames = ManageXml(selphlist)
                     run_list = filenames.getRunList()
                     filenames.closeXml()
                     del filenames
@@ -245,7 +279,7 @@ for runid in runids:
                         selphlist = np.append(selphlist, Photometrics.load_data_from_fits_file(file))
                 # aperture photometry ---!
                 phm = Photometrics({events_type: selphlist})
-                opts = phm_options(cfg, texp=texp, target=(ra_ctools, dec_ctools), pointing=pointing, runid=runid, prefix=f"texp{texp}s_{name}_")
+                opts = phm_options(cfg, texp=texp, start=grb.t[0], stop=grb.t[1], caldb=cfg.get('caldb'), irf=cfg.get('irf'), target=(ra_ctools, dec_ctools), pointing=pointing, runid=runid, prefix=f"texp{texp}s_{name}_")
                 off_regions = find_off_regions(phm, opts['background_method'], (ra_ctools, dec_ctools), pointing, opts['region_radius'], verbose=opts['verbose'], save=opts['save_off_regions'])
                 on_ctools, off_ctools, a_ctools, exc_ctools, sigma_ctools, err_note = counting(phm, target, opts['region_radius'], off_regions, e_min=opts['energy_min'], e_max=opts['energy_max'], t_min=opts['begin_time'], t_max=opts['end_time'], draconian=False)
                 if args.print.lower() == 'true':
@@ -261,7 +295,7 @@ for runid in runids:
             if args.print.lower() == 'true':
                 print(f"Results: {row}")
             if not isfile(logname):
-                hdr = 'runid seed texp ra_true dec_true ra_ctools dec_ctools on_ctools off_ctools alpha_ctools excess_ctools sigma_ctools offset delay scaleflux caldb irf pipe\n'
+                hdr = 'runid seed texp ra_true dec_true ra_ctools dec_ctools on_ctools off_ctools alpha_ctools excess_ctools sigma_ctools ra_gammapy dec_gammapy on_gammapy off_gammapy alpha_gammapy excess_gammapy sigma_gammapy offset delay scaleflux caldb irf pipe\n'
                 log = open(logname, 'w+')
                 log.write(hdr)
                 log.write(row)
@@ -274,7 +308,7 @@ for runid in runids:
             del grb
         if args.remove.lower() == 'true':
             # remove files ---!
-            os.system(f"rm {datapath}/obs/{runid}/texp*{name}*")
+            #os.system(f"rm {datapath}/obs/{runid}/texp*{name}*")
             os.system(f"rm {datapath}/rta_products/{runid}/*{name}*")
 print('...done.\n')
 
