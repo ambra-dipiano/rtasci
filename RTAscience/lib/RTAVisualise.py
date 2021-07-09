@@ -23,6 +23,7 @@ from astropy import units as u
 from astropy.wcs import WCS
 from astropy.io import fits
 from astropy.utils.data import get_pkg_data_filename
+from scipy.interpolate import interp1d
 
 
 # handle DS9 regiond (wip) ---!
@@ -574,6 +575,45 @@ def plot_template_lc(runid, erange=(0.04, 150), path='/home/ambra/Desktop/CTA/pr
   en[Ne]=energy[Ne-1][0]+(energy[Ne-1][0]-en[Ne-1])
   # instrument range
   inst = (min(en, key=lambda x:abs(x-erange[0]*1e3)), min(en, key=lambda x:abs(x-erange[1]*1e3)))
+  print(inst)
+  # FLUX SPECTRA ---!
+  f, f2 = [], []
+  for i in range(Nt):
+      f.append(0.0)
+      f2.append(0.0)
+      for j in range(Ne):
+          if en[j] <= erange[1]*1e3 and en[j] >= erange[0]*1e3:          
+          #if en[j] <= inst[1] and en[j] >= inst[0]:
+              f[i]=f[i]+spectra[i][j]*(en[j+1]-en[j])
+              f2[i]=f2[i]+ebl[i][j]*(en[j+1]-en[j])
+  return time, f, f2
+
+def plot_template_spectra(runid, time=(0.0, 800), erange=(0.03, 150), path='/home/ambra/Desktop/CTA/projects/DATA/templates/grb_afterglow/GammaCatalogV1.0'):
+
+  with fits.open(join(path, runid)) as hdul:
+    energy=np.array(hdul[1].data)
+    # timebins [s]
+    time=np.array(hdul[2].data)
+    # spectra [fotoni/GeV/cm^2/s]
+    spectra=np.array(hdul[3].data)
+    # ebl [fotoni/GeV/cm^2/s]
+    ebl=np.array(hdul[4].data)
+  Nt=len(time)
+  Ne=len(energy)
+  # TIME GRID ---!
+  t=[0.0 for x in range(Nt+1)]
+  for i in range(Nt-1):
+      t[i+1]=time[i][0]+(time[i+1][0]-time[i][0])/2
+  # last bin
+  t[Nt]=time[Nt-1][0]+(time[Nt-1][0]-t[Nt-1])
+  # ENERGY GRID ---!
+  en=[1.0 for x in range(Ne+1)]
+  for i in range(Ne-1):
+      en[i+1]=energy[i][0]+(energy[i+1][0]-energy[i][0])/2
+  # last bin
+  en[Ne]=energy[Ne-1][0]+(energy[Ne-1][0]-en[Ne-1])
+  # instrument range
+  inst = (min(en, key=lambda x:abs(x-erange[0]*1e3)), min(en, key=lambda x:abs(x-erange[1]*1e3)))
   # FLUX SPECTRA ---!
   f, f2 = [], []
   for i in range(Nt):
@@ -584,3 +624,60 @@ def plot_template_lc(runid, erange=(0.04, 150), path='/home/ambra/Desktop/CTA/pr
               f[i]=f[i]+spectra[i][j]*(en[j+1]-en[j])
               f2[i]=f2[i]+ebl[i][j]*(en[j+1]-en[j])
   return time, f, f2
+
+def plot_template_lc_interp(runid, erange=(0.04, 150), path='/home/ambra/Desktop/CTA/projects/DATA/templates/grb_afterglow/GammaCatalogV1.0'):
+
+  with fits.open(join(path, runid)) as hdul:
+    energy=np.array(hdul[1].data)
+    # timebins [s]
+    time=np.array(hdul[2].data)
+    # spectra [fotoni/GeV/cm^2/s]
+    spectra=np.array(hdul[3].data)
+    # ebl [fotoni/GeV/cm^2/s]
+    ebl=np.array(hdul[4].data)
+  Nt=len(time)
+  Ne=len(energy)
+  # TIME GRID ---!
+  t=[0.0 for x in range(Nt+1)]
+  for i in range(Nt-1):
+      t[i+1]=time[i][0]+(time[i+1][0]-time[i][0])/2
+  # last bin
+  t[Nt]=time[Nt-1][0]+(time[Nt-1][0]-t[Nt-1])
+  # ENERGY GRID ---!
+  en=[1.0 for x in range(Ne+1)]
+  for i in range(Ne-1):
+      en[i+1]=energy[i][0]+(energy[i+1][0]-energy[i][0])/2
+  # last bin
+  en[Ne]=energy[Ne-1][0]+(energy[Ne-1][0]-en[Ne-1])
+  # instrument range
+  x, y = [], []
+  xcta, ycta = [], []
+  fcta = []
+  for i in range(Nt):
+    xcta.append(erange[0])
+    for j in range(Ne):
+      x.append(en[j])
+      y.append(ebl[i][j])
+      if en[j] <= erange[1] and en[j] >= erange[0]:
+        xcta.append(en[j])
+        ycta.append(ebl[i][j])
+    xcta.append(erange[1])
+
+    efunc = interp1d(x, y, kind='linear', fill_value='extrapolate')
+    ycta.insert(0, float(efunc(xcta[0])))
+    ycta.append(float(efunc(xcta[1])))
+  
+    fcta.append(0.0)
+    edge = True
+    for j in range(Ne):
+      # CTA
+      if en[j] <= erange[1] and en[j] >= erange[0]:
+        if fcta[i] == 0.0:
+          fcta[i]=fcta[i]+ycta[0]*(en[j]-erange[0])
+        else:
+          fcta[i]=fcta[i]+ebl[i][j]*(en[j+1]-en[j])
+      elif edge:
+        fcta[i]=fcta[i]+ycta[-1]*(erange[1]-en[j])
+        edge = False
+
+  return time, fcta
