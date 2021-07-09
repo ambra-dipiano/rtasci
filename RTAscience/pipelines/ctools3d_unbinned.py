@@ -195,6 +195,7 @@ for runid in runids:
                         detection.modXml(overwrite=True)
                         detection.setTsTrue() 
                         detection.parametersFreeFixed(src_free=['Prefactor'])
+                        detection.setModelParameters(parameters=['RA', 'DEC', 'Index'], values=[target[0], target[1], cfg.get('index')])
                         detection.closeXml()
                         # fit ---!
                         grb.input = selphlist
@@ -231,6 +232,9 @@ for runid in runids:
                                 break
                             else:
                                 sys.exit(f"No significance detection with maximum exposure {texp} s.")
+                                
+                        if sigma < 5 or grb.t[1] > (cfg.get('tobs')+cfg.get('delay')):
+                            break
 
                         row = f"{runid} {count} {grb.t[0]} {grb.t[1]} {exp} {sqrt_ts} {flux} {flux_err} {ra} {dec} {results['on']} {results['off']} {results['alpha']} {results['excess']} {sigma} {offset} {cfg.get('delay')} {cfg.get('scalefluxfactor')} {caldb} {irf} ctools3d_unbinned\n"
                         if args.print.lower() == 'true':
