@@ -1,0 +1,9 @@
+astropy
+ctools==1.7.3
+healpy
+pandas
+xml
+pyaml
+scipy
+pyregion
+seaborn

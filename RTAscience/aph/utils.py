@@ -177,4 +177,5 @@ class ObjectConfig(object):
         self.__dict__['energy_max'] = float(self.__dict__['energy_max'])
         self.__dict__['pixel_size'] = float(self.__dict__['pixel_size'])
         self.__dict__['power_law_index'] = float(self.__dict__['power_law_index'])
-        #self.__dict__['irf_file'] = float(self.__dict__['irf_file'])
+        self.__dict__['irf_file'] = str(self.__dict__['irf_file'])
+        
