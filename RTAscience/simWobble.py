@@ -25,8 +25,8 @@ cfg = Config(args.cfgfile)
 if cfg.get('simtype').lower() != 'wobble':
     raise ValueError('Invalid simtype.')
 runid = cfg.get('runid').lower()
-if runid != 'crab':
-    raise ValueError('Currenlty only "crab" runid are contemplated for wobble simulation.')
+if runid not in ['crab', 'bkg']:
+    raise ValueError('Currenlty only "crab" and "bkg" runid are contemplated for wobble simulation.')
 
 # general ---!
 trials = cfg.get('trials')
@@ -55,14 +55,18 @@ if not os.path.isdir(obspath):
         os.mkdir(obspath.replace(runid, ''))
     os.mkdir(obspath)
 # files ---!
-model = os.path.join(datapath, f'models/{runid}.xml')  # grb XML template model
+if runid == 'bkg':
+    model = os.path.join(datapath, f'models/CTAIrfBackground.xml')
+else:
+    model = os.path.join(datapath, f'models/{runid}.xml')  # grb XML template model
 obsfile = os.path.join(obspath, 'wobble.xml')
 
 # ---------------------------------------------------- trials --- !!!
 target = (83.63, 22.01)
 runs = list()
 for count in range(nruns):
-    name = f'crab{start_count+count:06d}'
+    name = f'{cfg.get("runid")}{start_count:06d}'
+    print(f'Name: {name}')
     wobble_index = count % 4
     pointing = wobble_pointing(target, nrun=count, clockwise=True, offset=cfg.get('offset'))
     print(f'Simulating run {count+1}/{nruns} at pointing: {pointing} deg')
@@ -77,7 +81,7 @@ for count in range(nruns):
     sim.caldb = caldb
     sim.irf = irf
     sim.model = model
-    run = os.path.join(obspath, f'{name}_run{count:02d}.fits')
+    run = os.path.join(obspath, f'{name}_run{count+1:02d}.fits')
     runs.append(run)
     sim.output = run
     sim.run_simulation()
