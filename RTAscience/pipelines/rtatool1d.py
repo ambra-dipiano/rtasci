@@ -18,6 +18,7 @@ from RTAscience.lib.RTAUtils import *
 from RTAscience.cfg.Config import Config
 from RTAscience.lib.RTAVisualise import plotSkymap
 from RTAscience.aph.utils import *
+import time
 
 parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
 parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
@@ -196,6 +197,7 @@ for runid in runids:
                         
                         # aperture photometry ---!
                         phm = Photometrics({events_type: selphlist})
+                        pointing = tuple(pointing)
                         opts = phm_options(erange=grb.e, texp=texp, time_int=grb.t, target=target, pointing=pointing, index=cfg.get('index'), save_off_reg=f"{expandvars(cfg.get('data'))}/rta_products/{runid}/texp{exp}s_{name}_off_regions.reg", irf_file=join(expandvars('$CTOOLS'), f"share/caldb/data/cta/{caldb}/bcf/{irf}/irf_file.fits"))
                         off_regions = find_off_regions(phm, opts['background_method'], target, pointing, opts['region_radius'], verbose=opts['verbose'], save=opts['save_off_regions'])
                         oncounts, offcounts, alpha, excess, sigma, err_note = counting(phm, target, opts['region_radius'], off_regions, e_min=opts['energy_min'], e_max=opts['energy_max'], t_min=opts['begin_time'], t_max=opts['end_time'], draconian=False)
@@ -206,7 +208,9 @@ for runid in runids:
                         # flux ---!
                         src = {'ra': target[0], 'dec': target[1], 'rad': opts['region_radius']}
                         conf = ObjectConfig(opts)
+                        start = time.time()
                         region_eff_resp = aeff_eval(conf, src, {'ra': pointing[0], 'dec': pointing[1]})
+                        print(time.time()-start)
                         livetime = opts['end_time'] - opts['begin_time']
                         flux = excess / region_eff_resp / livetime
                         k0, e0, flux_err, sqrt_ts = np.nan, np.nan, np.nan, np.nan
