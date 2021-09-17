@@ -528,7 +528,7 @@ class RTACtoolsSimulation():
     # created a number of observation runs containing all events and GTIs ---!
     def appendEventsMultiPhList(self, max_length=None, last=None, r=True, new_GTI=False):
         '''This method will be deprecated.'''
-        raise Warning('This method is outdated')
+        exit('This method is outdated')
         n = 1
         sample = []
         singlefile = str(self.output)
@@ -558,3 +558,15 @@ class RTACtoolsSimulation():
             return n, singlefile
         else:
             return
+
+    def sortObsEvents(self, key='TIME'):
+        '''Sorts simulated events by keyword.'''
+        with fits.open(self.input) as hdul:
+            data = Table(hdul[1].data)
+            data.sort(key)
+            hdr = hdul[1].header
+            hdul[1] = fits.BinTableHDU(name='EVENTS', data=data, header=hdr)
+            hdul.flush()
+            self.__reindexEvents(hdul=hdul)
+            hdul.flush()
+        return
