@@ -7,6 +7,7 @@
 # Ambra Di Piano <ambra.dipiano@inaf.it>
 # *******************************************************************************
 
+from astropy.io.fits import hdu
 import gammalib
 import ctools
 import os.path
@@ -561,12 +562,15 @@ class RTACtoolsSimulation():
 
     def sortObsEvents(self, key='TIME'):
         '''Sorts simulated events by keyword.'''
-        with fits.open(self.input) as hdul:
+        with fits.open(self.input, mode='update') as hdul:
             data = Table(hdul[1].data)
             data.sort(key)
             hdr = hdul[1].header
             hdul[1] = fits.BinTableHDU(name='EVENTS', data=data, header=hdr)
             hdul.flush()
+            hdul.close()
+        with fits.open(self.input, mode='update') as hdul:
             self.__reindexEvents(hdul=hdul)
             hdul.flush()
+            hdul.close()
         return
