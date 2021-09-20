@@ -186,6 +186,8 @@ def simulateTrial(trial_args):
             os.remove(obslist)
         make_obslist(obslist=obslist, items=event_bins, names=name)
 
+    sim.input = phlist
+    sim.sortObsEvents()
     del sim
 
     # selections ---!

@@ -234,6 +234,8 @@ path:
             sim.output = phlist
             sim.appendEventsSinglePhList(GTI=[0, tobs])
 
+            sim.input = phlist
+            sim.sortObsEvents()
             del sim
             print('remove template bins')
             os.system('rm ' + os.path.join(grbpath, f'{name}*tbin*'))

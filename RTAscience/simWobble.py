@@ -85,5 +85,7 @@ for count in range(nruns):
     runs.append(run)
     sim.output = run
     sim.run_simulation()
+    sim.input = run
+    sim.sortObsEvents()
 
 make_obslist(obsfile, runs, runid)

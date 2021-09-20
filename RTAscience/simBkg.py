@@ -113,6 +113,10 @@ def simulateTrial(trial_args):
     sim.model = bkg_model
     sim.output = bkg
     sim.run_simulation()
+
+    sim.input = bkg
+    sim.sortObsEvents()
+    del sim
     # time ---!
     elapsed_t = time()-start_t
     if args.print.lower() == 'true':
