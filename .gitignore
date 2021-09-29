@@ -45,6 +45,7 @@ RTAscience/notebooks
 RTAscience/jnotebooks
 !RTAscience/aph
 RTAscience/adpthesis
+RTAscience/misc/csadd2caldb.py
 
 # exceptions
 !RTAscience/cfg/
