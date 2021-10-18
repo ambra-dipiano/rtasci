@@ -282,3 +282,13 @@ def get_gamma_r_rayleigh(dist, prob=0.6827):
     gamma = mode
     r = stats.rayleigh.ppf(q=prob, loc=0, scale=gamma)
     return gamma, r
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise TypeError('Boolean value expected.')

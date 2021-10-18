@@ -17,7 +17,7 @@ from os.path import isdir, isfile, join, expandvars
 from RTAscience.cfg.Config import Config
 from RTAscience.lib.RTAManageXml import ManageXml
 from RTAscience.lib.RTACtoolsSimulation import RTACtoolsSimulation
-from RTAscience.lib.RTAUtils import get_pointing, get_mergermap, get_alert_pointing_gw
+from RTAscience.lib.RTAUtils import get_pointing, get_mergermap, get_alert_pointing_gw, str2bool
 
 
 def main(args):
@@ -76,7 +76,7 @@ def main(args):
         for i in range(trials):
             times = simulateTrial((i, cfg, pointing, bkg_model, bkgpath, tobs))
     # time ---!
-    if args.print.lower() == 'true':
+    if args.print.lower():
         if len(times) > 1:
             print(f"Trial elapsed time (mean): {np.array(times).mean()}")
         else:
@@ -119,7 +119,7 @@ def simulateTrial(trial_args):
     del sim
     # time ---!
     elapsed_t = time()-start_t
-    if args.print.lower() == 'true':
+    if args.print.lower():
         print(f"Trial {count} took {elapsed_t} seconds.")
     print('.. done')
     return (count, elapsed_t)
@@ -128,8 +128,8 @@ def simulateTrial(trial_args):
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Simulate empty fields.')
     parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
-    parser.add_argument('--print', type=str, default='false', help='Print out results')
-    parser.add_argument('-mp', '--mp-enabled', type=str, default='false', help='To parallelize trials loop')
+    parser.add_argument('--print', type=str2bool, default='false', help='Print out results')
+    parser.add_argument('-mp', '--mp-enabled', type=str2bool, default='false', help='To parallelize trials loop')
     parser.add_argument('-mpt', '--mp-threads', type=int, default=4, help='The size of the threads pool') 
     args = parser.parse_args()
 
