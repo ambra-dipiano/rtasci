@@ -16,6 +16,7 @@ from multiprocessing import Pool
 from os.path import isdir, isfile, join, expandvars
 from RTAscience.cfg.Config import Config
 from RTAscience.lib.RTAManageXml import ManageXml
+from RTAscience.utils.argparseUtils import str2bool
 from RTAscience.lib.RTACtoolsSimulation import RTACtoolsSimulation
 from RTAscience.lib.RTAUtils import get_pointing, get_mergermap, get_alert_pointing_gw
 
@@ -129,7 +130,7 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Simulate empty fields.')
     parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
     parser.add_argument('--print', type=str, default='false', help='Print out results')
-    parser.add_argument('-mp', '--mp-enabled', type=str, default='false', help='To parallelize trials loop')
+    parser.add_argument('-mp', '--mp-enabled', type=str2bool, default=False, help='To parallelize trials loop')
     parser.add_argument('-mpt', '--mp-threads', type=int, default=4, help='The size of the threads pool') 
     args = parser.parse_args()
 
