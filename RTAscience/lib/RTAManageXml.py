@@ -11,7 +11,7 @@ import xml.etree.ElementTree as ET
 
 class ManageXml():
     '''
-    This class contains methods to handle XML models for ctools.
+    This class contains methods to handle XML templates.
     '''
 
     def __init__(self, xml):
@@ -320,5 +320,34 @@ class ManageXml():
                 for i, prm in enumerate(parameters):
                     p = src.find('*/parameter[@name="%s"]' % prm)
                     p.set('value', str(values[i]))
+        self.__saveXml()
+        return
+
+    # set TS values ---!
+    def setTsValue(self, value, source=None):
+        '''Set TS value for a given source (TS = sigma^2).'''
+        if source == None:
+            src = self.root.find(f'source')
+        else:
+            src = self.root.find(f'source[@name="{source}"]')
+        src.set('ts', str(value))
+        self.__saveXml()
+        return self.tsv_list
+
+    # add IntegratedFlux ---!
+    def setIntegratedFlux(self, value, scale=1e-12, source=None):
+        '''Sets Prefactor equal to -1 and adds IntegratedFlux instead.'''
+        if source == None:
+            prms = self.root.findall(f'source/spectrum/parameter')
+        else:
+            prms = self.root.findall(f'source[@name="{source}"]/spectrum/parameter')
+        for p in prms:
+            p.set('value', str(-1))
+        if source == None:
+            spc = self.root.find(f'source/spectrum')
+        else:
+            spc = self.root.find(f'source[@name="{source}"]/spectrum')
+        prm = ET.SubElement(spc, 'parameter', attrib={'name': 'IntegratedFlux', 'value': str(value/scale), 'scale': str(scale)})
+        prm.tail = '\n\t\t'.replace('\t', ' ' * 2)
         self.__saveXml()
         return
