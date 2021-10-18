@@ -127,8 +127,8 @@ def simulateTrial(trial_args):
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Simulate empty fields.')
     parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
-    parser.add_argument('--print', type=str2bool, default='false', help='Print out results')
-    parser.add_argument('-mp', '--mp-enabled', type=str2bool, default='false', help='To parallelize trials loop')
+    parser.add_argument('--print', type=str2bool, default=False, help='Print out results')
+    parser.add_argument('-mp', '--mp-enabled', type=str2bool, default=False, help='To parallelize trials loop')
     parser.add_argument('-mpt', '--mp-threads', type=int, default=4, help='The size of the threads pool') 
     args = parser.parse_args()
 
