@@ -91,7 +91,7 @@ def main(args):
             for i in range(trials):
                 times = simulateTrial((i, cfg, pointing, tmax, datapath, runid, tcsv, grbpath, bkg_model))
         # time ---!
-        if args.print.lower():
+        if args.print:
             if len(times) > 1:
                 print(f"Trial elapsed time (mean): {np.array(times).mean()}")
             else:
@@ -128,7 +128,7 @@ def simulateTrial(trial_args):
     sim.seed = count
     sim.set_ebl = cfg.get('set_ebl')
     sim.pointing = pointing
-    if args.print.lower():
+    if args.print:
         print(f'Pointing = {sim.pointing} s')
     sim.tmax = tmax
 
@@ -142,7 +142,7 @@ def simulateTrial(trial_args):
     print(f'Simulate template seed={sim.seed}')
     for j in range(tbin_stop-tbin_start-1):
         sim.t = [tgrid[j]+cfg.get('onset'), tgrid[j + 1]+cfg.get('onset')]
-        if args.print.lower():
+        if args.print:
             print(f'GTI (bin) = {sim.t} s')
         sim.model = join(datapath, f'extracted_data/{runid}/{runid}_tbin{tbin_start+j:02d}.xml')
         event = join(grbpath, f'{name}_tbin{tbin_start+j:02d}.fits')
@@ -158,20 +158,20 @@ def simulateTrial(trial_args):
         bkg = os.path.join(grbpath, f'bkg{count:06d}.fits')
         event_bins.insert(0, bkg)
         sim.t = [0, cfg.get('onset')]
-        if args.print.lower():
+        if args.print:
             print(f"GTI (bkg) = {sim.t} s")
         sim.model = bkg_model
         sim.output = bkg
         sim.run_simulation()
 
     # ---------------------------------------- gather bins ---!!!
-    if args.merge.lower():
+    if args.merge:
         print('Merge in photon-list')
         phlist = join(grbpath, f'{name}.fits')
         sim.input = event_bins
         sim.output = phlist
         sim.appendEventsSinglePhList(GTI=[cfg.get('delay'), cfg.get('delay')+cfg.get('tobs')])
-        if args.print.lower():
+        if args.print:
             h = fits.open(phlist)
             print('Check GTI and EVENTS time range:')
             print('************')
@@ -199,18 +199,18 @@ def simulateTrial(trial_args):
         grb.roi = cfg.get('roi')
         grb.e = [cfg.get('emin'), cfg.get('emax')]
         grb.t = [cfg.get('delay'), cfg.get('delay')+texp]
-        if args.print.lower():
+        if args.print:
             print(f"Selection t = {grb.t} s")
         grb.input = phlist
         grb.output = selphlist
-        if args.merge.lower():
+        if args.merge:
             grb.run_selection()
         else:
             prefix = join(grbpath, f'texp{texp}s_')
             grb.run_selection(prefix=prefix) """
 
     # remove files ---!
-    if args.remove.lower() and args.merge.lower():
+    if args.remove and args.merge:
         # remove bins ---!
         os.system('rm ' + join(grbpath, f'{name}*tbin*'))
         if cfg.get('onset') != 0:
@@ -219,7 +219,7 @@ def simulateTrial(trial_args):
 
     # time ---!   
     elapsed_t = time()-start_t
-    if args.print.lower():
+    if args.print:
         print(f"Trial {count} took {elapsed_t} seconds")
     return (count, elapsed_t)
 

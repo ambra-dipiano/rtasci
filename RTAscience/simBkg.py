@@ -23,7 +23,7 @@ from RTAscience.lib.RTAUtils import get_pointing, get_mergermap, get_alert_point
 def main(args):
     cfg = Config(args.cfgfile)
     # general ---!
-    if cfg.get('simtype').lower() != 'bkg':
+    if cfg.get('simtype') != 'bkg':
         raise ValueError('This script only allows bakground simulations')
     trials = cfg.get('trials')  # trials
     tobs = cfg.get('tobs')  # total obs time (s)
@@ -45,7 +45,7 @@ def main(args):
 
     # ------------------------------------------------------- loop runid --- !!!
     # get alert pointing
-    if type(cfg.get('offset')) == str and cfg.get('offset').lower() == 'gw':
+    if type(cfg.get('offset')) == str and cfg.get('offset') == 'gw':
         mergerpath = os.path.expandvars(cfg.get('merger'))
         mergermap = get_mergermap(runid, mergerpath)
         if mergermap == None:
@@ -76,7 +76,7 @@ def main(args):
         for i in range(trials):
             times = simulateTrial((i, cfg, pointing, bkg_model, bkgpath, tobs))
     # time ---!
-    if args.print.lower():
+    if args.print:
         if len(times) > 1:
             print(f"Trial elapsed time (mean): {np.array(times).mean()}")
         else:
@@ -97,7 +97,6 @@ def simulateTrial(trial_args):
     name = f'bkg{count:06d}'
     # setup ---!
     sim = RTACtoolsSimulation()
-    sim.configure(cfg)
     sim.seed = count
     sim.pointing = pointing
     sim.caldb = cfg.get('caldb')
@@ -119,7 +118,7 @@ def simulateTrial(trial_args):
     del sim
     # time ---!
     elapsed_t = time()-start_t
-    if args.print.lower():
+    if args.print:
         print(f"Trial {count} took {elapsed_t} seconds.")
     print('.. done')
     return (count, elapsed_t)
