@@ -11,6 +11,7 @@ import numpy as np
 import os, argparse
 from time import time
 from shutil import copy
+from pathlib import Path
 from astropy.io import fits
 from datetime import datetime
 from multiprocessing import Pool
@@ -72,10 +73,10 @@ def main(args):
     # ---------------------------------------------------- loop trials ---!!!
     if args.mp_enabled:
         with Pool(args.mp_threads) as p:
-            times = p.map(simulateTrial, [ (i, cfg, pointing, bkg_model, bkgpath, tobs) for i in range(trials)])
+            times = p.map(simulateTrial, [ (i, cfg, pointing, bkg_model, bkgpath, tobs, args.remove) for i in range(trials)])
     else:
         for i in range(trials):
-            times = simulateTrial((i, cfg, pointing, bkg_model, bkgpath, tobs))
+            times = simulateTrial((i, cfg, pointing, bkg_model, bkgpath, tobs, args.remove))
     # time ---!
     if args.print:
         if len(times) > 1:
@@ -93,6 +94,7 @@ def simulateTrial(trial_args):
     bkg_model=trial_args[3]
     bkgpath=trial_args[4]
     tobs=trial_args[5]
+    remove_logs=trial_args[6]
     # initialise ---!
     count = cfg.get('start_count') + i + 1
     name = f'bkg{count:06d}'
@@ -113,7 +115,8 @@ def simulateTrial(trial_args):
     sim.model = bkg_model
     sim.output = bkg
     sim.run_simulation()
-
+    if remove_logs:
+        Path(sim.output).with_suffix('.log').unlink()
     sim.input = bkg
     sim.sortObsEvents()
     del sim
@@ -129,6 +132,7 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Simulate empty fields.')
     parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
     parser.add_argument('--print', type=str2bool, default='false', help='Print out results')
+    parser.add_argument('--remove', type=str2bool, default='true', help='Keep only .fits files and not .log')
     parser.add_argument('-mp', '--mp-enabled', type=str2bool, default='false', help='To parallelize trials loop')
     parser.add_argument('-mpt', '--mp-threads', type=int, default=4, help='The size of the threads pool')
     args = parser.parse_args()
