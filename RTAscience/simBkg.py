@@ -12,6 +12,7 @@ import os, argparse
 from time import time
 from shutil import copy
 from astropy.io import fits
+from datetime import datetime
 from multiprocessing import Pool
 from os.path import isdir, isfile, join, expandvars
 from RTAscience.cfg.Config import Config
@@ -67,7 +68,7 @@ def main(args):
     dumpedConfig = os.path.join(bkgpath, "config.yaml")
     if not os.path.isfile(dumpedConfig):
         copy(args.cfgfile, str(dumpedConfig))
-        
+
     # ---------------------------------------------------- loop trials ---!!!
     if args.mp_enabled:
         with Pool(args.mp_threads) as p:
@@ -80,7 +81,7 @@ def main(args):
         if len(times) > 1:
             print(f"Trial elapsed time (mean): {np.array(times).mean()}")
         else:
-            print(f"Trial elapsed time: {times[0]}")    
+            print(f"Trial elapsed time: {times[0]}")
     print('\n... done.\n')
 
 
@@ -105,7 +106,7 @@ def simulateTrial(trial_args):
     sim.e = [cfg.get('emin'), cfg.get('emax')]
 
 
-    print(f"Simulate empty fields for runid = {cfg.get('runid')}")
+    print(f"[{datetime.now().strftime('%d/%m/%Y_%H:%M:%S')}] Simulate empty fields for runid = {cfg.get('runid')} with seed = {count}", flush=True)
     sim.seed = count
     sim.t = [0, tobs]
     bkg = os.path.join(bkgpath, f'{name}.fits')
@@ -120,7 +121,7 @@ def simulateTrial(trial_args):
     elapsed_t = time()-start_t
     if args.print:
         print(f"Trial {count} took {elapsed_t} seconds.")
-    print('.. done')
+    print(f".. done [{datetime.now().strftime('%d/%m/%Y_%H:%M:%S')}]", flush=True)
     return (count, elapsed_t)
 
 
@@ -129,7 +130,7 @@ if __name__=='__main__':
     parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
     parser.add_argument('--print', type=str2bool, default='false', help='Print out results')
     parser.add_argument('-mp', '--mp-enabled', type=str2bool, default='false', help='To parallelize trials loop')
-    parser.add_argument('-mpt', '--mp-threads', type=int, default=4, help='The size of the threads pool') 
+    parser.add_argument('-mpt', '--mp-threads', type=int, default=4, help='The size of the threads pool')
     args = parser.parse_args()
 
     main(args)
