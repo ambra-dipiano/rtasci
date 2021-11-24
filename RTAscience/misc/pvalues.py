@@ -42,4 +42,4 @@ fig, ax = ts_wilks(values, len(values), nbin=nbin, width=wbin, figsize=(10, 6), 
 
 fig, ax = p_values(values, len(values), nbin=nbin, width=wbin, figsize=(10, 6), title='pvalues', show=False, usetex=False, filename=png_path + filename.replace('.csv', '_pvalues.png'))
 
-#fig, ax = ts_wilks_cumulative(values, len(values), nbin=nbin, width=wbin, figsize=(10, 6), show=False, usetex=False, title='cumulative', filename=png_path + filename.replace('.csv', '_cumulative.png'))
+fig, ax = ts_wilks_cumulative(values, len(values), nbin=nbin, width=wbin, figsize=(10, 6), show=False, usetex=False, title='cumulative', filename=png_path + filename.replace('.csv', '_cumulative.png'))
