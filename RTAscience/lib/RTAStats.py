@@ -476,11 +476,12 @@ def hist2d_map(x, y, trials, nbin=None, width=None, xcentre=0, ycentre=0, thresh
 # WILKS THEOREM DIST FOR EMPTY FIELDS ---!
 def ts_wilks(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='TS', ylabel='normalised counts', title='TS distribution (empty fields)', filename='wilks_preTrials.png', usetex=False, sns_style=False):
     '''Plots a TS distribution comparison with chi2 and chi2/2.'''
+    assert width == None or nbin == None, 'Define either nbin or width but bot both.'
 
     if width is None:
-        width = (max(x)-min(x))/nbin
+        width = max(x)/nbin
     if nbin is None:
-        nbin = int((max(x)-min(x))/width)
+        nbin = int(max(x)/width)
     if nbin is None and width is None:
         print('Error: set either nbin or width')
 
@@ -526,11 +527,12 @@ def ts_wilks(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=
 # WILKS THEOREM P-VALUES FOR EMPTY FIELDS ---!
 def p_values(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='h', ylabel='p-values', title='p-value (empty fields)', filename='pvalue_preTrials.png', usetex=False, sns_style=False):
     '''Plots a p-values distribution comparison with chi2 and chi2/2.'''
+    assert width == None or nbin == None, 'Define either nbin or width but bot both.'
 
     if width is None:
-        width = (max(x)-min(x))/nbin
+        width = max(x)/nbin
     if nbin is None:
-        nbin = int((max(x)-min(x))/width)
+        nbin = int(max(x)/width)
     if nbin is None and width is None:
         print('Error: set either nbin or width')
 
@@ -558,6 +560,8 @@ def p_values(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=
     edges.append(max(x))
     edges = np.array(edges)
     cbin = (edges[1:] + edges[:-1]) / 2
+
+    print(cbin, len(cbin), p, len(p))
 
     f = interp1d(p, cbin, fill_value = "extrapolate", kind='linear')
     ts = f(3e-7)
@@ -593,13 +597,15 @@ def p_values(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=
 # WILKS THEOREM P-VALUES FOR EMPTY FIELDS ---!
 def ts_wilks_cumulative(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='h', ylabel='cumulative probability', title='p-value (empty fields)', filename='cumulative_preTrials.png', usetex=False, sns_style=False):
     '''Plots a TS cumulative distribution.'''
+    assert width == None or nbin == None, 'Define either nbin or width but bot both.'
 
     if width is None:
-        width = (max(x)-min(x))/nbin
+        width = max(x)/nbin
     if nbin is None:
-        nbin = int((max(x)-min(x))/width)
+        nbin = int(max(x)/width)
     if nbin is None and width is None:
         print('Error: set either nbin or width')
+    
 
     fig = plt.figure(figsize=figsize)
     if usetex:
