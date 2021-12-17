@@ -9,7 +9,7 @@
 
 import os
 import astropy.units as u
-import healpy as hp
+#import healpy as hp
 import numpy as np
 from astropy.io import fits
 from os.path import join, expandvars
@@ -164,7 +164,7 @@ def wobble_pointing(target, nrun, clockwise=True, offset=0.5):
     if clockwise:
         wobble = [(0., offset), (-offset, 0.), (0., -offset), (offset, 0.)]
     else:
-        wobble = [(0., offset), (offset, 0.), (0., -offset), (-offset, 0.)] 
+        wobble = [(0., offset), (offset, 0.), (0., -offset), (-offset, 0.)]
     wobble_index = nrun % 4
     print(wobble[wobble_index])
     pointing = (target[0] + wobble[wobble_index][0], target[1] + wobble[wobble_index][1])
@@ -274,7 +274,7 @@ def get_gamma_r_rayleigh(dist, prob=0.6827):
     for d in dist:
         tmp += d**2
     if len(dist) != 0.0 :
-        mode = np.sqrt(1/(2*len(dist)) * tmp) 
+        mode = np.sqrt(1/(2*len(dist)) * tmp)
         MLE = 0.606/mode
     else:
         mode = np.nan

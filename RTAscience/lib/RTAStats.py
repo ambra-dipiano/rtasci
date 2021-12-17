@@ -44,7 +44,7 @@ def hist1d(x, mean, true=None, nbin=20, hist=True, fit=True, fontsize=20, color=
         if fit:
             sns.distplot(el, bins=nbin, kde=False, hist=hist, fit=norm, norm_hist=True, fit_kws={"color": color[index], "ls": ls[index]}, color=color[index], hist_kws={'alpha':alpha})
             if mean != None:
-                plt.axvline(mean[index], c=color[index], ls=ls[index], lw=lw, label=leglabel[index]) 
+                plt.axvline(mean[index], c=color[index], ls=ls[index], lw=lw, label=leglabel[index])
         else:
             sns.distplot(el, bins=nbin, kde=False, hist=hist, fit=None, norm_hist=True, color=color[index], hist_kws={'alpha':alpha}, label=leglabel[index])
         if true != None and type(true) == list:
@@ -498,7 +498,9 @@ def ts_wilks(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=
     cbin = (edges[1:] + edges[:-1]) / 2
     xerr = (edges[:-1] - edges[1:]) / 2
 
+
     x2 = np.arange(0, 30, 1)
+    # plt.hist(x, bins=nbin, density=True, histtype='step', align='mid', range=(0, max(x)), label='mplt')
     plt.errorbar(cbin, h, fmt='k+', yerr=yerr, xerr=xerr, markersize=5, label='')
     plt.plot(x2, stats.chi2.pdf(x2, df=df), c='orange', lw=1, ls='-.', label='chi2(dof=%d)' %df)
     plt.plot(x2, stats.chi2.pdf(x2, df=df)/2, c='b', lw=1, ls='--', label='chi2/2(dof=%d)' %df)
@@ -577,6 +579,7 @@ def p_values(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=
     plt.grid()
     plt.tight_layout()
     fig.savefig(filename)
+    print(f"Fig. {filename} saved.")
 
     # show fig ---!
     plt.show() if show == True else None
@@ -634,6 +637,7 @@ def ts_wilks_cumulative(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=
     plt.grid()
     plt.tight_layout()
     fig.savefig(filename)
+    print(f"Fig. {filename} saved.")
 
     # show fig ---!
     plt.show() if show == True else None
