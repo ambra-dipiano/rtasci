@@ -227,11 +227,13 @@ def simulateTrial(trial_args):
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
     parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
-    parser.add_argument('--merge', type=str2bool, default='true', help='Merge in single phlist (true) or use observation library (false)')
-    parser.add_argument('--remove', type=str2bool, default='true', help='Keep only outputs')
-    parser.add_argument('--print', type=str2bool, default='false', help='Print out results')
-    parser.add_argument('-mp', '--mp-enabled', type=str2bool, default='false', help='To parallelize trials loop')
+    parser.add_argument('--merge', type=str2bool, default=True, help='Merge in single phlist (true) or use observation library (false)')
+    parser.add_argument('--remove', type=str2bool, default=True, help='Keep only outputs')
+    parser.add_argument('--print', type=str2bool, default=False, help='Print out results')
+    parser.add_argument('-mp', '--mp-enabled', type=str2bool, default=False, help='To parallelize trials loop')
     parser.add_argument('-mpt', '--mp-threads', type=int, default=4, help='The size of the threads pool') 
-
     args = parser.parse_args()
+
+    if args.remove and not args.merge:
+        raise ValueError('Keyword "remove" cannot be True if keyword "merge" is False.')
     main(args)

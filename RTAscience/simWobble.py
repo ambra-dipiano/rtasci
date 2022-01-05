@@ -62,7 +62,7 @@ else:
 obsfile = os.path.join(obspath, 'wobble.xml')
 
 # ---------------------------------------------------- trials --- !!!
-target = (83.63, 22.01)
+target = (83.6331, 22.0145)
 runs = list()
 for count in range(nruns):
     name = f'{cfg.get("runid")}{start_count:06d}'
