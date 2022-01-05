@@ -37,11 +37,9 @@ def main(args):
     datapath = cfg.get('data')
     if not isdir(datapath):  # main data folder
         raise ValueError('Please specify a valid path')
-    if not isdir(join(datapath, 'obs')):  # obs parent folder
-        os.mkdir(join(datapath, 'obs'))
-    bkgpath = join(datapath, 'obs', 'backgrounds')
-    if not isdir(bkgpath):
-        os.mkdir(bkgpath)
+    bkgpath = Path(datapath).joinpath('obs', 'backgrounds')
+    bkgpath.mkdir(parents=True, exist_ok=True)
+
     # background model ---!
     bkg_model = expandvars(cfg.get('bkg'))  # XML background model
 
