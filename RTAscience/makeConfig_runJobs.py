@@ -19,7 +19,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--infile', type=str, required=True, help='yaml configuration file')
 parser.add_argument('--tt', type=int, required=True, help='total trials')
-parser.add_argument('--tn', type=int, required=True, help='trials per node')
+parser.add_argument('--cpus', type=int, required=True, help='number of cpus')
 parser.add_argument('--script', type=str, required=True, help='script to run')
 parser.add_argument('--env', type=str, required=True, help='environment to activate')
 parser.add_argument('--delay', type=float, default=90, help='delay')
@@ -46,22 +46,24 @@ output_path = filename.parent
 ext = filename.suffix
 name = filename.stem
 
+trials_per_cpu = int(args.tt / args.cpus)
+
 if args.off == 'gw':
     config['simulation']['offset'] = args.off
 else:
     config['simulation']['offset'] = float(args.off)
 config['simulation']['delay'] = args.delay
-config['setup']['trials'] = int(args.tn)
+config['setup']['trials'] = int(trials_per_cpu)
 config['setup']['scalefluxfactor'] = args.flux
 config['options']['plotsky'] = False
+start_count = config['setup']['start_count']
 
-number_of_jobs=int(args.tt/args.tn)
-print(f"SLURM configuration:\n\tNumber of jobs: {number_of_jobs}\n\tTotal trials: {args.tt}\n\tTrials per job: {args.tn}")
+print(f"SLURM configuration:\n\tNumber of jobs: {args.cpus}\n\tTotal trials: {args.cpus*trials_per_cpu}\n\tTrials per job: {trials_per_cpu}\n\tStart count: {start_count}")
 input("Press any key to start!")
 
-for i in range(number_of_jobs):
+for i in range(args.cpus):
     run = f"job_{i+1:02d}"
-    job_name = f'trials_{i*args.tn+1}-{(i+1)*args.tn}'
+    job_name = f'trials_{i*trials_per_cpu+1}-{(i+1)*trials_per_cpu}'
     #print("\n")
     #print(f"run: {run}")
     #print(f"job name: {job_name}")
@@ -69,7 +71,7 @@ for i in range(number_of_jobs):
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # save new config
-    config['setup']['start_count'] = int(i*args.tn)
+    config['setup']['start_count'] = start_count + i*trials_per_cpu
     config_outname = output_dir.joinpath(f"{name}_{job_name}").with_suffix(ext)
 
     if config_outname.is_file():
