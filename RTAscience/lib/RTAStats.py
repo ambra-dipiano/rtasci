@@ -524,16 +524,19 @@ def ts_wilks(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=
     return fig, ax
 
 # WILKS THEOREM P-VALUES FOR EMPTY FIELDS ---!
-def p_values(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='h', ylabel='p-values', title='p-value (empty fields)', filename='pvalue_preTrials.png', usetex=False, sns_style=False):
+def p_values(data, trials, labels=[], df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='h', ylabel='p-values', title='p-value (empty fields)', filename='pvalue_preTrials.png', usetex=False, sns_style=False):
     '''Plots a p-values distribution comparison with chi2 and chi2/2.'''
     assert width == None or nbin == None, 'Define either nbin or width but bot both.'
 
-    if width is None:
-        width = max(x)/nbin
-    if nbin is None:
-        nbin = int(max(x)/width)
-    if nbin is None and width is None:
-        print('Error: set either nbin or width')
+    data = np.array(data)
+
+    # In order to not break the old interface in which an array with only one dimension was passed as 'x' (now is 'data')
+    if len(data.shape) == 1:
+        data = np.expand_dims(data, axis=0)
+
+    # If not enough labels are passed
+    if len(labels) < data.shape[0]:
+        labels = [f"p-values {ii}" for ii, dd in enumerate(data)]
 
     fig = plt.figure(figsize=figsize)
     if usetex:
@@ -544,38 +547,47 @@ def p_values(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=
     plt.xticks(fontsize=fontsize, rotation=rotation)
     plt.yticks(fontsize=fontsize, rotation=rotation)
 
-    h = np.empty(len(np.linspace(0, max(x), nbin)))
-    p = np.empty(len(np.linspace(0, max(x), nbin)))
-    edges, xerr = [], []
-    for i in range(nbin):
-        edges.append(width*i)
-        xerr.append(width/2)
-        for idx, val in enumerate(x):
-            if val >= width*i:
-                h[i] += 1
-    p = h/trials
-    yerr = np.sqrt(h)/trials
+    for dd, x in enumerate(data):
+        if width is None:
+            dwidth = np.max(x)/nbin
+            dnbin = nbin
+        if nbin is None:
+            dwidth = width
+            dnbin = int(np.max(x)/width)
+        if nbin is None and width is None:
+            print('Error: set either nbin or width')
 
-    edges.append(max(x))
-    edges = np.array(edges)
-    cbin = (edges[1:] + edges[:-1]) / 2
+        h = np.empty(len(np.linspace(0, max(x), dnbin)))
+        p = np.empty(len(np.linspace(0, max(x), dnbin)))
+        edges, xerr = [], []
+        for i in range(dnbin):
+            edges.append(dwidth*i)
+            xerr.append(dwidth/2)
+            for idx, val in enumerate(x):
+                if val >= dwidth*i:
+                    h[i] += 1
+        p = h/trials
+        yerr = np.sqrt(h)/trials
 
-    print(cbin, len(cbin), p, len(p))
+        edges.append(max(x))
+        edges = np.array(edges)
+        cbin = (edges[1:] + edges[:-1]) / 2
 
-    f = interp1d(p, cbin, fill_value = "extrapolate", kind='linear')
-    ts = f(3e-7)
-    print(f'Significance (5sgm) == {ts}')
+        f = interp1d(p, cbin, fill_value = "extrapolate", kind='linear')
+        ts = f(3e-7)
+        print(f'Significance (5sgm) == {ts}')
 
-    plt.hist(x, bins=nbin, density=True, histtype='step', align='mid', range=(0, max(x)), cumulative=-1, label='mplt')
+        plt.hist(x, bins=dnbin, density=True, histtype='step', align='mid', range=(0, max(x)), cumulative=-1, label=labels[dd])
 
-    plt.errorbar(cbin, p, yerr=yerr, xerr=xerr, fmt='k+', markersize=5, label='pvlues')
-    #x2 = np.linspace(0, max(x), nbin)
-    #plt.plot(x2, (1 - stats.chi2.cdf(x2, df=df)), lw=1, ls='--', c='green', label='chi2(dof=%d)' %df)
-    #plt.plot(x2, (1 - stats.chi2.cdf(x2, df=df))/2, lw=1, ls='-.', c='maroon', label='chi2/2(dof=%d)' %df)
-    # plt.legend(('chi2/2(dof=%d)', 'chi2(dof=%d)', 'ts'), loc=0, fontsize=fontsize)
+        plt.errorbar(cbin, p, yerr=yerr, xerr=xerr, fmt='k+', markersize=5)
+
+        #x2 = np.linspace(0, max(x), dnbin)
+        #plt.plot(x2, (1 - stats.chi2.cdf(x2, df=df)), lw=1, ls='--', c='green', label='chi2(dof=%d)' %df)
+        #plt.plot(x2, (1 - stats.chi2.cdf(x2, df=df))/2, lw=1, ls='-.', c='maroon', label='chi2/2(dof=%d)' %df)
+        # plt.legend(('chi2/2(dof=%d)', 'chi2(dof=%d)', 'ts'), loc=0, fontsize=fontsize)
+
     plt.axhline(3e-7, c='gray', ls=':', alpha=1, lw=2)
     plt.text(min(x)*1.2, 3e-7, '5sigma', fontsize=fontsize, alpha=1)
-
     plt.xlabel(xlabel, fontsize=fontsize)
     plt.ylabel(ylabel, fontsize=fontsize)
     plt.title(title, fontsize=fontsize)
