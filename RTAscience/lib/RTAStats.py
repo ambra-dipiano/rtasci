@@ -474,7 +474,7 @@ def hist2d_map(x, y, trials, nbin=None, width=None, xcentre=0, ycentre=0, thresh
 
 
 # WILKS THEOREM DIST FOR EMPTY FIELDS ---!
-def ts_wilks(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='TS', ylabel='normalised counts', title='TS distribution (empty fields)', filename='wilks_preTrials.png', usetex=False, sns_style=False):
+def ts_wilks(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='TS', ylabel='normalised counts', title='TS distribution (empty fields)', filename='wilks_preTrials.png', usetex=False, sns_style=False, overlay=['chi2']):
     '''Plots a TS distribution comparison with chi2 and chi2/2.'''
     assert width == None or nbin == None, 'Define either nbin or width but bot both.'
 
@@ -484,6 +484,9 @@ def ts_wilks(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=
         nbin = int(max(x)/width)
     if nbin is None and width is None:
         print('Error: set either nbin or width')
+
+    if type(overlay) != list:
+        overlay = [overlay]
 
     fig = plt.figure(figsize=figsize)
     if usetex:
@@ -500,12 +503,14 @@ def ts_wilks(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=
     cbin = (edges[1:] + edges[:-1]) / 2
     xerr = (edges[:-1] - edges[1:]) / 2
 
-    plt.hist(x, bins=nbin, density=True, histtype='step', align='mid', range=(0, max(x)), label='mplt')
-    
     plt.errorbar(cbin, h, fmt='k+', yerr=yerr, xerr=xerr, markersize=5, label='')
-    #x2 = np.linspace(0, max(x), nbin)
-    #plt.plot(x2, stats.chi2.pdf(x2, df=df), c='orange', lw=1, ls='-.', label='chi2(dof=%d)' %df)
-    #plt.plot(x2, stats.chi2.pdf(x2, df=df)/2, c='b', lw=1, ls='--', label='chi2/2(dof=%d)' %df)
+
+    if 'chi2' in overlay:
+        x2 = np.linspace(0, max(x), nbin)
+        plt.plot(x2, stats.chi2.pdf(x2, df=df), c='orange', lw=1, ls='-.', label='chi2(dof=%d)' %df)
+        plt.plot(x2, stats.chi2.pdf(x2, df=df)/2, c='b', lw=1, ls='--', label='chi2/2(dof=%d)' %df)
+    if 'mplt' in overlay:
+        plt.hist(x, bins=nbin, density=False, histtype='step', align='mid', range=(0, max(x)), label='mplt')
 
     plt.xlabel(xlabel, fontsize=fontsize)
     plt.ylabel(ylabel, fontsize=fontsize)
@@ -525,7 +530,7 @@ def ts_wilks(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=
     return fig, ax
 
 # WILKS THEOREM P-VALUES FOR EMPTY FIELDS ---!
-def p_values(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='h', ylabel='p-values', title='p-value (empty fields)', filename='pvalue_preTrials.png', usetex=False, sns_style=False):
+def p_values(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='h', ylabel='p-values', title='p-value (empty fields)', filename='pvalue_preTrials.png', usetex=False, sns_style=False, overlay=['chi2']):
     '''Plots a p-values distribution comparison with chi2 and chi2/2.'''
     assert width == None or nbin == None, 'Define either nbin or width but bot both.'
 
@@ -535,6 +540,9 @@ def p_values(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=
         nbin = int(max(x)/width)
     if nbin is None and width is None:
         print('Error: set either nbin or width')
+
+    if type(overlay) != list:
+        overlay = [overlay]
 
     fig = plt.figure(figsize=figsize)
     if usetex:
@@ -561,19 +569,22 @@ def p_values(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=
     edges = np.array(edges)
     cbin = (edges[1:] + edges[:-1]) / 2
 
-    print(cbin, len(cbin), p, len(p))
+    #print(cbin, len(cbin), p, len(p))
 
-    f = interp1d(p, cbin, fill_value = "extrapolate", kind='linear')
+    f = interp1d(cbin, p, fill_value="extrapolate", kind='linear')
     ts = f(3e-7)
     print(f'Significance (5sgm) == {ts}')
 
-    plt.hist(x, bins=nbin, density=True, histtype='step', align='mid', range=(0, max(x)), cumulative=-1, label='mplt')
-
     plt.errorbar(cbin, p, yerr=yerr, xerr=xerr, fmt='k+', markersize=5, label='pvlues')
-    #x2 = np.linspace(0, max(x), nbin)
-    #plt.plot(x2, (1 - stats.chi2.cdf(x2, df=df)), lw=1, ls='--', c='green', label='chi2(dof=%d)' %df)
-    #plt.plot(x2, (1 - stats.chi2.cdf(x2, df=df))/2, lw=1, ls='-.', c='maroon', label='chi2/2(dof=%d)' %df)
-    # plt.legend(('chi2/2(dof=%d)', 'chi2(dof=%d)', 'ts'), loc=0, fontsize=fontsize)
+
+    if 'chi2' in overlay:
+        x2 = np.linspace(0, max(x), nbin)
+        plt.plot(x2, (1 - stats.chi2.cdf(x2, df=df)), lw=1, ls='--', c='green', label='chi2(dof=%d)' %df)
+        plt.plot(x2, (1 - stats.chi2.cdf(x2, df=df))/2, lw=1, ls='-.', c='maroon', label='chi2/2(dof=%d)' %df)
+        plt.legend(('chi2/2(dof=%d)', 'chi2(dof=%d)', 'ts'), loc=0, fontsize=fontsize)
+    if 'mplt' in overlay:
+        plt.hist(x, bins=nbin, density=True, histtype='step', align='mid', range=(0, max(x)), cumulative=-1, label='mplt')
+
     plt.axhline(3e-7, c='gray', ls=':', alpha=1, lw=2)
     plt.text(min(x)*1.2, 3e-7, '5sigma', fontsize=fontsize, alpha=1)
 
@@ -595,7 +606,7 @@ def p_values(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=
     return fig, ax
 
 # WILKS THEOREM P-VALUES FOR EMPTY FIELDS ---!
-def ts_wilks_cumulative(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='h', ylabel='cumulative probability', title='p-value (empty fields)', filename='cumulative_preTrials.png', usetex=False, sns_style=False):
+def ts_wilks_cumulative(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='h', ylabel='cumulative probability', title='p-value (empty fields)', filename='cumulative_preTrials.png', usetex=False, sns_style=False, overlay=['chi2']):
     '''Plots a TS cumulative distribution.'''
     assert width == None or nbin == None, 'Define either nbin or width but bot both.'
 
@@ -606,6 +617,8 @@ def ts_wilks_cumulative(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=
     if nbin is None and width is None:
         print('Error: set either nbin or width')
     
+    if type(overlay) != list:
+        overlay = [overlay]
 
     fig = plt.figure(figsize=figsize)
     if usetex:
@@ -632,12 +645,15 @@ def ts_wilks_cumulative(x, trials, df=1, nbin=None, width=None, ylim=None, xlim=
     edges = np.array(edges)
     cbin = (edges[1:] + edges[:-1]) / 2
 
-    plt.hist(x, bins=nbin, density=True, histtype='step', align='mid', range=(0, max(x)), cumulative=1, label='mplt')
-
     plt.errorbar(cbin, p, yerr=yerr, xerr=xerr, fmt='k+', markersize=5, label='cumulative')
-    #x2 = np.linspace(0, max(x), nbin)
-    #plt.plot(x2, stats.chi2.cdf(x2, df=df), lw=1, ls='-.', c='maroon', label='P(dof=%d)' %df)
-    # plt.legend(('chi2/2(dof=%d)', 'chi2(dof=%d)', 'ts'), loc=0, fontsize=fontsize)
+
+    if 'chi2' in overlay:
+        x2 = np.linspace(0, max(x), nbin)
+        plt.plot(x2, stats.chi2.cdf(x2, df=df), lw=1, ls='-.', c='maroon', label='P(dof=%d)' %df)
+        plt.legend(('chi2/2(dof=%d)', 'chi2(dof=%d)', 'ts'), loc=0, fontsize=fontsize)
+    if 'mplt' in overlay:
+        plt.hist(x, bins=nbin, density=True, histtype='step', align='mid', range=(0, max(x)), cumulative=1, label='mplt')
+
     plt.axhline(1-3e-7, c='gray', ls=':', lw=2, alpha=1)
     plt.text(min(x)*1.2, 1-3e7, '5sigma', fontsize=fontsize, alpha=1)
 
