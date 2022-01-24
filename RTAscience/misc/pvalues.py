@@ -33,7 +33,7 @@ values.sort()
 #values = np.genfromtxt(join(path, filename), usecols=(0), skip_header=0, dtype=float)
 
 nbin = 100
-print(min(values), max(values), len(values))
+print(f'min = {min(values)}\nmax = {max(values)}\nlen = {len(values)}')
 
 # -------------------------------- PLOT ---!
 
