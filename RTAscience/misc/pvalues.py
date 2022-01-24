@@ -8,16 +8,16 @@
 # *******************************************************************************
 
 import os
-from os.path import join
+from os.path import join, expandvars
 from RTAscience.lib.RTAStats import *
 
-path = '/data01/homes/cta/gammapy_integration/DATA/outputs/LEO'
+path = expandvars('$DATA/outputs/LEO')
 png_path = join(path, 'png/')
 if not os.path.isdir(png_path):
   os.mkdir(png_path)
 
 
-filename = 'reconstruction_errors.csv'
+filename = 'reconstruction_errors_2.csv'
 os.system(f'head {filename}')
 # load DataFrame and column names ---!
 df = pd.read_csv(join(path, filename))
