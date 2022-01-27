@@ -18,8 +18,7 @@ if not os.path.isdir(png_path):
   os.mkdir(png_path)
 
 
-filename = 'reconstruction_errors_3.csv'
-os.system(f'head {filename}')
+filename = 'chi2sample.csv'
 # load DataFrame and column names ---!
 df = pd.read_csv(join(path, filename))
 cols = list(df.columns)
@@ -35,8 +34,8 @@ print(f'min = {min(values)}\nmax = {max(values)}\nlen = {len(values)}')
 
 # -------------------------------- PLOT ---!
 
-fig, ax = ts_wilks(values, len(values), nbin=nbin, figsize=(7, 8), title='distribution', show=False, usetex=False, filename=png_path + filename.replace('.csv', '_wilks.png'), overlay=None, write_data=True)
+fig, ax = ts_wilks(values, len(values), nbin=nbin, figsize=(7, 8), xrange=None, title='distribution', show=False, usetex=False, filename=png_path + filename.replace('.csv', '_wilks.png'), overlay=None, write_data=True)
 
-fig, ax = p_values(values, len(values), nbin=nbin, figsize=(7, 8), title='pvalues', show=False, usetex=False, filename=png_path + filename.replace('.csv', '_pvalues.png'), overlay=None, sigma5=False, write_data=True)
+fig, ax = p_values(values, len(values), nbin=nbin, figsize=(7, 8), xrange=None, title='pvalues', show=False, usetex=False, filename=png_path + filename.replace('.csv', '_pvalues.png'), overlay=None, sigma5=False, write_data=True)
 
-#fig, ax = ts_wilks_cumulative(values, len(values), nbin=nbin, figsize=(7, 8), show=False, usetex=False, title='cumulative', filename=png_path + filename.replace('.csv', '_cumulative.png'), overlay=None)
+#fig, ax = ts_wilks_cumulative(values, len(values), nbin=nbin, figsize=(7, 8), xrange=(0,0.3), show=False, usetex=False, title='cumulative', filename=png_path + filename.replace('.csv', '_cumulative.png'), overlay=None)

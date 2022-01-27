@@ -464,21 +464,23 @@ def hist2d_map(x, y, nbin=None, width=None, xcentre=0, ycentre=0, threshold=1, a
 
 
 # WILKS THEOREM DIST FOR EMPTY FIELDS ---!
-def ts_wilks(x, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='TS', ylabel='normalised counts', title='TS distribution (empty fields)', filename='wilks_preTrials.png', usetex=False, sns_style=False, overlay=['chi2'], write_data=False):
+def ts_wilks(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='TS', ylabel='normalised counts', title='TS distribution (empty fields)', filename='wilks_preTrials.png', usetex=False, sns_style=False, overlay=['chi2'], write_data=False):
     '''Plots a TS distribution comparison with chi2 and chi2/2.'''
     assert width == None or nbin == None, 'Define either nbin or width but bot both.'
 
-    trials = len(x)
+    if xrange == None:
+        xrange = (min(x), max(x))
+    if trials == None:
+        trials = len(x)
     if width is None:
-        width = max(x)/nbin
+        width = (xrange[1]-xrange[0])/nbin
     if nbin is None:
-        nbin = int(max(x)/width)
+        nbin = int((xrange[1]-xrange[0])/width)
     if nbin is None and width is None:
         print('Error: set either nbin or width')
-
     if type(overlay) != list:
         overlay = [overlay]
-
+    
     fig = plt.figure(figsize=figsize)
     if usetex:
         plt.rc('text', usetex=usetex)
@@ -488,7 +490,7 @@ def ts_wilks(x, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, f
     plt.xticks(fontsize=fontsize, rotation=rotation)
     plt.yticks(fontsize=fontsize, rotation=rotation)
 
-    h, edges = np.histogram(x, bins=int(nbin), density=False, range=(0, max(x)))
+    h, edges = np.histogram(x, bins=int(nbin), density=False, range=(xrange[0], xrange[1]))
     yerr = np.sqrt(h)/trials
     h = h/trials
     cbin = (edges[1:] + edges[:-1]) / 2
@@ -497,11 +499,11 @@ def ts_wilks(x, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, f
     plt.errorbar(cbin, h, fmt='k+', yerr=yerr, xerr=xerr, markersize=5, label='')
 
     if 'chi2' in overlay:
-        x2 = np.linspace(0, max(x), nbin)
+        x2 = np.linspace(xrange[0], xrange[1], nbin)
         plt.plot(x2, chi2.pdf(x2, df=df), c='orange', lw=1, ls='-.', label='chi2(dof=%d)' %df)
         plt.plot(x2, chi2.pdf(x2, df=df)/2, c='b', lw=1, ls='--', label='chi2/2(dof=%d)' %df)
     if 'mplt' in overlay:
-        plt.hist(x, bins=nbin, density=False, histtype='step', align='mid', range=(0, max(x)), label='mplt')
+        plt.hist(x, bins=nbin, density=False, histtype='step', align='mid', range=(xrange[0], xrange[1]), label='mplt')
 
     plt.xlabel(xlabel, fontsize=fontsize)
     plt.ylabel(ylabel, fontsize=fontsize)
@@ -515,7 +517,7 @@ def ts_wilks(x, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, f
     fig.savefig(filename)
 
     if write_data:
-        save_data_on_file(x=cbin, y=h, xerr=xerr, yerr=yerr, filename=filename.replace('.png', '.txt'))
+        save_hist_on_file(x=cbin, y=h, xerr=xerr, yerr=yerr, filename=filename.replace('.png', '.txt'))
 
     # show fig ---!
     plt.show() if show == True else None
@@ -524,18 +526,20 @@ def ts_wilks(x, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, f
     return fig, ax
 
 # WILKS THEOREM P-VALUES FOR EMPTY FIELDS ---!
-def p_values(x, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='h', ylabel='p-values', title='p-value (empty fields)', filename='pvalue_preTrials.png', usetex=False, sns_style=False, overlay=['chi2'], sigma5=True, write_data=False):
+def p_values(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='h', ylabel='p-values', title='p-value (empty fields)', filename='pvalue_preTrials.png', usetex=False, sns_style=False, overlay=['chi2'], sigma5=True, write_data=False):
     '''Plots a p-values distribution comparison with chi2 and chi2/2.'''
     assert width == None or nbin == None, 'Define either nbin or width but bot both.'
 
-    trials = len(x)
+    if xrange == None:
+        xrange = (min(x), max(x))
+    if trials == None:
+        trials = len(x)
     if width is None:
-        width = max(x)/nbin
+        width = (xrange[1]-xrange[0])/nbin
     if nbin is None:
-        nbin = int(max(x)/width)
+        nbin = int((xrange[1]-xrange[0])/width)
     if nbin is None and width is None:
         print('Error: set either nbin or width')
-
     if type(overlay) != list:
         overlay = [overlay]
 
@@ -548,8 +552,8 @@ def p_values(x, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, f
     plt.xticks(fontsize=fontsize, rotation=rotation)
     plt.yticks(fontsize=fontsize, rotation=rotation)
 
-    h = np.empty(len(np.linspace(0, max(x), nbin)))
-    p = np.empty(len(np.linspace(0, max(x), nbin)))
+    h = np.empty(len(np.linspace(xrange[0], xrange[1], nbin)))
+    p = np.empty(len(np.linspace(xrange[0], xrange[1], nbin)))
     edges, xerr = [], []
     for i in range(nbin):
         edges.append(width*i)
@@ -560,23 +564,23 @@ def p_values(x, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, f
     p = h/trials
     yerr = np.sqrt(h)/trials
 
-    edges.append(max(x))
+    edges.append(xrange[1])
     edges = np.array(edges)
     cbin = (edges[1:] + edges[:-1]) / 2
 
     plt.errorbar(cbin, p, yerr=yerr, xerr=xerr, fmt='k+', markersize=5, label='pvlues')
 
     if 'chi2' in overlay:
-        x2 = np.linspace(0, max(x), nbin)
+        x2 = np.linspace(xrange[0], xrange[1], nbin)
         plt.plot(x2, (1 - chi2.cdf(x2, df=df)), lw=1, ls='--', c='green', label='chi2(dof=%d)' %df)
         plt.plot(x2, (1 - chi2.cdf(x2, df=df))/2, lw=1, ls='-.', c='maroon', label='chi2/2(dof=%d)' %df)
         plt.legend(('chi2/2(dof=%d)', 'chi2(dof=%d)', 'ts'), loc=0, fontsize=fontsize)
     if 'mplt' in overlay:
-        plt.hist(x, bins=nbin, density=True, histtype='step', align='mid', range=(0, max(x)), cumulative=-1, label='mplt')
+        plt.hist(x, bins=nbin, density=True, histtype='step', align='mid', range=(xrange[0], xrange[1]), cumulative=-1, label='mplt')
 
     if sigma5:
         plt.axhline(3e-7, c='gray', ls=':', alpha=1, lw=2)
-        plt.text(min(x)*1.2, 3e-7, '5sigma', fontsize=fontsize, alpha=1)
+        plt.text(xrange[0]*1.2, 3e-7, '5sigma', fontsize=fontsize, alpha=1)
         f = interp1d(cbin, p, fill_value="extrapolate", kind='linear')
         ts = f(3e-7)
         print(f'Significance (5sgm) == {ts}')
@@ -593,7 +597,7 @@ def p_values(x, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, f
     fig.savefig(filename)
 
     if write_data:
-        save_data_on_file(x=cbin, y=p, xerr=xerr, yerr=yerr, filename=filename.replace('.png', '.txt'))
+        save_hist_on_file(x=cbin, y=p, xerr=xerr, yerr=yerr, filename=filename.replace('.png', '.txt'))
 
     # show fig ---!
     plt.show() if show == True else None
@@ -602,18 +606,20 @@ def p_values(x, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, f
     return fig, ax
 
 # WILKS THEOREM P-VALUES FOR EMPTY FIELDS ---!
-def ts_wilks_cumulative(x, df=1, nbin=None, width=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='h', ylabel='cumulative probability', title='p-value (empty fields)', filename='cumulative_preTrials.png', usetex=False, sns_style=False, overlay=['chi2'], write_data=False):
+def ts_wilks_cumulative(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='h', ylabel='cumulative probability', title='p-value (empty fields)', filename='cumulative_preTrials.png', usetex=False, sns_style=False, overlay=['chi2'], write_data=False):
     '''Plots a TS cumulative distribution.'''
     assert width == None or nbin == None, 'Define either nbin or width but bot both.'
 
-    trials = len(x)
+    if xrange == None:
+        xrange = (min(x), max(x))
+    if trials == None:
+        trials = len(x)
     if width is None:
-        width = max(x)/nbin
+        width = (xrange[1]-xrange[0])/nbin
     if nbin is None:
-        nbin = int(max(x)/width)
+        nbin = int((xrange[1]-xrange[0])/width)
     if nbin is None and width is None:
         print('Error: set either nbin or width')
-    
     if type(overlay) != list:
         overlay = [overlay]
 
@@ -626,8 +632,8 @@ def ts_wilks_cumulative(x, df=1, nbin=None, width=None, ylim=None, xlim=None, sh
     plt.xticks(fontsize=fontsize, rotation=rotation)
     plt.yticks(fontsize=fontsize, rotation=rotation)
 
-    h = np.empty(len(np.linspace(0, max(x), nbin)))
-    p = np.empty(len(np.linspace(0, max(x), nbin)))
+    h = np.empty(len(np.linspace(xrange[0], xrange[1], nbin)))
+    p = np.empty(len(np.linspace(xrange[0], xrange[1], nbin)))
     xerr, edges = [], []
     for i in range(nbin):
         edges.append(width*i)
@@ -638,21 +644,21 @@ def ts_wilks_cumulative(x, df=1, nbin=None, width=None, ylim=None, xlim=None, sh
     p = 1 - h/trials
     yerr = np.sqrt(h)/trials
 
-    edges.append(max(x))
+    edges.append(xrange[1])
     edges = np.array(edges)
     cbin = (edges[1:] + edges[:-1]) / 2
 
     plt.errorbar(cbin, p, yerr=yerr, xerr=xerr, fmt='k+', markersize=5, label='cumulative')
 
     if 'chi2' in overlay:
-        x2 = np.linspace(0, max(x), nbin)
+        x2 = np.linspace(xrange[0], xrange[1], nbin)
         plt.plot(x2, chi2.cdf(x2, df=df), lw=1, ls='-.', c='maroon', label='P(dof=%d)' %df)
         plt.legend(('chi2/2(dof=%d)', 'chi2(dof=%d)', 'ts'), loc=0, fontsize=fontsize)
     if 'mplt' in overlay:
-        plt.hist(x, bins=nbin, density=True, histtype='step', align='mid', range=(0, max(x)), cumulative=1, label='mplt')
+        plt.hist(x, bins=nbin, density=True, histtype='step', align='mid', range=(xrange[0], xrange[1]), cumulative=1, label='mplt')
 
     plt.axhline(1-3e-7, c='gray', ls=':', lw=2, alpha=1)
-    plt.text(min(x)*1.2, 1-3e7, '5sigma', fontsize=fontsize, alpha=1)
+    plt.text(xrange[0]*1.2, 1-3e7, '5sigma', fontsize=fontsize, alpha=1)
 
     plt.xlabel(xlabel, fontsize=fontsize)
     plt.ylabel(ylabel, fontsize=fontsize)
@@ -666,7 +672,7 @@ def ts_wilks_cumulative(x, df=1, nbin=None, width=None, ylim=None, xlim=None, sh
     fig.savefig(filename)
 
     if write_data:
-        save_data_on_file(x=cbin, y=h, xerr=xerr, yerr=yerr, filename=filename.replace('.png', '.txt'))
+        save_hist_on_file(x=cbin, y=h, xerr=xerr, yerr=yerr, filename=filename.replace('.png', '.txt'))
 
     # show fig ---!
     plt.show() if show == True else None
@@ -674,18 +680,23 @@ def ts_wilks_cumulative(x, df=1, nbin=None, width=None, ylim=None, xlim=None, sh
 
     return fig, ax
 
-def chi2_reduced(x, df=1, nbin=None, width=None, var=True):
+def chi2_reduced(x, df=1, nbin=None, width=None, var=True, xrange=None):
     '''Returns the chi2 and chi2 reduced.'''
     trials = len(x)
     np.seterr(divide='ignore', invalid='ignore')
+
+    if xrange == None:
+        xrange = (min(x), max(x))
+    if trials == None:
+        trials = len(x)
     if width is None:
-        width = max(x)/nbin
+        width = (xrange[1]-xrange[0])/nbin
     if nbin is None:
-        nbin = int(max(x)/width)
+        nbin = int((xrange[1]-xrange[0])/width)
     if nbin is None and width is None:
         print('Error: set either nbin or width')
 
-    h, edges = np.histogram(x, bins=int(nbin), density=False, range=(0., max(x)))
+    h, edges = np.histogram(x, bins=int(nbin), density=False, range=(0., xrange[1]))
     yerr = np.sqrt(h)/trials
     h = h/trials
     cbin = (edges[1:] + edges[:-1])/2
@@ -709,16 +720,19 @@ def chi2_reduced(x, df=1, nbin=None, width=None, var=True):
 
 
 # MANUAL NORMALISED HISTOGRAM ---!
-def make_hist(x, step=None, nbin=None, normed=True, write_data=False, filename='histogram.txt'):
+def make_hist(x, step=None, nbin=None, width=None, normed=True, write_data=False, xrange=None, trials=None, filename='histogram.txt'):
     
     x = np.sort(x)
-    trials = len(x)
-    if step is None:
-        step = max(x)/nbin
+    if xrange == None:
+        xrange = (min(x), max(x))
+    if trials == None:
+        trials = len(x)
+    if width is None:
+        width = (xrange[1]-xrange[0])/nbin
     if nbin is None:
-        nbin = int(max(x)/step)
-    if nbin is None and step is None:
-        print('Error: set either nbin or step')
+        nbin = int((xrange[1]-xrange[0])/width)
+    if nbin is None and width is None:
+        print('Error: set either nbin or width')
 
     h = np.empty(len(np.arange(nbin)))
     cbin, xerr = [], []
@@ -737,20 +751,23 @@ def make_hist(x, step=None, nbin=None, normed=True, write_data=False, filename='
         yerr = np.sqrt(h)
 
     if write_data:
-        save_data_on_file(x=cbin, y=h, xerr=xerr, yerr=yerr, filename=filename.replace('.png', '.txt'))
+        save_hist_on_file(x=cbin, y=h, xerr=xerr, yerr=yerr, filename=filename.replace('.png', '.txt'))
     return cbin, h, xerr, yerr
 
-def normed_hist_plot(x, step=None, nbin=None, ylim=None, xlim=None, show=False, normed=True, xscale='linear', yscale='log', fontsize=15, figsize=(15,12), rotation=0, xlabel='x', ylabel='normalised counts', leglabel='legend', title='normed histogram', usetex=False, sns_style=False, usesns=False, filename='normed_histogram.png', write_data=False):
+def normed_hist_plot(x, step=None, nbin=None, width=None, ylim=None, xlim=None, trials=None, xrange=None, show=False, normed=True, xscale='linear', yscale='log', fontsize=15, figsize=(15,12), rotation=0, xlabel='x', ylabel='normalised counts', leglabel='legend', title='normed histogram', usetex=False, sns_style=False, usesns=False, filename='normed_histogram.png', write_data=False):
     '''Generates a manually normalised histogram.'''
 
     x = np.sort(x)
-    trials = len(x)
-    if step is None:
-        step = max(x)/nbin
+    if xrange == None:
+        xrange = (min(x), max(x))
+    if trials == None:
+        trials = len(x)
+    if width is None:
+        width = (xrange[1]-xrange[0])/nbin
     if nbin is None:
-        nbin = int(max(x)/step)
-    if nbin is None and step is None:
-        print('Error: set either nbin or step')
+        nbin = int((xrange[1]-xrange[0])/width)
+    if nbin is None and width is None:
+        print('Error: set either nbin or width')
 
     fig = plt.figure(figsize=figsize)
     if usetex:
@@ -792,7 +809,7 @@ def normed_hist_plot(x, step=None, nbin=None, ylim=None, xlim=None, show=False, 
     fig.savefig(filename)
 
     if write_data:
-        save_data_on_file(x=cbin, y=h, xerr=xerr, yerr=yerr, filename=filename.replace('.png', '.txt'))
+        save_hist_on_file(x=cbin, y=h, xerr=xerr, yerr=yerr, filename=filename.replace('.png', '.txt'))
 
     # show fig ---!
     plt.show() if show else None
@@ -800,7 +817,7 @@ def normed_hist_plot(x, step=None, nbin=None, ylim=None, xlim=None, show=False, 
 
     return fig, ax
 
-def save_data_on_file(x, y, xerr, yerr, filename='histogram.txt', hdr='x xerr y yerr'):
+def save_hist_on_file(x, y, xerr, yerr, filename='histogram.txt', hdr='x xerr y yerr'):
     log = open(filename, 'w+')
     if hdr != None:
         if '\n' not in hdr:
@@ -808,5 +825,16 @@ def save_data_on_file(x, y, xerr, yerr, filename='histogram.txt', hdr='x xerr y 
         log.write(hdr)
     for i in range(len(x)):
         log.write(f'{x[i]} {xerr[i]} {y[i]} {yerr[i]}\n')
+    log.close()
+    return
+
+def save_data_on_file(x, filename='histogram.txt', hdr='x xerr y yerr'):
+    log = open(filename, 'w+')
+    if hdr != None:
+        if '\n' not in hdr:
+            hdr += '\n'
+        log.write(hdr)
+    for el in x:
+        log.write(f'{el}\n')
     log.close()
     return
