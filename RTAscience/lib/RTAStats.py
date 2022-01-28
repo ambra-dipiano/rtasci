@@ -65,7 +65,7 @@ def hist1d_gauss(x, mean, true=None, loc=0, threshold=1, nbin=20, width=None, hi
 
     if nbin == None:
         if width == None:
-            print('Error: set either nbin or width')
+            raise ValueError('Either nbin or width must be not None')
         nbin = int(threshold/width)
 
     fig = plt.figure(figsize=figsize)
@@ -109,7 +109,7 @@ def hist1d_rayleigh(x, mean, rayleigh_prms={'loc':0, 'scale':[1]}, threshold=1, 
     if nbin == None:
         nbin = int(threshold/width)
     if nbin == None and width == None:
-        print('Error: set either nbin or width')
+        raise ValueError('Either nbin or width must be not None')
 
     fig = plt.figure(figsize=figsize)
     if usetex:
@@ -228,7 +228,7 @@ def hist2d_rayleigh_CI(x, y, nbin=None, width=None, rayleigh_prms={'loc':0, 'sca
     if nbin is None:
         nbin = int(threshold/width)
     if nbin is None and width is None:
-        print('Error: set either nbin or width')
+        raise ValueError('Either nbin or width must be not None')
 
     fig = plt.figure(figsize=figsize)
     if usetex:
@@ -292,7 +292,7 @@ def hist2d_gauss_CI(x, y, nbin=None, width=None, xcentre=0, ycentre=0, threshold
     if nbin is None:
         nbin = int(threshold/width)
     if nbin is None and width is None:
-        print('Error: set either nbin or width')
+        raise ValueError('Either nbin or width must be not None')
 
     fig = plt.figure(figsize=figsize)
     if usetex:
@@ -348,7 +348,7 @@ def contour_gauss_CI(x, y, nbin=None, width=None, xcentre=0, ycentre=0, threshol
     if nbin is None:
         nbin = int(threshold/width)
     if nbin is None and width is None:
-        print('Error: set either nbin or width')
+        raise ValueError('Either nbin or width must be not None')
 
     fig = plt.figure(figsize=figsize)
     if usetex:
@@ -396,7 +396,7 @@ def hist2d_map(x, y, nbin=None, width=None, xcentre=0, ycentre=0, threshold=1, a
     if nbin is None:
         nbin = int(threshold/width)
     if nbin is None and width is None:
-        print('Error: set either nbin or width')
+        raise ValueError('Either nbin or width must be not None')
 
     fig = plt.figure(figsize=figsize)
     if usetex:
@@ -444,7 +444,7 @@ def hist2d_map(x, y, nbin=None, width=None, xcentre=0, ycentre=0, threshold=1, a
             ell.set_facecolor('none')
             ax.add_artist(ell)
     else:
-        print('Error: if_CI parameter value not understood')
+        raise ValueError('Ivalid if_CI parameter value')
 
     m = plt.cm.ScalarMappable(cmap='jet')
     m.set_clim(0., trials/100)
@@ -477,7 +477,7 @@ def ts_wilks(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None
     if nbin is None:
         nbin = int((xrange[1]-xrange[0])/width)
     if nbin is None and width is None:
-        print('Error: set either nbin or width')
+        raise ValueError('Either nbin or width must be not None')
     if type(overlay) != list:
         overlay = [overlay]
     
@@ -532,6 +532,7 @@ def p_values(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None
 
     if xrange == None:
         xrange = (min(x), max(x))
+    x = x[(x >= xrange[0]) & (x <= xrange[1])]
     if trials == None:
         trials = len(x)
     if width is None:
@@ -539,7 +540,7 @@ def p_values(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None
     if nbin is None:
         nbin = int((xrange[1]-xrange[0])/width)
     if nbin is None and width is None:
-        print('Error: set either nbin or width')
+        raise ValueError('Either nbin or width must be not None')
     if type(overlay) != list:
         overlay = [overlay]
 
@@ -552,8 +553,7 @@ def p_values(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None
     plt.xticks(fontsize=fontsize, rotation=rotation)
     plt.yticks(fontsize=fontsize, rotation=rotation)
 
-    h = np.empty(len(np.linspace(xrange[0], xrange[1], nbin)))
-    p = np.empty(len(np.linspace(xrange[0], xrange[1], nbin)))
+    h = np.zeros_like(np.empty(len(np.linspace(xrange[0], xrange[1], nbin))))
     edges, xerr = [], []
     for i in range(nbin):
         edges.append(width*i)
@@ -619,7 +619,7 @@ def ts_wilks_cumulative(x, df=1, nbin=None, width=None, trials=None, xrange=None
     if nbin is None:
         nbin = int((xrange[1]-xrange[0])/width)
     if nbin is None and width is None:
-        print('Error: set either nbin or width')
+        raise ValueError('Either nbin or width must be not None')
     if type(overlay) != list:
         overlay = [overlay]
 
@@ -632,15 +632,16 @@ def ts_wilks_cumulative(x, df=1, nbin=None, width=None, trials=None, xrange=None
     plt.xticks(fontsize=fontsize, rotation=rotation)
     plt.yticks(fontsize=fontsize, rotation=rotation)
 
-    h = np.empty(len(np.linspace(xrange[0], xrange[1], nbin)))
-    p = np.empty(len(np.linspace(xrange[0], xrange[1], nbin)))
+    h = np.zeros_like(np.empty(len(np.linspace(xrange[0], xrange[1], nbin))))
     xerr, edges = [], []
+    x = np.sort(x)
     for i in range(nbin):
         edges.append(width*i)
         xerr.append(width/2)
         for idx, val in enumerate(x):
             if val >= width*i:
                 h[i] += 1
+        
     p = 1 - h/trials
     yerr = np.sqrt(h)/trials
 
@@ -694,7 +695,7 @@ def chi2_reduced(x, df=1, nbin=None, width=None, var=True, xrange=None):
     if nbin is None:
         nbin = int((xrange[1]-xrange[0])/width)
     if nbin is None and width is None:
-        print('Error: set either nbin or width')
+        raise ValueError('Either nbin or width must be not None')
 
     h, edges = np.histogram(x, bins=int(nbin), density=False, range=(0., xrange[1]))
     yerr = np.sqrt(h)/trials
@@ -732,9 +733,9 @@ def make_hist(x, step=None, nbin=None, width=None, normed=True, write_data=False
     if nbin is None:
         nbin = int((xrange[1]-xrange[0])/width)
     if nbin is None and width is None:
-        print('Error: set either nbin or width')
+        raise ValueError('Either nbin or width must be not None')
 
-    h = np.empty(len(np.arange(nbin)))
+    h = np.zeros_like(np.empty(len(np.arange(nbin))))
     cbin, xerr = [], []
     for i in range(nbin):
         cbin.append(step*i + step/2)
@@ -767,7 +768,7 @@ def normed_hist_plot(x, step=None, nbin=None, width=None, ylim=None, xlim=None, 
     if nbin is None:
         nbin = int((xrange[1]-xrange[0])/width)
     if nbin is None and width is None:
-        print('Error: set either nbin or width')
+        raise ValueError('Either nbin or width must be not None')
 
     fig = plt.figure(figsize=figsize)
     if usetex:
@@ -781,7 +782,7 @@ def normed_hist_plot(x, step=None, nbin=None, width=None, ylim=None, xlim=None, 
     plt.xticks(fontsize=fontsize, rotation=rotation)
     plt.yticks(fontsize=fontsize, rotation=rotation)
 
-    h = np.empty(len(np.arange(nbin)))
+    h = np.zeros_like(np.empty(len(np.arange(nbin))))
     cbin, xerr = [], []
     for i in range(nbin):
         cbin.append(step*i + step/2)
