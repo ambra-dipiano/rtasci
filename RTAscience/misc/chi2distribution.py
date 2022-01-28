@@ -12,8 +12,8 @@ from RTAscience.lib.RTAStats import *
 from os.path import expandvars, join
 
 x = np.random.chisquare(1, int(1e7))
-np.insert(x, 0, 0)
+#np.insert(x, 0, 0)
 
 path = expandvars('$DATA/outputs/LEO')
-save_data_on_file(x, filename=join(path, 'chi2sample.csv'), hdr=None)
+save_data_on_file(x, filename=join(path, 'chi2sample_s1e7_r0-36_n100.csv'), hdr=None)
 
