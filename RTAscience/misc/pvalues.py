@@ -34,7 +34,7 @@ print(f'min = {min(values)}\nmax = {max(values)}\nlen = {len(values)}')
 
 print(len(values[values > 36]), len(values[values >= 36]))
 
-print(values[values >= 36])
+print(len(values[values < 0]))
 
 # -------------------------------- PLOT ---!
 
