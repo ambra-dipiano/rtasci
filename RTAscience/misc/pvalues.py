@@ -12,13 +12,13 @@ import pandas as pd
 from os.path import join, expandvars
 from RTAscience.lib.RTAStats import *
 
-path = expandvars('$DATA/outputs/LEO')
+path = expandvars('$DATA/outputs/GIULIANA')
 png_path = join(path, 'png/')
 if not os.path.isdir(png_path):
   os.mkdir(png_path)
 
 
-filename = 'chi2sample_s1e7_r0-36_n100.csv'
+filename = 'merge_prob.csv'
 # load DataFrame and column names ---!
 df = pd.read_csv(join(path, filename))
 cols = list(df.columns)
@@ -32,14 +32,10 @@ values.sort()
 nbin = 100
 print(f'min = {min(values)}\nmax = {max(values)}\nlen = {len(values)}')
 
-print(len(values[values > 36]), len(values[values >= 36]))
-
-print(len(values[values < 0]))
-
 # -------------------------------- PLOT ---!
 
-fig, ax = ts_wilks(values, len(values), nbin=nbin, figsize=(7, 8), xrange=(0,36), title='distribution', show=False, usetex=False, filename=png_path + filename.replace('.csv', '_wilks.png'), overlay=None, write_data=True)
+fig, ax = ts_wilks(values, len(values), nbin=nbin, figsize=(7, 8), xrange=(0,1), title='distribution', show=False, usetex=False, filename=png_path + filename.replace('.csv', '_wilks.png'), overlay=None, write_data=True)
 
-fig, ax = p_values(values, len(values), nbin=nbin, figsize=(7, 8), xrange=(0,36), title='pvalues', show=False, usetex=False, filename=png_path + filename.replace('.csv', '_pvalues.png'), overlay=None, sigma5=False, write_data=True)
+fig, ax = p_values(values, len(values), nbin=nbin, figsize=(7, 8), xrange=(0,1), ylim=(5e-4,2e-3), title='pvalues', show=False, usetex=False, filename=png_path + filename.replace('.csv', '_pvalues.png'), overlay=None, sigma5=False, write_data=True)
 
 #fig, ax = ts_wilks_cumulative(values, len(values), nbin=nbin, figsize=(7, 8), xrange=(0,0.3), show=False, usetex=False, title='cumulative', filename=png_path + filename.replace('.csv', '_cumulative.png'), overlay=None)
