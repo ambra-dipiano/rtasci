@@ -496,7 +496,7 @@ def ts_wilks(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None
     cbin = (edges[1:] + edges[:-1]) / 2
     xerr = (edges[:-1] - edges[1:]) / 2
 
-    plt.errorbar(cbin, h, fmt='k+', yerr=yerr, xerr=xerr, markersize=5, label='')
+    plt.errorbar(cbin, h, fmt='k+', yerr=yerr, xerr=xerr, markersize=5, label='data')
 
     if 'chi2' in overlay:
         x2 = np.linspace(xrange[0], xrange[1], nbin)
@@ -568,7 +568,7 @@ def p_values(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None
     edges = np.array(edges)
     cbin = (edges[1:] + edges[:-1]) / 2
 
-    plt.errorbar(cbin, p, yerr=yerr, xerr=xerr, fmt='k+', markersize=5, label='pvlues')
+    plt.errorbar(cbin, p, yerr=yerr, xerr=xerr, fmt='k+', markersize=5, label='p-values')
 
     if 'chi2' in overlay:
         x2 = np.linspace(xrange[0], xrange[1], nbin)
