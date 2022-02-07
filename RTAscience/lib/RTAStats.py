@@ -561,10 +561,7 @@ def p_values(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None
         for idx, val in enumerate(x):
             if val >= width*i:
                 h[i] += 1
-        print(h[i])
-    print(h)
     p = h/trials
-    print(p)
     yerr = np.sqrt(h)/trials
 
     edges.append(xrange[1])
