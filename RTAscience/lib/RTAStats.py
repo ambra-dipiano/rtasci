@@ -877,3 +877,16 @@ def save_data_on_file(x, filename='histogram.txt', hdr='x xerr y yerr'):
         log.write(f'{el}\n')
     log.close()
     return
+
+def get_sigma_from_pvalue(pval, decimals=3):
+    return np.abs(np.round(norm.ppf(pval), decimals))
+
+def get_prob_from_sigma(sigma, decimals=8):
+    return np.round(1-(norm.sf(sigma)*2), decimals)
+
+def get_prob_from_pvalue(pval, decimals=8):
+    return np.round(1-pval*2, decimals)
+
+def get_pvalue_from_sigma(sigma, decimals=8):
+    p = get_prob_from_sigma(sigma, decimals=decimals)
+    return np.round((1-p)/2, decimals)
