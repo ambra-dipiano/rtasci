@@ -10,6 +10,7 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+from time import time
 from os.path import isfile
 from matplotlib.patches import Rectangle
 from scipy import stats
@@ -536,7 +537,7 @@ def ts_wilks(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None
     return fig, ax
 
 # WILKS THEOREM P-VALUES FOR EMPTY FIELDS
-def p_values(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='h', ylabel='p-values', title='p-value (empty fields)', filename='pvalue_preTrials.png', usetex=False, sns_style=False, overlay=['chi2'], sigma5=True, write_data=False):
+def p_values(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='h', ylabel='p-values', title='p-value (empty fields)', filename='pvalue_preTrials.png', usetex=False, sns_style=False, overlay=['chi2'], sigma5=True, write_data=False, dpi=400, fmt='+', ecolor='red', markersize=1, elinewidth=1, alpha=0.8):
     '''Plots a p-values distribution comparison with chi2 and chi2/2.'''
     assert width == None or nbin == None, 'Define either nbin or width but bot both.'
 
@@ -550,9 +551,6 @@ def p_values(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None
     ax = plt.subplot(111, yscale='log')
     plt.xticks(fontsize=fontsize, rotation=rotation)
     plt.yticks(fontsize=fontsize, rotation=rotation)
-
-    #if len(x.shape) == 1:
-    #    x = np.expand_dims(x, axis=0)
 
     for n, el in enumerate(x):
         # checks
@@ -570,56 +568,25 @@ def p_values(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None
         if type(overlay) != list:
             overlay = [overlay]
 
-        # compute the pvalues
-        h = np.zeros_like(np.empty(len(np.linspace(xrange[0], xrange[1], nbin))))
-        edges, xerr = [], []
-        for i in range(nbin):
-            edges.append(width*i)
-            xerr.append(width/2)
-            for idx, val in enumerate(el):
-                if val >= width*i:
-                    h[i] += 1
-        p = h/trials
-        yerr = np.sqrt(h)/trials
-        # edges
-        edges.append(xrange[1])
-        edges = np.array(edges)
+        s = time()
+        xerr = np.full((len(range(nbin))), width/2)
+        h, edges = np.histogram(el, bins=nbin, range=xrange)
+        cumul = np.cumsum(h[::-1])[::-1] 
+        print(f"Numpy cdf took: {time() - s} s")
+
+        p = cumul/trials
+        yerr = np.sqrt(cumul)/trials
         cbin = (edges[1:] + edges[:-1]) / 2
 
-        print("trials: ",trials)
-        print("nbin:",nbin)
-        print("xrange:", xrange)
-        print("width:", width)
-        print("edges:", edges)
-        print("h:",h)
-        print("cbin:",cbin)
-        print("p:",p)
-
-        np_xerr = np.full((len(range(nbin))), width/2)
-        np_h, np_edges = np.histogram(el, bins=nbin, range=(0,1))
-        # np_cum = np.flip(np.cumsum(np_h))
-        np_cum = np.cumsum(np_h[::-1])[::-1] 
-
-        np_p = np_cum/trials
-        np_yerr = np.sqrt(np_cum)/trials
-        np_cbin = (np_edges[1:] + np_edges[:-1]) / 2
-        print("np_histo:",np_h)
-        print("np_edges:",np_edges)
-        print("np_h:",np_cum)
-        print("np_cbin:",np_cbin)
-        print("np_p:",np_p)
-
         # plot the pvalues
-        plt.errorbar(cbin, p, yerr=yerr, xerr=xerr, fmt='o', markersize=5, label=f'p-values ({n})')
-        plt.errorbar(np_cbin, np_p, yerr=np_yerr, xerr=np_xerr, fmt='+', markersize=5, label=f'p-values ({n}) NUMPY')
-
+        plt.errorbar(cbin, p, yerr=yerr, xerr=xerr, fmt=fmt, ecolor=ecolor, markersize=markersize, elinewidth=elinewidth,  alpha=alpha, label=f'p-values ({n})')
+        
         if 'mplt' in overlay:
             plt.hist(el, bins=nbin, density=True, histtype='step', align='mid', range=(xrange[0], xrange[1]), cumulative=-1, label=f'mplt_{n}')
 
         # save the pvalues
         if write_data:
-            save_hist_on_file(x=cbin, y=p, xerr=xerr, yerr=yerr, filename=filename.replace('.png', f'_{n}.txt'))
-            save_hist_on_file(x=np_cbin, y=np_p, xerr=np_xerr, yerr=np_yerr, filename=filename.replace('.png', f'_{n}.numpy.txt'))
+            save_hist_on_file(x=cbin, y=p, xerr=xerr, yerr=yerr, filename=filename.replace('.png', f'_{n}.numpy.txt'))
 
     # overlay theoretical dist
     if 'chi2' in overlay:
@@ -646,7 +613,7 @@ def p_values(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None
 
     plt.grid()
     plt.tight_layout()
-    fig.savefig(filename)
+    fig.savefig(filename, dpi=dpi)
 
     # show fig 
     plt.show() if show == True else None
