@@ -465,7 +465,7 @@ def hist2d_map(x, y, nbin=None, width=None, xcentre=0, ycentre=0, threshold=1, a
 
 
 # WILKS THEOREM DIST FOR EMPTY FIELDS
-def ts_wilks(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='TS', ylabel='normalised counts', title='TS distribution (empty fields)', filename='wilks_preTrials.png', usetex=False, sns_style=False, overlay=['chi2'], write_data=False):
+def ts_wilks(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='TS', ylabel='normalised counts', title='TS distribution (empty fields)', filename='wilks_preTrials.png', usetex=False, sns_style=False, overlay=['chi2'], write_data=False, dpi=400, fmt='+', ecolor='red', markersize=1, elinewidth=1, alpha=0.8):
     '''Plots a TS distribution comparison with chi2 and chi2/2.'''
     assert width == None or nbin == None, 'Define either nbin or width but bot both.'
 
@@ -504,7 +504,7 @@ def ts_wilks(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None
         xerr = (edges[:-1] - edges[1:]) / 2
 
         # plot the histogram
-        plt.errorbar(cbin, h, yerr=yerr, xerr=xerr, fmt='+', markersize=5, label=f'hist ({n})')
+        plt.errorbar(cbin, h, yerr=yerr, xerr=xerr, fmt=fmt, ecolor=ecolor, markersize=markersize, elinewidth=elinewidth, alpha=alpha, label=f'hist ({n})')
         if 'mplt' in overlay:   
             plt.hist(el, bins=nbin, density=False, histtype='step', align='mid', range=(xrange[0], xrange[1]), label=f'mplt_{n}')
 
@@ -528,7 +528,7 @@ def ts_wilks(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None
 
     plt.grid()
     plt.tight_layout()
-    fig.savefig(filename)
+    fig.savefig(filename, dpi=dpi)
 
     # show fig
     plt.show() if show == True else None
@@ -568,19 +568,17 @@ def p_values(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None
         if type(overlay) != list:
             overlay = [overlay]
 
-        s = time()
+        # compute pvalues
         xerr = np.full((len(range(nbin))), width/2)
         h, edges = np.histogram(el, bins=nbin, range=xrange)
         cumul = np.cumsum(h[::-1])[::-1] 
-        print(f"Numpy cdf took: {time() - s} s")
 
         p = cumul/trials
         yerr = np.sqrt(cumul)/trials
         cbin = (edges[1:] + edges[:-1]) / 2
 
         # plot the pvalues
-        plt.errorbar(cbin, p, yerr=yerr, xerr=xerr, fmt=fmt, ecolor=ecolor, markersize=markersize, elinewidth=elinewidth,  alpha=alpha, label=f'p-values ({n})')
-        
+        plt.errorbar(cbin, p, yerr=yerr, xerr=xerr, fmt=fmt, ecolor=ecolor, markersize=markersize, elinewidth=elinewidth, alpha=alpha, label=f'p-values ({n})')
         if 'mplt' in overlay:
             plt.hist(el, bins=nbin, density=True, histtype='step', align='mid', range=(xrange[0], xrange[1]), cumulative=-1, label=f'mplt_{n}')
 
@@ -622,7 +620,7 @@ def p_values(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None
     return fig, ax
 
 # WILKS THEOREM P-VALUES FOR EMPTY FIELDS
-def ts_wilks_cumulative(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='h', ylabel='cumulative probability', title='p-value (empty fields)', filename='cumulative_preTrials.png', usetex=False, sns_style=False, overlay=['chi2'], write_data=False, sigma5=True):
+def ts_wilks_cumulative(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='h', ylabel='cumulative probability', title='p-value (empty fields)', filename='cumulative_preTrials.png', usetex=False, sns_style=False, overlay=['chi2'], write_data=False, sigma5=True, dpi=400, fmt='+', ecolor='red', markersize=1, elinewidth=1, alpha=0.8):
     '''Plots a TS cumulative distribution.'''
     assert width == None or nbin == None, 'Define either nbin or width but bot both.'
 
@@ -654,24 +652,16 @@ def ts_wilks_cumulative(x, df=1, nbin=None, width=None, trials=None, xrange=None
             overlay = [overlay]
 
         # compute cumulative
-        h = np.zeros_like(np.empty(len(np.linspace(xrange[0], xrange[1], nbin))))
-        xerr, edges = [], []
-        #x = np.sort(el)
-        for i in range(nbin):
-            edges.append(width*i)
-            xerr.append(width/2)
-            for idx, val in enumerate(el):
-                if val >= width*i:
-                    h[i] += 1   
-        p = 1 - h/trials
-        yerr = np.sqrt(h)/trials
-        # edges
-        edges.append(xrange[1])
-        edges = np.array(edges)
+        xerr = np.full((len(range(nbin))), width/2)
+        h, edges = np.histogram(el, bins=nbin, range=xrange)
+        cumul = np.cumsum(h[::-1])[::-1] 
+
+        p = 1 - cumul/trials
+        yerr = np.sqrt(cumul)/trials
         cbin = (edges[1:] + edges[:-1]) / 2
 
         # plot the cumulative
-        plt.errorbar(cbin, p, yerr=yerr, xerr=xerr, fmt='+', markersize=5, label='cumulative')
+        plt.errorbar(cbin, p, yerr=yerr, xerr=xerr, fmt=fmt, markersize=markersize, ecolor=ecolor, elinewidth=elinewidth, alpha=alpha, label='cumulative')
         if 'mplt' in overlay:
             plt.hist(el, bins=nbin, density=True, histtype='step', align='mid', range=(xrange[0], xrange[1]), cumulative=-1, label=f'mplt_{n}')
 
@@ -704,7 +694,7 @@ def ts_wilks_cumulative(x, df=1, nbin=None, width=None, trials=None, xrange=None
 
     plt.grid()
     plt.tight_layout()
-    fig.savefig(filename)
+    fig.savefig(filename, dpi=dpi)
 
     # show fig 
     plt.show() if show == True else None
