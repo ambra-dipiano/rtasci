@@ -586,14 +586,40 @@ def p_values(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None
         edges = np.array(edges)
         cbin = (edges[1:] + edges[:-1]) / 2
 
+        print("trials: ",trials)
+        print("nbin:",nbin)
+        print("xrange:", xrange)
+        print("width:", width)
+        print("edges:", edges)
+        print("h:",h)
+        print("cbin:",cbin)
+        print("p:",p)
+
+        np_xerr = np.full((len(range(nbin))), width/2)
+        np_h, np_edges = np.histogram(el, bins=nbin, range=(0,1))
+        # np_cum = np.flip(np.cumsum(np_h))
+        np_cum = np.cumsum(np_h[::-1])[::-1] 
+
+        np_p = np_cum/trials
+        np_yerr = np.sqrt(np_cum)/trials
+        np_cbin = (np_edges[1:] + np_edges[:-1]) / 2
+        print("np_histo:",np_h)
+        print("np_edges:",np_edges)
+        print("np_h:",np_cum)
+        print("np_cbin:",np_cbin)
+        print("np_p:",np_p)
+
         # plot the pvalues
-        plt.errorbar(cbin, p, yerr=yerr, xerr=xerr, fmt='+', markersize=5, label=f'p-values ({n})')
+        plt.errorbar(cbin, p, yerr=yerr, xerr=xerr, fmt='o', markersize=5, label=f'p-values ({n})')
+        plt.errorbar(np_cbin, np_p, yerr=np_yerr, xerr=np_xerr, fmt='+', markersize=5, label=f'p-values ({n}) NUMPY')
+
         if 'mplt' in overlay:
             plt.hist(el, bins=nbin, density=True, histtype='step', align='mid', range=(xrange[0], xrange[1]), cumulative=-1, label=f'mplt_{n}')
 
         # save the pvalues
         if write_data:
             save_hist_on_file(x=cbin, y=p, xerr=xerr, yerr=yerr, filename=filename.replace('.png', f'_{n}.txt'))
+            save_hist_on_file(x=np_cbin, y=np_p, xerr=np_xerr, yerr=np_yerr, filename=filename.replace('.png', f'_{n}.numpy.txt'))
 
     # overlay theoretical dist
     if 'chi2' in overlay:
