@@ -39,7 +39,7 @@ def hist1d(x, mean, true=None, nbin=20, hist=True, fit=True, fontsize=20, color=
         if fit:
             sns.distplot(el, bins=nbin, kde=False, hist=hist, fit=norm, norm_hist=True, fit_kws={"color": color[index], "ls": ls[index]}, color=color[index], hist_kws={'alpha':alpha})
             if mean != None:
-                plt.axvline(mean[index], c=color[index], ls=ls[index], lw=lw, label=leglabel[index]) 
+                plt.axvline(mean[index], c=color[index], ls=ls[index], lw=lw, label=leglabel[index])
         else:
             sns.distplot(el, bins=nbin, kde=False, hist=hist, fit=None, norm_hist=True, color=color[index], hist_kws={'alpha':alpha}, label=leglabel[index])
         if true != None and type(true) == list:

@@ -9,9 +9,12 @@
 
 import numpy as np
 import os, argparse
+import time
 from time import time
 from shutil import copy
+from pathlib import Path
 from astropy.io import fits
+from datetime import datetime
 from multiprocessing import Pool
 from os.path import isdir, isfile, join, expandvars
 from RTAscience.cfg.Config import Config
@@ -35,11 +38,9 @@ def main(args):
     datapath = cfg.get('data')
     if not isdir(datapath):  # main data folder
         raise ValueError('Please specify a valid path')
-    if not isdir(join(datapath, 'obs')):  # obs parent folder
-        os.mkdir(join(datapath, 'obs'))
-    bkgpath = join(datapath, 'obs', 'backgrounds')
-    if not isdir(bkgpath):
-        os.mkdir(bkgpath)
+    bkgpath = Path(datapath).joinpath('obs', 'backgrounds')
+    bkgpath.mkdir(parents=True, exist_ok=True)
+
     # background model ---!
     bkg_model = expandvars(cfg.get('bkg'))  # XML background model
 
@@ -67,20 +68,20 @@ def main(args):
     dumpedConfig = os.path.join(bkgpath, "config.yaml")
     if not os.path.isfile(dumpedConfig):
         copy(args.cfgfile, str(dumpedConfig))
-        
+
     # ---------------------------------------------------- loop trials ---!!!
     if args.mp_enabled:
         with Pool(args.mp_threads) as p:
-            times = p.map(simulateTrial, [ (i, cfg, pointing, bkg_model, bkgpath, tobs) for i in range(trials)])
+            times = p.map(simulateTrial, [ (i, cfg, pointing, bkg_model, bkgpath, tobs, args.remove) for i in range(trials)])
     else:
         for i in range(trials):
-            times = simulateTrial((i, cfg, pointing, bkg_model, bkgpath, tobs))
+            times = simulateTrial((i, cfg, pointing, bkg_model, bkgpath, tobs, args.remove))
     # time ---!
     if args.print:
         if len(times) > 1:
             print(f"Trial elapsed time (mean): {np.array(times).mean()}")
         else:
-            print(f"Trial elapsed time: {times[0]}")    
+            print(f"Trial elapsed time: {times[0]}")
     print('\n... done.\n')
 
 
@@ -92,6 +93,7 @@ def simulateTrial(trial_args):
     bkg_model=trial_args[3]
     bkgpath=trial_args[4]
     tobs=trial_args[5]
+    remove_logs=trial_args[6]
     # initialise ---!
     count = cfg.get('start_count') + i + 1
     name = f'bkg{count:08d}'
@@ -105,14 +107,15 @@ def simulateTrial(trial_args):
     sim.e = [cfg.get('emin'), cfg.get('emax')]
 
 
-    print(f"Simulate empty fields for runid = {cfg.get('runid')}")
+    print(f"[{datetime.now().strftime('%d/%m/%Y_%H:%M:%S')}] Simulate empty fields for runid = {cfg.get('runid')} with seed = {count}", flush=True)
     sim.seed = count
     sim.t = [0, tobs]
     bkg = os.path.join(bkgpath, f'{name}.fits')
     sim.model = bkg_model
     sim.output = bkg
     sim.run_simulation()
-
+    if remove_logs:
+        Path(sim.output).with_suffix('.log').unlink()
     sim.input = bkg
     sim.sortObsEvents()
     del sim
@@ -120,16 +123,17 @@ def simulateTrial(trial_args):
     elapsed_t = time()-start_t
     if args.print:
         print(f"Trial {count} took {elapsed_t} seconds.")
-    print('.. done')
+    print(f".. done [{datetime.now().strftime('%d/%m/%Y_%H:%M:%S')}]", flush=True)
     return (count, elapsed_t)
 
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Simulate empty fields.')
     parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
-    parser.add_argument('--print', type=str2bool, default=False, help='Print out results')
-    parser.add_argument('-mp', '--mp-enabled', type=str2bool, default=False, help='To parallelize trials loop')
-    parser.add_argument('-mpt', '--mp-threads', type=int, default=4, help='The size of the threads pool') 
+    parser.add_argument('--print', type=str2bool, default='false', help='Print out results')
+    parser.add_argument('--remove', type=str2bool, default='true', help='Keep only .fits files and not .log')
+    parser.add_argument('-mp', '--mp-enabled', type=str2bool, default='false', help='To parallelize trials loop')
+    parser.add_argument('-mpt', '--mp-threads', type=int, default=4, help='The size of the threads pool')
     args = parser.parse_args()
 
     main(args)

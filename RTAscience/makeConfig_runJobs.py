@@ -10,76 +10,109 @@
 import yaml
 import sys
 import os
+from pathlib import Path
 import pandas as pd
 import argparse
 
 # ---------------------------------------------------------------------------- !
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-f', '--infile', type=str, default='cfg/myconfig.yml', help='yaml configuration file')
-parser.add_argument('--tt', type=float, default=100, help='total trials')
-parser.add_argument('--tn', type=float, default=5, help='trials per node')
+parser.add_argument('-f', '--infile', type=str, required=True, help='yaml configuration file')
+parser.add_argument('--tt', type=int, required=True, help='total trials')
+parser.add_argument('--cpus', type=int, required=True, help='number of cpus')
+parser.add_argument('--script', type=str, required=True, help='script to run')
+parser.add_argument('--env', type=str, required=True, help='environment to activate')
 parser.add_argument('--delay', type=float, default=90, help='delay')
 parser.add_argument('--off', type=str, default='gw', help='offset')
 parser.add_argument('--flux', type=float, default=1, help='flux scaling factor')
-parser.add_argument('--env', type=str, default='scitools', help='environment to activate')
-parser.add_argument('--pipe', type=str, default='pipe', help='pipeline to run')
 parser.add_argument('--print', type=str, default='false', help='print checks and outputs')
 args = parser.parse_args()
 
-#print(args)
+if "DATA" not in os.environ:
+    raise ValueError("Please, export DATA")
+    exit(0)
+print(f'\nDATA={os.environ["DATA"]}')
 
 # compose file path
-filename = os.path.join(os.path.expandvars('$PWD'), args.infile)
-if not os.path.isfile(filename):
-    raise ValueError('yaml file not found')
+#filename = os.path.join(os.path.expandvars('$PWD'), args.infile)
+filename = Path(args.infile)
+if not filename.is_file():
+    raise ValueError('configuration file not found')
 # load yaml
 with open(filename) as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
+
+output_path = filename.parent
+ext = filename.suffix
+name = filename.stem
+
+trials_per_cpu = int(args.tt / args.cpus)
 
 if args.off == 'gw':
     config['simulation']['offset'] = args.off
 else:
     config['simulation']['offset'] = float(args.off)
 config['simulation']['delay'] = args.delay
-config['setup']['trials'] = int(args.tn)
+config['setup']['trials'] = int(trials_per_cpu)
 config['setup']['scalefluxfactor'] = args.flux
 config['options']['plotsky'] = False
+start_count = config['setup']['start_count']
 
-for i in range(int(args.tt/args.tn)):
-    print(f"run {i+1:02d}")
-    # save new gonfig
-    config['setup']['start_count'] = int(i*args.tn)
-    outname = args.infile.replace('.yml',f'_trials{i*args.tn+1}-{(i+1)*args.tn}')
-    yml = outname + '.yml' 
-    if os.path.isfile(yml):
-        os.remove(yml)
-    with open(yml, 'w+') as f:
+print(f"SLURM configuration:\n\tNumber of jobs: {args.cpus}\n\tTotal trials: {args.cpus*trials_per_cpu}\n\tTrials per job: {trials_per_cpu}\n\tStart count: {start_count}")
+input("Press any key to start!")
+
+for i in range(args.cpus):
+    run = f"job_{i+1:02d}"
+    job_name = f'trials_{i*trials_per_cpu+1}-{(i+1)*trials_per_cpu}'
+    #print("\n")
+    #print(f"run: {run}")
+    #print(f"job name: {job_name}")
+    output_dir = output_path.joinpath(run)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # save new config
+    config['setup']['start_count'] = start_count + i*trials_per_cpu
+    config_outname = output_dir.joinpath(f"{name}_{job_name}").with_suffix(ext)
+
+    if config_outname.is_file():
+        config_outname.unlink()
+    with open(config_outname, 'w+') as f:
         new_config = yaml.dump(config, f, default_flow_style=False)
 
     # write bash
-    sh = outname.replace('cfg/', 'jobs/') + '.sh'
-    with open(sh, 'w+') as f:
+    sh_outname = output_dir.joinpath(f"sh_{job_name}").with_suffix(".sh")
+    with open(sh_outname, 'w+') as f:
         f. write('#!/bin/bash\n')
         f.write(f'\nsource activate {args.env}')
-        f.write('\n\texport DATA=/data01/homes/cta/gammapy_integration/DATA/')
-        if args.pipe.lower() == 'pipe':
-            f.write(f'\n\tpython rtapipe.py -f {yml} --print {args.print.lower()}\n')
-        elif args.pipe.lower() == 'wilks':
-            f.write(f'\n\tpython emptyfields.py -f {yml}\n')
+        f.write(f'\n\texport DATA={os.environ["DATA"]}')
 
+        scriptName = Path(args.script).stem.lower()
 
-    """ 
+        if scriptName == 'pipe':
+            f.write(f'\n\tpython {args.script} -f {config_outname} --print {args.print.lower()}\n')
+        elif scriptName == 'wilks':
+            f.write(f'\n\tpython {args.script} -f {config_outname}\n')
+        elif scriptName == "simbkg":
+            f.write(f'\n\tpython {args.script} -f {config_outname}\n')
+        else:
+            raise ValueError(f"Script {scriptName} is not supported.")
+
     # write job
-    job = outname.replace('cfg/', 'jobs/job_') + '.sh'
-    with open(job, 'w+') as f:
+    job_outname = output_dir.joinpath(f"job_{job_name}").with_suffix(".sh")
+    job_outlog = output_dir.joinpath(f"job_{job_name}").with_suffix(".log")
+
+    with open(job_outname, 'w+') as f:
         f.write('#!/bin/bash')
-        f.write('\n\n#SBATCH --job-name=' + outname)
-        f.write('\n#SBATCH --output=slurm-' + outname+ '.out')
-        f.write('\n#SBATCH --account=rt')
+        f.write(f'\n\n#SBATCH --job-name=CTA-sim-slurm-job_{job_name}')
+        f.write(f'\n#SBATCH --output={job_outlog}')
+        f.write('\n#SBATCH --account=baroncelli')
         f.write('\n#SBATCH --ntasks=1')
         f.write('\n#SBATCH --nodes=1')
         f.write('\n#SBATCH --cpus-per-task=1')
-        f.write('\n\nexec sh ' + sh + '\n') """
+        f.write(f'\n\nexec sh {str(sh_outname)}\n')
 
-    os.system(f'sbatch {sh}')
+    #print(f"Configuration file={config_outname}")
+    #print(f"Exec file created={sh_outname}")
+    #print(f"Slurm configuration file created={job_outname}")
+
+    os.system(f'sbatch {job_outname}')
