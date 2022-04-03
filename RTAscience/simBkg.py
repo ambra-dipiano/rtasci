@@ -9,6 +9,7 @@
 
 import numpy as np
 import os, argparse
+import time
 from time import time
 from shutil import copy
 from astropy.io import fits

@@ -25,6 +25,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from genericpath import isfile
 from astropy.coordinates import SkyCoord, Angle
 from astropy.io import fits
 from RTAscience.aph import utils
@@ -33,6 +34,7 @@ from regions import write_ds9
 import astropy.units as u
 import numpy as np
 import logging
+import os
 logging.basicConfig(level=logging.WARN)
 
 # Bintable columns:
@@ -198,5 +200,7 @@ class Photometrics():
             center = utils.get_skycoord(coord)
             rad = utils.get_angle(coord['rad'])
             circles.append(CircleSkyRegion(center=center, radius=rad, visual=kwargs))
+        if isfile(filename):
+            os.remove(filename)
         write_ds9(circles, filename)
 
