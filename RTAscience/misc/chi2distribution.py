@@ -7,17 +7,13 @@
 # Ambra Di Piano <ambra.dipiano@inaf.it>
 # *******************************************************************************
 
-import os
-from pydoc import pipepager
-import sys
+import numpy as np
+from RTAscience.lib.RTAStats import *
+from os.path import expandvars, join
 
-start = int(sys.argv[1])
-if len(sys.argv) > 2:
-    runs = int(sys.argv[2])
-else:
-    runs = 20
+x = np.random.chisquare(1, int(1e7))
+#np.insert(x, 0, 0)
 
-for i in range(runs):
-    os.system(f'scancel {start+i}')
-
+path = expandvars('$DATA/outputs/LEO')
+save_data_on_file(x, filename=join(path, 'chi2sample_s1e7_r0-36_n100.csv'), hdr=None)
 

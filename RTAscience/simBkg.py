@@ -95,7 +95,7 @@ def simulateTrial(trial_args):
     remove_logs=trial_args[6]
     # initialise ---!
     count = cfg.get('start_count') + i + 1
-    name = f'bkg{count:06d}'
+    name = f'bkg{count:08d}'
     # setup ---!
     sim = RTACtoolsSimulation()
     sim.seed = count
