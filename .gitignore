@@ -25,6 +25,7 @@ env.sh
 loadenv.sh
 RTAscience/misc/rmfiles.py
 RTAscience/test*
+RTAscience/misc/csadd2caldb.py
 
 # folders
 .*/
@@ -45,7 +46,7 @@ RTAscience/notebooks
 RTAscience/jnotebooks
 !RTAscience/aph
 RTAscience/adpthesis
-RTAscience/misc/csadd2caldb.py
+RTAscience/misc/tmp
 
 # exceptions
 !RTAscience/cfg/
