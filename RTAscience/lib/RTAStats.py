@@ -842,11 +842,7 @@ def normed_hist_plot(x, step=None, nbin=None, width=None, ylim=None, xlim=None, 
     plt.close()
 
     return fig, ax
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> devel
+
 
 def save_hist_on_file(x, y, xerr, yerr, filename='histogram.txt', hdr='x xerr y yerr'):
     log = open(filename, 'w+')
