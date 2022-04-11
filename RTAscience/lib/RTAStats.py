@@ -616,7 +616,6 @@ def p_values(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None
     plt.grid()
     plt.tight_layout()
     fig.savefig(filename, dpi=dpi)
-    print(f"Fig. {filename} saved.")
 
     # show fig 
     plt.show() if show == True else None
@@ -700,7 +699,6 @@ def ts_wilks_cumulative(x, df=1, nbin=None, width=None, trials=None, xrange=None
     plt.grid()
     plt.tight_layout()
     fig.savefig(filename, dpi=dpi)
-    print(f"Fig. {filename} saved.")
 
     # show fig 
     plt.show() if show == True else None
@@ -845,7 +843,10 @@ def normed_hist_plot(x, step=None, nbin=None, width=None, ylim=None, xlim=None, 
 
     return fig, ax
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> devel
 
 def save_hist_on_file(x, y, xerr, yerr, filename='histogram.txt', hdr='x xerr y yerr'):
     log = open(filename, 'w+')
@@ -881,4 +882,7 @@ def get_prob_from_pvalue(pval, decimals=8):
 def get_pvalue_from_sigma(sigma, decimals=8):
     p = get_prob_from_sigma(sigma, decimals=decimals)
     return np.round((1-p)/2, decimals)
+<<<<<<< HEAD
+>>>>>>> devel
+=======
 >>>>>>> devel

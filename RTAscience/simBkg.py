@@ -9,6 +9,7 @@
 
 import numpy as np
 import os, argparse
+import time
 from time import time
 from shutil import copy
 from pathlib import Path
@@ -95,7 +96,7 @@ def simulateTrial(trial_args):
     remove_logs=trial_args[6]
     # initialise ---!
     count = cfg.get('start_count') + i + 1
-    name = f'bkg{count:06d}'
+    name = f'bkg{count:08d}'
     # setup ---!
     sim = RTACtoolsSimulation()
     sim.seed = count
