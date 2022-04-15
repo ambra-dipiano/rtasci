@@ -537,12 +537,12 @@ def ts_wilks(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None
     return fig, ax
 
 # WILKS THEOREM P-VALUES FOR EMPTY FIELDS
-def p_values(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='h', ylabel='p-values', title='p-value (empty fields)', filename='pvalue_preTrials.png', usetex=False, sns_style=False, overlay=['chi2'], sigma5=True, write_data=False, dpi=400, fmt='+', ecolor='red', markersize=1, elinewidth=1, alpha=0.8):
+def p_values(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None, xlim=None, show=False, fontsize=15, figsize=(15,12), rotation=0, xlabel='h', ylabel='p-values', slabel=None, title='p-value (empty fields)', filename='pvalue_preTrials.png', usetex=False, sns_style=False, overlay=['chi2'], sigma5=True, write_data=False, dpi=400, fmt='+', ecolor='red', markersize=1, elinewidth=1, alpha=0.8, legendprop={"size": 6}, legendloc=0):
     '''Plots a p-values distribution comparison with chi2 and chi2/2.'''
     assert width == None or nbin == None, 'Define either nbin or width but bot both.'
-    markers_colors = ['#2ca25f', '#8856a7', '#e34a33']
-    error_lines_colors = ['#99d8c9', '#9ebcda', '#fdbb84']
-    if len(x) > 3:
+    markers_colors = ['#2ca25f', '#8856a7', '#e34a33', '#4a0a41']
+    error_lines_colors = ['#99d8c9', '#9ebcda', '#fdbb84', '#f571e3']
+    if len(x) > 4:
         print("Warning: colors are optimized for a maximum of three series.")
     x = np.array(x)
     filename = str(filename)
@@ -554,6 +554,9 @@ def p_values(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None
     ax = plt.subplot(111, yscale='log')
     plt.xticks(fontsize=fontsize, rotation=rotation)
     plt.yticks(fontsize=fontsize, rotation=rotation)
+
+    if slabel is None:
+        slabel = list(range(len(x)))
 
     for n, el in enumerate(x):
         # checks
@@ -581,7 +584,7 @@ def p_values(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None
         cbin = (edges[1:] + edges[:-1]) / 2
 
         # plot the pvalues
-        plt.errorbar(cbin, p, yerr=yerr, xerr=xerr, fmt=fmt, markerfacecolor=markers_colors[n], markeredgecolor=markers_colors[n], ecolor=error_lines_colors[n], markersize=markersize, elinewidth=elinewidth,  alpha=alpha, label=f'p-values ({n})')
+        plt.errorbar(cbin, p, yerr=yerr, xerr=xerr, fmt=fmt, markerfacecolor=markers_colors[n], markeredgecolor=markers_colors[n], ecolor=error_lines_colors[n], markersize=markersize, elinewidth=elinewidth,  alpha=alpha, label=f'p-values ({slabel[n]})')
         
         if 'mplt' in overlay:
             plt.hist(el, bins=nbin, density=True, histtype='step', align='mid', range=(xrange[0], xrange[1]), cumulative=-1, label=f'mplt_{n}')
@@ -609,7 +612,7 @@ def p_values(x, df=1, nbin=None, width=None, trials=None, xrange=None, ylim=None
     plt.xlabel(xlabel, fontsize=fontsize)
     plt.ylabel(ylabel, fontsize=fontsize)
     plt.title(title, fontsize=fontsize)
-    plt.legend(loc=0, fontsize=fontsize)
+    plt.legend(loc=legendloc, fontsize=fontsize, prop=legendprop, markerscale=10)
     plt.xlim(xlim) if xlim is not None else None
     plt.ylim(ylim) if ylim is not None else None
 
@@ -878,7 +881,3 @@ def get_prob_from_pvalue(pval, decimals=8):
 def get_pvalue_from_sigma(sigma, decimals=8):
     p = get_prob_from_sigma(sigma, decimals=decimals)
     return np.round((1-p)/2, decimals)
-<<<<<<< HEAD
->>>>>>> devel
-=======
->>>>>>> devel
