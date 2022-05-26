@@ -7,12 +7,10 @@
 # Ambra Di Piano <ambra.dipiano@inaf.it>
 # *******************************************************************************
 
-import yaml
-import sys
 import os
-from pathlib import Path
-import pandas as pd
+import yaml
 import argparse
+from pathlib import Path
 
 # ---------------------------------------------------------------------------- !
 
@@ -26,6 +24,7 @@ parser.add_argument('--delay', type=float, default=90, help='delay')
 parser.add_argument('--off', type=str, default='gw', help='offset')
 parser.add_argument('--flux', type=float, default=1, help='flux scaling factor')
 parser.add_argument('--print', type=str, default='false', help='print checks and outputs')
+parser.add_argument('-out', '--output-dir', type=str, required=False, default="", help='The path to the output directory')
 args = parser.parse_args()
 
 if "DATA" not in os.environ:
@@ -58,7 +57,7 @@ config['setup']['scalefluxfactor'] = args.flux
 config['options']['plotsky'] = False
 start_count = config['setup']['start_count']
 
-print(f"SLURM configuration:\n\tNumber of jobs: {args.cpus}\n\tTotal trials: {args.cpus*trials_per_cpu}\n\tTrials per job: {trials_per_cpu}\n\tStart count: {start_count}")
+print(f"SLURM configuration:\n\tNumber of jobs: {args.cpus}\n\tTotal trials: {args.cpus*trials_per_cpu}\n\tTrials per job: {trials_per_cpu}\n\tStart count: {start_count}\n\tOutput dir: {args.output_dir}")
 input("Press any key to start!")
 
 for i in range(args.cpus):
@@ -93,7 +92,7 @@ for i in range(args.cpus):
         elif scriptName == 'wilks':
             f.write(f'\n\tpython {args.script} -f {config_outname}\n')
         elif scriptName == "simbkg":
-            f.write(f'\n\tpython {args.script} -f {config_outname}\n')
+            f.write(f'\n\tpython {args.script} -f {config_outname} -out {args.output_dir}\n')
         else:
             raise ValueError(f"Script {scriptName} is not supported.")
 
@@ -106,9 +105,7 @@ for i in range(args.cpus):
         f.write(f'\n\n#SBATCH --job-name=CTA-sim-slurm-job_{job_name}')
         f.write(f'\n#SBATCH --output={job_outlog}')
         f.write('\n#SBATCH --account=baroncelli')
-        f.write('\n#SBATCH --ntasks=1')
-        f.write('\n#SBATCH --nodes=1')
-        f.write('\n#SBATCH --cpus-per-task=1')
+        f.write('\n#SBATCH --partition=large_lc')
         f.write(f'\n\nexec sh {str(sh_outname)}\n')
 
     #print(f"Configuration file={config_outname}")
