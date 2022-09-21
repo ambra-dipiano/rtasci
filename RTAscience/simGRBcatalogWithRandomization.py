@@ -116,7 +116,7 @@ def simulate_trial(input_args):
     # initialise ---!
     print(f"start_count: {cfg.get('start_count')} trial id: {trial_id}")
     count = cfg.get('start_count') + trial_id + 1
-    name = f'runid_{runid}_trial_{count:08d}_onset_{onset}_delay_{delay}_offset_{offset}'
+    name = f'runid_{runid}_trial_{count:08d}_simtype_{cfg.get("simtype")}_onset_{onset}_delay_{delay}_offset_{offset}'
     
     # setup ---!
     sim = RTACtoolsSimulation()
