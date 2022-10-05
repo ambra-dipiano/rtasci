@@ -93,9 +93,11 @@ def simulate_trial_bkg(input_args):
     tobs = cfg.get('tobs')
     bkg_model = cfg.get('bkg')
 
-    print(f"start_count: {cfg.get('start_count')} trial id: {trial_id}")
+    if args.print:
+        print(f"start_count: {cfg.get('start_count')} trial id: {trial_id}")
+    
     count = cfg.get('start_count') + trial_id + 1
-    name = f'runid_notemplate_trial_{count:010d}_simtype_{cfg.get("simtype")}_onset_0_delay_0_offset_{offset}'
+    name = f'runid_notemplate_trial_{count:010d}_simtype_{cfg.get("simtype")}_onset_0_delay_0_offset_{offset}.fits'
 
     try:
         pointing = get_pointing_utility(runid, cfg)
@@ -111,8 +113,9 @@ def simulate_trial_bkg(input_args):
     sim.roi = cfg.get('roi')
     sim.e = [cfg.get('emin'), cfg.get('emax')]
 
-
-    print(f"[{now()}] Simulate empty fields for runid = {cfg.get('runid')} with seed = {count}", flush=True)
+    if args.print:
+        print(f"[{now()}] Simulate empty fields for runid = {cfg.get('runid')} with seed = {count}")
+    
     sim.seed = count
     sim.t = [0, tobs]
     bkg = str(sim_output_path.joinpath(name))
@@ -128,7 +131,7 @@ def simulate_trial_bkg(input_args):
     elapsed_t = time()-start_t
     if args.print:
         print(f"Trial {count} took {elapsed_t} seconds.")
-    print(f".. done [{now()}]", flush=True)
+        print(f".. done [{now()}]", flush=True)
 
     # time ---!   
     elapsed_t = time()-start_t
@@ -293,8 +296,7 @@ def stats(output_dir, trials_outputs):
     trials_elapsed_times_mean = np.array([trial_output.elapsed_time for trial_output in trials_outputs if not trial_output.errors]).mean()
     trials_elapsed_times_std = np.array([trial_output.elapsed_time for trial_output in trials_outputs if not trial_output.errors]).std()
     trials_with_errors = [trial_output for trial_output in trials_outputs if trial_output.errors]
-    print(f"Trials elapsed time (mean): {trials_elapsed_times_mean} +- {trials_elapsed_times_std}")
-    print("Number of trials with errors: ", len(trials_with_errors))
+    print(f"Trials elapsed time (mean): {trials_elapsed_times_mean} +- {trials_elapsed_times_std}\nNumber of trials with errors: {len(trials_with_errors)}", flush=True)
     with open(output_dir.joinpath("trials_with_errors.txt"), "a") as f:
         for trial_output in trials_with_errors:
             f.write(f"\n{trial_output}")
@@ -324,11 +326,11 @@ def main(args):
 
     count = 0
     for trial_batch in yield_batch(args.mp_threads, runids, trials, cfg, args):
-        print("trial_batch", trial_batch)
         trials_outputs = pool.map(simulate_trial, trial_batch)
         count += len(trials_outputs)
-        print(f"\nProcessed {count} trials, computing statistics..")
+        print(f"\n[{now()}] Batch processed, computing statistics..", flush=True)
         stats(args.output_dir, trials_outputs)
+        print(f"Processed a total of {count} trials", flush=True)
 
     """Profiling run
     #import cProfile, pstats
@@ -341,7 +343,7 @@ def main(args):
     """
 
     
-    print('\n... done.\n')
+    print(f'\n...[{now()}] done.\n')
 
 
 
