@@ -5,6 +5,7 @@ import numpy as np
 from time import time
 from pathlib import Path
 from astropy.io import fits
+from datetime import datetime
 from multiprocessing import Pool
 from os.path import join, isfile
 from shutil import copy, move, rmtree
@@ -54,7 +55,87 @@ def create_output_dirs(cfgfile_path, cfg, runids):
         cfg.dump(output_path.joinpath("config.yaml")) 
     print(f"Output dirs created in {round(time()-start, 3)} seconds")
 
-def simulate_trial(input_args):
+def now():
+    return datetime.now().strftime('%d/%m/%Y_%H:%M:%S')
+
+def get_pointing_utility(runid, cfg):
+
+    # get alert pointing
+    pointing = None
+    offset = cfg.get('offset')
+
+    if isinstance(offset, str) and offset.lower() == 'gw':
+        mergerpath = os.path.expandvars(cfg.get('merger'))
+        mergermap = get_mergermap(runid, mergerpath)
+        pointing = get_alert_pointing_gw(mergermap)
+    
+    else:
+        pointing = list(get_pointing(f"{os.path.expandvars(cfg.get('catalog'))}/{runid}.fits"))
+        if pointing[1] < 0:
+            pointing[0] += 0.0
+            pointing[1] += -offset
+        else:
+            pointing[0] += 0.0
+            pointing[1] += offset
+
+    return pointing
+
+def simulate_trial_bkg(input_args):
+    
+    runid, trial_id, cfg, args = input_args
+
+    start_t = time()
+
+    sim_output_path = args.output_dir.joinpath("backgrounds") 
+    sim_output_path.mkdir(parents=True, exist_ok=True)
+
+    offset = cfg.get('offset')
+    tobs = cfg.get('tobs')
+    bkg_model = cfg.get('bkg')
+
+    print(f"start_count: {cfg.get('start_count')} trial id: {trial_id}")
+    count = cfg.get('start_count') + trial_id + 1
+    name = f'runid_notemplate_trial_{count:010d}_simtype_{cfg.get("simtype")}_onset_0_delay_0_offset_{offset}'
+
+    try:
+        pointing = get_pointing_utility(runid, cfg)
+    except Exception as e:
+        return TrialOutput(trial_id, runid, time()-start_t, True, str(e))
+
+    # setup ---!
+    sim = RTACtoolsSimulation()
+    sim.seed = count
+    sim.pointing = pointing
+    sim.caldb = cfg.get('caldb')
+    sim.irf = cfg.get('irf')
+    sim.roi = cfg.get('roi')
+    sim.e = [cfg.get('emin'), cfg.get('emax')]
+
+
+    print(f"[{now()}] Simulate empty fields for runid = {cfg.get('runid')} with seed = {count}", flush=True)
+    sim.seed = count
+    sim.t = [0, tobs]
+    bkg = str(sim_output_path.joinpath(name))
+    sim.model = bkg_model
+    sim.output = bkg
+    sim.run_simulation()
+    #if remove_logs:
+    #    Path(sim.output).with_suffix('.log').unlink()
+    sim.input = bkg
+    sim.sortObsEvents()
+    del sim
+    # time ---!
+    elapsed_t = time()-start_t
+    if args.print:
+        print(f"Trial {count} took {elapsed_t} seconds.")
+    print(f".. done [{now()}]", flush=True)
+
+    # time ---!   
+    elapsed_t = time()-start_t
+
+    return TrialOutput(trial_id, runid, elapsed_t)
+
+def simulate_trial_grb(input_args):
 
     runid, trial_id, cfg, args = input_args
 
@@ -90,25 +171,10 @@ def simulate_trial(input_args):
     if(is_randomizable(cfg.get('offset'))):
         offset = randomize(cfg.get('offset'))
 
-    # get alert pointing
-    pointing = None
-
-    if isinstance(offset, str) and offset.lower() == 'gw':
-        mergerpath = os.path.expandvars(cfg.get('merger'))
-        mergermap = get_mergermap(runid, mergerpath)
-        if mergermap == None:
-            return TrialOutput(trial_id, runid, time()-start_t, True, f"File {mergerpath} not found")
-        pointing = get_alert_pointing_gw(mergermap)
-    
-    else:
-        pointing = list(get_pointing(f"{os.path.expandvars(cfg.get('catalog'))}/{runid}.fits"))
-        if pointing[1] < 0:
-            pointing[0] += 0.0
-            pointing[1] += -offset
-        else:
-            pointing[0] += 0.0
-            pointing[1] += offset
-
+    try:
+        pointing = get_pointing_utility(runid, cfg)
+    except Exception as e:
+        return TrialOutput(trial_id, runid, time()-start_t, True, str(e))
 
     tmax = cfg.get('tobs')- onset + delay
     bkg_model = cfg.get('bkg')
@@ -231,7 +297,7 @@ def stats(output_dir, trials_outputs):
     print("Number of trials with errors: ", len(trials_with_errors))
     with open(output_dir.joinpath("trials_with_errors.txt"), "a") as f:
         for trial_output in trials_with_errors:
-            f.write(f"{trial_output}")
+            f.write(f"\n{trial_output}")
 
 def main(args):
     cfg = Config(args.cfgfile)
@@ -247,11 +313,15 @@ def main(args):
     print(f"total trials: {trials}")
     print(f"total simulations: {len(runids)*trials}")
     print(f"Threads: {args.mp_threads}")
-
-    create_output_dirs(args.cfgfile, cfg, runids)
+    
+    if cfg.get('simtype') == "bkg":
+        simulate_trial = simulate_trial_bkg
+    else:
+        create_output_dirs(args.cfgfile, cfg, runids)
+        simulate_trial = simulate_trial_grb
 
     pool = Pool(args.mp_threads)
-    
+
     count = 0
     for trial_batch in yield_batch(args.mp_threads, runids, trials, cfg, args):
         print("trial_batch", trial_batch)
