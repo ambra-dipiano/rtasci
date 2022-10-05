@@ -116,7 +116,7 @@ def simulate_trial(input_args):
     # initialise ---!
     print(f"start_count: {cfg.get('start_count')} trial id: {trial_id}")
     count = cfg.get('start_count') + trial_id + 1
-    name = f'runid_{runid}_trial_{count:08d}_simtype_{cfg.get("simtype")}_onset_{onset}_delay_{delay}_offset_{offset}'
+    name = f'runid_{runid}_trial_{count:010d}_simtype_{cfg.get("simtype")}_onset_{onset}_delay_{delay}_offset_{offset}'
     
     # setup ---!
     sim = RTACtoolsSimulation()
@@ -212,7 +212,26 @@ def simulate_trial(input_args):
 
     return TrialOutput(trial_id, runid, elapsed_t)
     
+def yield_batch(batch_size, runids, trials, cfg, args):
+    trials_batch = []
+    for runid in runids:
+        for trial in range(trials):
+            trials_batch.append((runid, trial, cfg, args))
+            if batch_size == len(trials_batch):
+                yield trials_batch
+                trials_batch = []
+    if len(trials_batch) > 0:
+        yield trials_batch
 
+def stats(output_dir, trials_outputs):
+    trials_elapsed_times_mean = np.array([trial_output.elapsed_time for trial_output in trials_outputs if not trial_output.errors]).mean()
+    trials_elapsed_times_std = np.array([trial_output.elapsed_time for trial_output in trials_outputs if not trial_output.errors]).std()
+    trials_with_errors = [trial_output for trial_output in trials_outputs if trial_output.errors]
+    print(f"Trials elapsed time (mean): {trials_elapsed_times_mean} +- {trials_elapsed_times_std}")
+    print("Number of trials with errors: ", len(trials_with_errors))
+    with open(output_dir.joinpath("trials_with_errors.txt"), "a") as f:
+        for trial_output in trials_with_errors:
+            f.write(f"{trial_output}")
 
 def main(args):
     cfg = Config(args.cfgfile)
@@ -229,30 +248,29 @@ def main(args):
     print(f"total simulations: {len(runids)*trials}")
     print(f"Threads: {args.mp_threads}")
 
-    print("Getting the pointing..")
-
     create_output_dirs(args.cfgfile, cfg, runids)
 
-    with Pool(args.mp_threads) as p:
+    pool = Pool(args.mp_threads)
+    
+    count = 0
+    for trial_batch in yield_batch(args.mp_threads, runids, trials, cfg, args):
+        print("trial_batch", trial_batch)
+        trials_outputs = pool.map(simulate_trial, trial_batch)
+        count += len(trials_outputs)
+        print(f"\nProcessed {count} trials, computing statistics..")
+        stats(args.output_dir, trials_outputs)
 
-        trials_outputs = p.map(simulate_trial, 
-                            [ (runid, trial_id, cfg, args) 
-                                    for runid in runids
-                                    for trial_id in range(trials)
-                            ])
+    """Profiling run
+    #import cProfile, pstats
+    #profiler = cProfile.Profile()
+    #profiler.enable()
+    #trial_output = simulate_trial(('run0406_ID000126', 1, cfg, args))
+    #profiler.disable()
+    #stats = pstats.Stats(profiler).sort_stats('tottime')
+    #stats.print_stats()
+    """
 
-    print("Processing the results and get statistics..")    
-
-    trials_elapsed_times_mean = np.array([trial_output.elapsed_time for trial_output in trials_outputs if not trial_output.errors]).mean()
-    trials_elapsed_times_std = np.array([trial_output.elapsed_time for trial_output in trials_outputs if not trial_output.errors]).std()
-    trials_with_errors = [trial_output for trial_output in trials_outputs if trial_output.errors]
-
-    print(f"Trials elapsed time (mean): {trials_elapsed_times_mean} +- {trials_elapsed_times_std}")
-    print("Number of trials with errors: ", len(trials_with_errors))
-    with open(args.output_dir.joinpath("trials_with_errors.txt"), "w") as f:
-        for trial_output in trials_with_errors:
-            f.write(f"{trial_output}")
-
+    
     print('\n... done.\n')
 
 
