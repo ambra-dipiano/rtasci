@@ -44,11 +44,11 @@ def config_runid(cfg):
         runids = cfg.get('runid')
     return sorted(runids)
 
-def create_output_dirs(cfgfile_path, cfg, runids):
+def create_output_dirs(output_dir, cfg, runids):
     start = time()
     # Create output dirs and dump the configuration file inside
     for runid in runids:
-        output_path = args.output_dir.joinpath(runid)
+        output_path = Path(output_dir).joinpath(runid)
         if not output_path.exists():
             output_path.mkdir(parents=True, exist_ok=True)
         cfg.set("runid", runid) # it could be a list or "all" but I want a single runid
@@ -97,7 +97,7 @@ def simulate_trial_bkg(input_args):
         print(f"start_count: {cfg.get('start_count')} trial id: {trial_id}")
     
     count = cfg.get('start_count') + trial_id + 1
-    name = f'runid_notemplate_trial_{count:010d}_simtype_{cfg.get("simtype")}_onset_0_delay_0_offset_{offset}.fits'
+    name = f'runid_notemplate_trial_{count:010d}_simtype_{cfg.get("simtype")}_onset_0_delay_0_offset_{offset}_tobs_{tobs}.fits'
 
     try:
         pointing = get_pointing_utility(runid, cfg)
@@ -301,7 +301,20 @@ def stats(output_dir, trials_outputs):
         for trial_output in trials_with_errors:
             f.write(f"\n{trial_output}")
 
-def main(args):
+def main():
+    
+    parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
+    parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
+    parser.add_argument('--merge', type=str2bool, default=True, help='Merge in single phlist (true) or use observation library (false)')
+    parser.add_argument('--remove', type=str2bool, default=True, help='Keep only outputs')
+    parser.add_argument('--output-dir', type=str, default=None, help='Output directory')
+    parser.add_argument('--print', type=str2bool, default=False, help='Print out results')
+    parser.add_argument('-mpt', '--mp-threads', type=int, default=4, help='The size of the threads pool') 
+    args = parser.parse_args()
+
+    if args.remove and not args.merge:
+        raise ValueError('Keyword "remove" cannot be True if keyword "merge" is False.')
+
     cfg = Config(args.cfgfile)
     runids = config_runid(cfg)
     trials = cfg.get('trials')
@@ -319,7 +332,7 @@ def main(args):
     if cfg.get('simtype') == "bkg":
         simulate_trial = simulate_trial_bkg
     else:
-        create_output_dirs(args.cfgfile, cfg, runids)
+        create_output_dirs(args.output_dir, cfg, runids)
         simulate_trial = simulate_trial_grb
 
     pool = Pool(args.mp_threads)
@@ -350,15 +363,4 @@ def main(args):
 
 
 if __name__=='__main__':
-    parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
-    parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
-    parser.add_argument('--merge', type=str2bool, default=True, help='Merge in single phlist (true) or use observation library (false)')
-    parser.add_argument('--remove', type=str2bool, default=True, help='Keep only outputs')
-    parser.add_argument('--output-dir', type=str, default=None, help='Output directory')
-    parser.add_argument('--print', type=str2bool, default=False, help='Print out results')
-    parser.add_argument('-mpt', '--mp-threads', type=int, default=4, help='The size of the threads pool') 
-    args = parser.parse_args()
-
-    if args.remove and not args.merge:
-        raise ValueError('Keyword "remove" cannot be True if keyword "merge" is False.')
-    main(args)
+    main()
