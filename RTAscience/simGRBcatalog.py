@@ -99,10 +99,10 @@ def main():
         # ---------------------------------------------------- loop trials ---!!!
         if args.mp_enabled:                
             with Pool(args.mp_threads) as p:
-                times = p.map(simulateTrial, [ (i, cfg, pointing, tmax, datapath, runid, tcsv, grbpath, bkg_model, args.print) for i in range(trials)])
+                times = p.map(simulateTrial, [ (i, cfg, pointing, tmax, datapath, runid, tcsv, grbpath, bkg_model, args.print, args.merge, args.remove) for i in range(trials)])
         else:
             for i in range(trials):
-                times = simulateTrial((i, cfg, pointing, tmax, datapath, runid, tcsv, grbpath, bkg_model, args.print))
+                times = simulateTrial((i, cfg, pointing, tmax, datapath, runid, tcsv, grbpath, bkg_model, args.print, args.merge, args.remove))
         # time ---!
         if args.print:
             if len(times) > 1:
@@ -124,6 +124,9 @@ def simulateTrial(trial_args):
     grbpath=trial_args[7]
     bkg_model=trial_args[8]
     verbose=trial_args[9]
+    merge=trial_args[10]
+    remove=trial_args[11]
+
     # initialise ---!
     count = cfg.get('start_count') + i + 1
     name = f'ebl{count:06d}'
@@ -179,7 +182,7 @@ def simulateTrial(trial_args):
         sim.run_simulation()
 
     # ---------------------------------------- gather bins ---!!!
-    if args.merge:
+    if merge:
         print('Merge in photon-list')
         phlist = join(grbpath, f'{name}.fits')
         sim.input = event_bins
@@ -217,14 +220,14 @@ def simulateTrial(trial_args):
             print(f"Selection t = {grb.t} s")
         grb.input = phlist
         grb.output = selphlist
-        if args.merge:
+        if merge:
             grb.run_selection()
         else:
             prefix = join(grbpath, f'texp{texp}s_')
             grb.run_selection(prefix=prefix) """
 
     # remove files ---!
-    if args.remove and args.merge:
+    if remove and merge:
         # remove bins ---!
         os.system('rm ' + join(grbpath, f'{name}*tbin*'))
         if cfg.get('onset') != 0:
