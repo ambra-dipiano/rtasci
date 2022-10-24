@@ -9,10 +9,10 @@
 
 import os
 import astropy.units as u
-#import healpy as hp
+import healpy as hp
 import numpy as np
 from astropy.io import fits
-from os.path import join, expandvars
+from os.path import join
 from scipy import stats
 from scipy.interpolate import interp1d, interp2d
 
