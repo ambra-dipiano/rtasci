@@ -110,7 +110,7 @@ def simulate_trial_bkg(input_args):
     sim.pointing = pointing
     sim.caldb = cfg.get('caldb')
     sim.irf = cfg.get('irf')
-    sim.roi = cfg.get('roi')
+    sim.fov = cfg.get('roi')
     sim.e = [cfg.get('emin'), cfg.get('emax')]
 
     if args.print:

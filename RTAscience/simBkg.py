@@ -119,7 +119,6 @@ def simulateTrial(trial_args):
     if args.print:
         print(f"Simulation {bkg}")    
     sim.run_simulation()
-    print(sim.fov)
     if remove_logs:
         Path(sim.output).with_suffix('.log').unlink()
     sim.input = bkg
