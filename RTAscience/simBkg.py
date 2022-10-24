@@ -113,6 +113,8 @@ def simulateTrial(trial_args):
     bkg = os.path.join(bkgpath, f'{name}.fits')
     sim.model = bkg_model
     sim.output = bkg
+    if args.print:
+        print(f"Simulation {bkg}")    
     sim.run_simulation()
     if remove_logs:
         Path(sim.output).with_suffix('.log').unlink()
