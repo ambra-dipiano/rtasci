@@ -103,7 +103,7 @@ def simulateTrial(trial_args):
     sim.pointing = pointing
     sim.caldb = cfg.get('caldb')
     sim.irf = cfg.get('irf')
-    sim.roi = cfg.get('roi')
+    sim.fov = cfg.get('roi')
     sim.e = [cfg.get('emin'), cfg.get('emax')]
 
 
@@ -116,6 +116,7 @@ def simulateTrial(trial_args):
     if args.print:
         print(f"Simulation {bkg}")    
     sim.run_simulation()
+    print(sim.fov)
     if remove_logs:
         Path(sim.output).with_suffix('.log').unlink()
     sim.input = bkg
