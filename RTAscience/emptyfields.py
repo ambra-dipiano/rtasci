@@ -26,7 +26,7 @@ from RTAscience.aph.utils import *
 def main(args):
     cfg = Config(args.cfgfile)
     # general ---!
-    if cfg.get('simtype').lower() != 'wilks':
+    if cfg.get('simtype').lower() != 'bkg':
         raise ValueError('This script should be used only for empty fields simulation and analysis')
     trials = cfg.get('trials')  # trials
     tobs = cfg.get('tobs')  # total obs time (s)
@@ -161,6 +161,7 @@ def main(args):
             an.output = fit
             an.run_maxlikelihood()
             # stats ---!
+            print(fit)
             xml = ManageXml(fit)
             try:
                 coords = xml.getRaDec()
@@ -200,6 +201,8 @@ if __name__=='__main__':
     parser.add_argument('--remove', type=str, default='true', help='Keep only outputs')
     parser.add_argument('--print', type=str, default='false', help='Print out results')
     args = parser.parse_args()
+
+    print(args.cfgfile)
 
     main(args)
     print('...done.\n')

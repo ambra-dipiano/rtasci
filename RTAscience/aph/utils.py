@@ -105,12 +105,12 @@ def get_skycoord(pnt_coord):
     coord = None
     if isinstance(pnt_coord, SkyCoord):
         coord = pnt_coord
-    elif isinstance(pnt_coord, tuple):
+    elif isinstance(pnt_coord, tuple) or isinstance(pnt_coord, list):
         coord = SkyCoord(ra=pnt_coord[0], dec=pnt_coord[1], unit='deg', frame='icrs')
     elif isinstance(pnt_coord, dict) and 'ra' in pnt_coord and 'dec' in pnt_coord:
         coord = SkyCoord(ra=pnt_coord['ra'], dec=pnt_coord['dec'], unit='deg', frame='icrs')
     else:
-        raise Exception('The input parameter must be a SkyCoord, a { "ra": 12.3, "dec": 45.6 } dictionary or (12.3, 45.6) tuple.')
+        raise Exception('The input parameter must be a SkyCoord, a { "ra": 12.3, "dec": 45.6 } dictionary, a (12.3, 45.6) tuple or a [12.3, 45.6] list.')
     return coord
 
 def counting(phm, src, rad, off_regions, e_min=None, e_max=None, t_min=None, t_max=None, draconian=False):
