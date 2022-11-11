@@ -12,17 +12,13 @@ import pyregion
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-import astropy.visualization as avis
 from os.path import join, isdir, expandvars
 from astropy.io import fits
 from matplotlib.colors import SymLogNorm
-from matplotlib import rc
-from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.patches import Rectangle
 from astropy import units as u
 from astropy.wcs import WCS
 from astropy.io import fits
-from astropy.utils.data import get_pkg_data_filename
 from scipy.interpolate import interp1d
 
 
@@ -549,7 +545,7 @@ def plotLightCurve(flux, t1, uplims, t2, xerr, yerr, filename, temp_t, temp_f, c
   plt.close()
   return
 
-def plot_template_lc(runid, erange=(0.04, 150), path='/home/ambra/Desktop/CTA/projects/DATA/templates/grb_afterglow/GammaCatalogV1.0'):
+def get_template_lc(runid, erange=(0.04, 150), path='/home/ambra/Desktop/CTA/projects/DATA/templates/grb_afterglow/GammaCatalogV1.0', if_ebl=False):
 
   with fits.open(join(path, runid)) as hdul:
     energy=np.array(hdul[1].data)
@@ -557,10 +553,13 @@ def plot_template_lc(runid, erange=(0.04, 150), path='/home/ambra/Desktop/CTA/pr
     time=np.array(hdul[2].data)
     # spectra [fotoni/GeV/cm^2/s]
     spectra=np.array(hdul[3].data)
-    # ebl [fotoni/GeV/cm^2/s]
-    ebl=np.array(hdul[4].data)
+    if if_ebl:
+      # ebl [fotoni/GeV/cm^2/s]
+      ebl=np.array(hdul[4].data)
   Nt=len(time)
   Ne=len(energy)
+  print('Total time bins:', Nt)
+  print('Total energy bins:', Ne)
   # TIME GRID ---!
   t=[0.0 for x in range(Nt+1)]
   for i in range(Nt-1):
@@ -575,7 +574,7 @@ def plot_template_lc(runid, erange=(0.04, 150), path='/home/ambra/Desktop/CTA/pr
   en[Ne]=energy[Ne-1][0]+(energy[Ne-1][0]-en[Ne-1])
   # instrument range
   inst = (min(en, key=lambda x:abs(x-erange[0]*1e3)), min(en, key=lambda x:abs(x-erange[1]*1e3)))
-  print(inst)
+  print('Instrument range:', inst)
   # FLUX SPECTRA ---!
   f, f2 = [], []
   for i in range(Nt):
@@ -585,10 +584,14 @@ def plot_template_lc(runid, erange=(0.04, 150), path='/home/ambra/Desktop/CTA/pr
           if en[j] <= erange[1]*1e3 and en[j] >= erange[0]*1e3:          
           #if en[j] <= inst[1] and en[j] >= inst[0]:
               f[i]=f[i]+spectra[i][j]*(en[j+1]-en[j])
-              f2[i]=f2[i]+ebl[i][j]*(en[j+1]-en[j])
-  return time, f, f2
+              if if_ebl:
+                f2[i]=f2[i]+ebl[i][j]*(en[j+1]-en[j])
+  if if_ebl:
+    return time, f, f2
+  else:
+    return time, f
 
-def plot_template_spectra(runid, time=(0.0, 800), erange=(0.03, 150), path='/home/ambra/Desktop/CTA/projects/DATA/templates/grb_afterglow/GammaCatalogV1.0'):
+def get_template_spectra(runid, time=(0.0, 800), erange=(0.03, 150), path='/home/ambra/Desktop/CTA/projects/DATA/templates/grb_afterglow/GammaCatalogV1.0', if_ebl=False):
 
   with fits.open(join(path, runid)) as hdul:
     energy=np.array(hdul[1].data)
@@ -596,10 +599,13 @@ def plot_template_spectra(runid, time=(0.0, 800), erange=(0.03, 150), path='/hom
     time=np.array(hdul[2].data)
     # spectra [fotoni/GeV/cm^2/s]
     spectra=np.array(hdul[3].data)
-    # ebl [fotoni/GeV/cm^2/s]
-    ebl=np.array(hdul[4].data)
+    if if_ebl:
+      # ebl [fotoni/GeV/cm^2/s]
+      ebl=np.array(hdul[4].data)
   Nt=len(time)
   Ne=len(energy)
+  print('Total time bins:', Nt)
+  print('Total energy bins:', Ne)
   # TIME GRID ---!
   t=[0.0 for x in range(Nt+1)]
   for i in range(Nt-1):
@@ -616,16 +622,20 @@ def plot_template_spectra(runid, time=(0.0, 800), erange=(0.03, 150), path='/hom
   inst = (min(en, key=lambda x:abs(x-erange[0]*1e3)), min(en, key=lambda x:abs(x-erange[1]*1e3)))
   # FLUX SPECTRA ---!
   f, f2 = [], []
-  for i in range(Nt):
-      f.append(0.0)
-      f2.append(0.0)
-      for j in range(Ne):
-          if en[j] <= inst[1] and en[j] >= inst[0]:
-              f[i]=f[i]+spectra[i][j]*(en[j+1]-en[j])
-              f2[i]=f2[i]+ebl[i][j]*(en[j+1]-en[j])
-  return time, f, f2
+  for j in range(Ne):
+    f.append(0.0)
+    f2.append(0.0)
+    for i in range(Nt):
+      if en[j] <= inst[1] and en[j] >= inst[0]:
+        f[j]=f[j]+spectra[i][j]*(en[j+1]-en[j])
+        if if_ebl:
+          f2[j]=f2[j]+ebl[i][j]*(en[j+1]-en[j])
+  if if_ebl:
+    return energy, f, f2
+  else:
+    return energy, f
 
-def plot_template_lc_interp(runid, erange=(0.04, 150), path='/home/ambra/Desktop/CTA/projects/DATA/templates/grb_afterglow/GammaCatalogV1.0'):
+def get_template_lc_interp(runid, erange=(0.04, 150), path='/home/ambra/Desktop/CTA/projects/DATA/templates/grb_afterglow/GammaCatalogV1.0'):
 
   with fits.open(join(path, runid)) as hdul:
     energy=np.array(hdul[1].data)
