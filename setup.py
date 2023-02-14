@@ -8,10 +8,10 @@
 
 from setuptools import setup, find_packages
 
-setup(name='RTAscience',
+setup(name='rtasci',
      author='Ambra Di Piano',
      author_email='ambra.dipiano@inaf.it',
-     package_dir={'RTAscience': 'RTAscience'},
+     package_dir={'rtasci': 'rtasci'},
     packages=find_packages(),
     include_package_data=True,
     license='BSD-3-Clause',
