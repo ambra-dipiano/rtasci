@@ -29,7 +29,6 @@ args = parser.parse_args()
 
 if "DATA" not in os.environ:
     raise ValueError("Please, export DATA")
-    exit(0)
 print(f'\nDATA={os.environ["DATA"]}')
 
 # compose file path
@@ -87,8 +86,8 @@ for i in range(args.cpus):
 
         scriptName = Path(args.script).stem.lower()
 
-        if scriptName == 'pipe':
-            f.write(f'\n\tpython {args.script} -f {config_outname} --print {args.print.lower()}\n')
+        if scriptName == 'rtapipe':
+            f.write(f'\n\tpython {args.script}.py -f {config_outname} --print {args.print.lower()}\n')
         elif scriptName == 'wilks':
             f.write(f'\n\tpython {args.script} -f {config_outname}\n')
         elif scriptName == "simbkg":
