@@ -1,0 +1,51 @@
+setup:
+  simtype: wobble                       
+  runid: crab
+  trials: 1                         
+  start_count: 2               
+  scalefluxfactor: 1               
+
+simulation:
+  caldb: prod5-v0.1                 
+  irf: North_z20_0.5h           
+  tobs: 1200                         
+  onset: 0                          
+  delay: 0                         
+  emin: 0.02                     
+  emax: 3                        
+  roi: 5                            
+  offset: 2 
+  nruns: 4                        
+
+analysis:
+  binned: no                         
+  blind: yes                     
+  tool: ctools                    
+  type: 3d                     
+  usepnt: yes                  
+  skypix: 0.02                     
+  skyroifrac: 1                    
+  smooth: 0.1                        
+  maxsrc: 1                         
+  sgmthresh: 3                      
+  exposure:                         
+    - 10
+    - 100
+  index: 2.4
+  cumulative: no
+  lightcurve: no
+
+options:
+  set_ebl: True                      
+  extract_data: True                 
+  plotsky: False                
+
+path: 
+  data: $DATA                       
+  ebl: $DATA/ebl_tables/gilmore_tau_fiducial.csv
+  model: $DATA/models
+  merger: $DATA/mergers
+  bkg: $DATA/models/CTAIrfBackground.xml
+  catalog: $DATA/templates/grb_afterglow/GammaCatalogV1.0
+
+
