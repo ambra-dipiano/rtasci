@@ -9,7 +9,7 @@
 
 import os
 import argparse
-from RTAscience.lib.RTAIrfs import RTAIrfs
+from rtasci.lib.RTAIrfs import RTAIrfs
 
 # files ---!
 parser = argparse.ArgumentParser()

@@ -8,7 +8,7 @@
 # *******************************************************************************
 
 import numpy as np
-from RTAscience.lib.RTAStats import *
+from rtasci.lib.RTAStats import *
 from os.path import expandvars, join
 
 x = np.random.chisquare(1, int(1e7))

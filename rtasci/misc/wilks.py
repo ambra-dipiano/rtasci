@@ -9,7 +9,7 @@
 
 import os
 import sys
-from RTAscience.lib.RTAStats import *
+from rtasci.lib.RTAStats import *
 
 dof = 1
 folder = 'tesi_bkg_1e6_nominal_%ddof_fullE_old' % dof

@@ -16,11 +16,11 @@ first = sys.argv[2]
 # start timing
 t = time.time()
 clock0 = time.time()
-from RTAscience.lib.RTACtoolsSimulation import make_obslist
-from RTAscience.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
-from RTAscience.lib.RTAUtils import *
-from RTAscience.lib.RTAManageXml import ManageXml
-from RTAscience.lib.RTACtoolsBase import *
+from rtasci.lib.RTACtoolsSimulation import make_obslist
+from rtasci.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
+from rtasci.lib.RTAUtils import *
+from rtasci.lib.RTAManageXml import ManageXml
+from rtasci.lib.RTACtoolsBase import *
 timport = time.time() - t
 print(f'Imports : {timport} s\n')
 

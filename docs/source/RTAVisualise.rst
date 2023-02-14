@@ -1,5 +1,5 @@
 RTAVisualise
 ============
 
-.. automodule:: RTAscience.lib.RTAVisualise
+.. automodule:: rtasci.lib.RTAVisualise
    :members: 

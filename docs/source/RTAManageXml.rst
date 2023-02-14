@@ -1,5 +1,5 @@
 RTAManageXml
 ============
 
-.. automodule:: RTAscience.lib.RTAManageXml
+.. automodule:: rtasci.lib.RTAManageXml
    :members: 

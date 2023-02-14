@@ -8,7 +8,7 @@
 # Leonardo Baroncelli <leonardo.baroncelli@inaf.it>
 # *******************************************************************************
 
-from RTAscience.cfg.Config import Config
+from rtasci.cfg.Config import Config
 
 class RTACtoolsBase:
 

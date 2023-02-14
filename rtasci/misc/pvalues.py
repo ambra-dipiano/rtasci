@@ -10,7 +10,7 @@
 import os
 import pandas as pd
 from os.path import join, expandvars
-from RTAscience.lib.RTAStats import *
+from rtasci.lib.RTAStats import *
 
 path = expandvars('$DATA/outputs/GIULIANA')
 png_path = join(path, 'png/')

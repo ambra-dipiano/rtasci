@@ -11,7 +11,7 @@ import os
 import argparse
 from os.path import isdir, join
 import numpy as np
-from RTAscience.lib.RTAStats import ts_wilks, p_values, ts_wilks_cumulative
+from rtasci.lib.RTAStats import ts_wilks, p_values, ts_wilks_cumulative
 
 if __name__=='__main__':
 

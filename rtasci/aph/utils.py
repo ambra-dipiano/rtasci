@@ -30,8 +30,8 @@ import csv
 import math
 import numpy as np
 from astropy.coordinates import SkyCoord, Angle
-from RTAscience.aph.photometry import Photometrics
-from RTAscience.aph.irf import EffectiveArea
+from rtasci.aph.photometry import Photometrics
+from rtasci.aph.irf import EffectiveArea
 
 def photometrics_counts(events_list, events_type, pointing, true_coords, region_rad=0.2):
   phm = Photometrics({events_type: events_list})

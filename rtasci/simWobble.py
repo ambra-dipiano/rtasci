@@ -10,9 +10,9 @@
 import os
 import argparse
 import numpy as np
-from RTAscience.lib.RTACtoolsSimulation import RTACtoolsSimulation, make_obslist
-from RTAscience.lib.RTAUtils import wobble_pointing
-from RTAscience.cfg.Config import Config
+from rtasci.lib.RTACtoolsSimulation import RTACtoolsSimulation, make_obslist
+from rtasci.lib.RTAUtils import wobble_pointing
+from rtasci.cfg.Config import Config
 from os.path import join, isfile, isdir, expandvars
 
 parser = argparse.ArgumentParser(description='This scripts allows to simulate wobble observation')

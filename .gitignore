@@ -4,28 +4,28 @@ config.yaml
 *.xml
 env.sh
 loadenv.sh
-RTAscience/cfg/*.yml
-RTAscience/paper/*
-RTAscience/cfg/*.sh
-RTAscience/jobs/*myconfig*
-RTAscience/jobs
-RTAscience/paper
-RTAscience/log
-RTAscience/cancel_jobs.py
-RTAscience/deljobs.py
-RTAscience/wilks.py
-RTAscience/sphdist.py
-RTAscience/datamerger.py
-RTAscience/thesis/config.xml
-RTAscience/thesis/wilks.xml
-RTAscience/thesis/rta-test
-RTAscience/misc/notebooks
-RTAscience/misc/notebooks/*ipynb
+rtasci/cfg/*.yml
+rtasci/paper/*
+rtasci/cfg/*.sh
+rtasci/jobs/*myconfig*
+rtasci/jobs
+rtasci/paper
+rtasci/log
+rtasci/cancel_jobs.py
+rtasci/deljobs.py
+rtasci/wilks.py
+rtasci/sphdist.py
+rtasci/datamerger.py
+rtasci/thesis/config.xml
+rtasci/thesis/wilks.xml
+rtasci/thesis/rta-test
+rtasci/misc/notebooks
+rtasci/misc/notebooks/*ipynb
 env.sh
 loadenv.sh
-RTAscience/misc/rmfiles.py
-RTAscience/test*
-RTAscience/misc/csadd2caldb.py
+rtasci/misc/rmfiles.py
+rtasci/test*
+rtasci/misc/csadd2caldb.py
 
 # folders
 .*/
@@ -40,14 +40,14 @@ adptest*
 test_*
 testing/*
 phd
-RTAscience/lib/old*
-RTAscience/lib/__pycache__/*
-RTAscience/notebooks
-RTAscience/jnotebooks
-!RTAscience/aph
-RTAscience/adpthesis
-RTAscience/misc/tmp
+rtasci/lib/old*
+rtasci/lib/__pycache__/*
+rtasci/notebooks
+rtasci/jnotebooks
+!rtasci/aph
+rtasci/adpthesis
+rtasci/misc/tmp
 
 # exceptions
-!RTAscience/cfg/
+!rtasci/cfg/
 

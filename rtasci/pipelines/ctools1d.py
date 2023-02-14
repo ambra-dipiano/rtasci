@@ -12,12 +12,12 @@ import os
 import sys
 import argparse
 from os.path import isdir, join, isfile, expandvars
-from RTAscience.lib.RTACtoolsAnalysis import RTACtoolsAnalysis, onoff_counts
-from RTAscience.lib.RTAManageXml import ManageXml
-from RTAscience.lib.RTAUtils import *
-from RTAscience.cfg.Config import Config
-from RTAscience.lib.RTAVisualise import plotSkymap
-from RTAscience.aph.utils import *
+from rtasci.lib.RTACtoolsAnalysis import RTACtoolsAnalysis, onoff_counts
+from rtasci.lib.RTAManageXml import ManageXml
+from rtasci.lib.RTAUtils import *
+from rtasci.cfg.Config import Config
+from rtasci.lib.RTAVisualise import plotSkymap
+from rtasci.aph.utils import *
 
 parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
 parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")

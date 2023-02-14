@@ -10,7 +10,7 @@
 import sys
 import numpy as np
 from os.path import expandvars, join, abspath
-from RTAscience.lib.RTACtoolsSimulation import RTACtoolsSimulation as sim
+from rtasci.lib.RTACtoolsSimulation import RTACtoolsSimulation as sim
 
 events = sim()
 events.input = expandvars(sys.argv[1])

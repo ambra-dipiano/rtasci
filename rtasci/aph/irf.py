@@ -28,7 +28,7 @@
 from astropy.io import fits
 import numpy as np
 from scipy import interpolate, integrate
-from RTAscience.aph import utils 
+from rtasci.aph import utils 
 from astropy.coordinates import SkyCoord
 import math
 

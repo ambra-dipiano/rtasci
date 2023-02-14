@@ -17,10 +17,10 @@ from astropy.io import fits
 from datetime import datetime
 from multiprocessing import Pool
 from os.path import isdir, isfile, join, expandvars
-from RTAscience.cfg.Config import Config
-from RTAscience.lib.RTAManageXml import ManageXml
-from RTAscience.lib.RTACtoolsSimulation import RTACtoolsSimulation
-from RTAscience.lib.RTAUtils import get_pointing, get_mergermap, get_alert_pointing_gw, str2bool
+from rtasci.cfg.Config import Config
+from rtasci.lib.RTAManageXml import ManageXml
+from rtasci.lib.RTACtoolsSimulation import RTACtoolsSimulation
+from rtasci.lib.RTAUtils import get_pointing, get_mergermap, get_alert_pointing_gw, str2bool
 
 
 def main(args):

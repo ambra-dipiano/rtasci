@@ -12,12 +12,12 @@ import os
 import sys
 import argparse
 from os.path import isdir, join, isfile
-from RTAscience.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
-from RTAscience.lib.RTAManageXml import ManageXml
-from RTAscience.lib.RTAUtils import phflux_powerlaw, get_pointing, get_mergermap, get_alert_pointing_gw
-from RTAscience.cfg.Config import Config
-from RTAscience.lib.RTAVisualise import plotSkymap
-from RTAscience.aph.utils import *
+from rtasci.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
+from rtasci.lib.RTAManageXml import ManageXml
+from rtasci.lib.RTAUtils import phflux_powerlaw, get_pointing, get_mergermap, get_alert_pointing_gw
+from rtasci.cfg.Config import Config
+from rtasci.lib.RTAVisualise import plotSkymap
+from rtasci.aph.utils import *
 
 parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
 parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")

@@ -1,7 +1,7 @@
 import os
 import sys
 import pandas as pd
-from RTAscience.thesis.pkg_blindsearch import *
+from rtasci.thesis.pkg_blindsearch import *
 from os.path import join, expandvars, isdir, isfile
 
 inst = str(sys.argv[1])

@@ -28,7 +28,7 @@
 from genericpath import isfile
 from astropy.coordinates import SkyCoord, Angle
 from astropy.io import fits
-from RTAscience.aph import utils
+from rtasci.aph import utils
 from regions import CircleSkyRegion
 from regions import write_ds9
 import astropy.units as u

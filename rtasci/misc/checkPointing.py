@@ -12,10 +12,10 @@ import os
 import sys
 import argparse
 from os.path import isdir, join, isfile
-from RTAscience.lib.RTACtoolsSimulation import RTACtoolsSimulation
-from RTAscience.lib.RTAManageXml import ManageXml
-from RTAscience.lib.RTAUtils import get_alert_pointing_gw, get_mergermap, get_pointing, get_offset
-from RTAscience.cfg.Config import Config
+from rtasci.lib.RTACtoolsSimulation import RTACtoolsSimulation
+from rtasci.lib.RTAManageXml import ManageXml
+from rtasci.lib.RTAUtils import get_alert_pointing_gw, get_mergermap, get_pointing, get_offset
+from rtasci.cfg.Config import Config
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 

@@ -12,7 +12,7 @@ import sys
 import os
 import argparse
 from os.path import join
-from RTAscience.cfg.Config import Config
+from rtasci.cfg.Config import Config
 
 # configure
 parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')

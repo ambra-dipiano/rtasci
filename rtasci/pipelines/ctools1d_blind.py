@@ -13,11 +13,11 @@ import os
 import sys
 import argparse
 from os.path import isdir, join, isfile, expandvars
-from RTAscience.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
-from RTAscience.lib.RTAManageXml import ManageXml
-from RTAscience.lib.RTAUtils import *
-from RTAscience.cfg.Config import Config
-from RTAscience.aph.utils import *
+from rtasci.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
+from rtasci.lib.RTAManageXml import ManageXml
+from rtasci.lib.RTAUtils import *
+from rtasci.cfg.Config import Config
+from rtasci.aph.utils import *
 from astropy.coordinates import SkyCoord
 
 runtime = time.time() - tstamp

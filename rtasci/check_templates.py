@@ -2,7 +2,7 @@
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
-from RTAscience.lib.RTAVisualise import plot_template_lc, plot_template_spectra
+from rtasci.lib.RTAVisualise import plot_template_lc, plot_template_spectra
 
 parser = argparse.ArgumentParser(description='Simulate empty fields.')
 parser.add_argument('--runid', type=str, required=True, help="template RUNID")

@@ -17,9 +17,9 @@ first = sys.argv[2]
 t = time.time()
 clock0 = time.time()
 import numpy as np
-from RTAscience.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
-from RTAscience.lib.RTAUtils import phflux_powerlaw
-from RTAscience.lib.RTAManageXml import ManageXml
+from rtasci.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
+from rtasci.lib.RTAUtils import phflux_powerlaw
+from rtasci.lib.RTAManageXml import ManageXml
 timport = time.time() - t
 print(f'Imports : {timport} s\n')
 
