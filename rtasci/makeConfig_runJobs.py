@@ -32,7 +32,6 @@ if "DATA" not in os.environ:
 print(f'\nDATA={os.environ["DATA"]}')
 
 # compose file path
-#filename = os.path.join(os.path.expandvars('$PWD'), args.infile)
 filename = Path(args.infile)
 if not filename.is_file():
     raise ValueError('configuration file not found')
@@ -84,16 +83,15 @@ for i in range(args.cpus):
         f.write(f'\nsource activate {args.env}')
         f.write(f'\n\texport DATA={os.environ["DATA"]}')
 
-        scriptName = Path(args.script).stem.lower()
-
-        if scriptName == 'rtapipe':
+        script_name = Path(args.script).stem.lower()
+        if script_name == 'rtapipe':
             f.write(f'\n\tpython {args.script}.py -f {config_outname} --print {args.print.lower()}\n')
-        elif scriptName == 'wilks':
+        elif script_name == 'wilks':
             f.write(f'\n\tpython {args.script} -f {config_outname}\n')
-        elif scriptName == "simbkg":
+        elif script_name == "simbkg":
             f.write(f'\n\tpython {args.script} -f {config_outname} -out {args.output_dir}\n')
         else:
-            raise ValueError(f"Script {scriptName} is not supported.")
+            raise ValueError(f"Script {script_name} is not supported.")
 
     # write job
     job_outname = output_dir.joinpath(f"job_{job_name}").with_suffix(".sh")
@@ -101,7 +99,7 @@ for i in range(args.cpus):
 
     with open(job_outname, 'w+') as f:
         f.write('#!/bin/bash')
-        f.write(f'\n\n#SBATCH --job-name=CTA-sim-slurm-job_{job_name}')
+        f.write(f'\n\n#SBATCH --job-name={script_name}-slurm-job')
         f.write(f'\n#SBATCH --output={job_outlog}')
         f.write('\n#SBATCH --account=baroncelli')
         f.write('\n#SBATCH --partition=large_lc')
