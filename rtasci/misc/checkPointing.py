@@ -14,8 +14,9 @@ import argparse
 from os.path import isdir, join, isfile
 from rtasci.lib.RTACtoolsSimulation import RTACtoolsSimulation
 from rtasci.lib.RTAManageXml import ManageXml
-from rtasci.lib.RTAUtils import get_alert_pointing_gw, get_mergermap, get_pointing, get_offset
+from rtasci.lib.RTAUtils import get_pointing, get_offset
 from rtasci.cfg.Config import Config
+from rtasci.lib.RTAUtilsGW import get_alert_pointing_gw
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 

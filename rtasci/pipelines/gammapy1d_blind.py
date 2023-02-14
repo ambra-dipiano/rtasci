@@ -15,6 +15,7 @@ from os.path import isdir, join, isfile, expandvars
 from rtasci.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
 from rtasci.lib.RTAManageXml import ManageXml
 from rtasci.lib.RTAUtils import *
+from rtasci.lib.RTAUtilsGW import *
 from rtasci.cfg.Config import Config
 from rtasci.aph.utils import *
 from astropy.coordinates import SkyCoord

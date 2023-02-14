@@ -20,7 +20,9 @@ from rtasci.cfg.Config import Config
 from rtasci.lib.RTAManageXml import ManageXml
 from rtasci.lib.RTACtoolsSimulation import RTACtoolsSimulation, make_obslist
 from rtasci.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
-from rtasci.lib.RTAUtils import get_alert_pointing_gw, get_mergermap, get_pointing, str2bool
+from rtasci.lib.RTAUtils import get_mergermap, get_pointing, str2bool
+from rtasci.lib.RTAUtilsGW import get_alert_pointing_gw
+
 
 
 def main(args):

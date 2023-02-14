@@ -19,6 +19,7 @@ from rtasci.lib.RTAManageXml import ManageXml
 from rtasci.lib.RTAUtils import *
 from rtasci.cfg.Config import Config
 from rtasci.aph.utils import *
+from rtasci.lib.RTAUtilsGW import *
 from astropy.coordinates import SkyCoord
 
 runtime = time.time() - tstamp
