@@ -2,8 +2,8 @@ from setuptools import setup, find_packages
 
 entry_points = {
 	'console_scripts': [
-		'simGRBcatalogWithRandomization = RTAscience.simGRBcatalogWithRandomization:main',
-		'simGRBcatalog = RTAscience.simGRBcatalog:main'
+		'simGRBcatalogWithRandomization = rtasci.simGRBcatalogWithRandomization:main',
+		'simGRBcatalog = rtasci.simGRBcatalog:main'
      ]
 }
 
