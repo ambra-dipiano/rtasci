@@ -1,0 +1,48 @@
+setup:
+  simtype: grb                       
+  runid: run0406_ID000126   
+  trials: 1                         
+  start_count: 0               
+  scalefluxfactor: 1               
+
+simulation:
+  caldb: prod3b-v2   
+  irf: South_z20_0.5h  
+  tobs: 100                       
+  onset: 0                          
+  delay: 0                         
+  emin: 0.03                     
+  emax: 1                      
+  roi: 5                            
+  offset: gw            
+  nruns:             
+
+analysis:
+  binned: yes                         
+  blind: no                  
+  tool: rtatool                      
+  type: 1d                     
+  usepnt: yes 
+  cumulative: no    
+  lightcurve: yes             
+  skypix: 0.02                   
+  skyroifrac: 1                  
+  smooth: 0.1                        
+  maxsrc: 1                        
+  sgmthresh: 5 
+  index: 2.1                   
+  exposure: 200
+
+options:
+  set_ebl: True                      
+  extract_data: False                 
+  plotsky: False                
+
+path: 
+  data: $DATA                       
+  ebl: $DATA/ebl_tables/gilmore_tau_fiducial.csv
+  model: $DATA/models
+  merger: $DATA/mergers
+  bkg: $DATA/models/CTAIrfBackground.xml
+  catalog: $DATA/templates/grb_afterglow/GammaCatalogV1.0
+

@@ -7,15 +7,11 @@ entry_points = {
      ]
 }
 
-setup( 
-     name='RTAscience',
-     version='0.1.0',
+setup(name='rtasci',
      author='Ambra Di Piano',
      author_email='ambra.dipiano@inaf.it',
-     packages=find_packages(),
-     package_dir={ 'RTAscience': 'RTAscience' },
-     include_package_data=True,
-	entry_points=entry_points,
-     license='BSD-3-Clause',
-     python_requires=">=3.7"
+     package_dir={'rtasci': 'rtasci'},
+    packages=find_packages(),
+    include_package_data=True,
+    license='BSD-3-Clause',
 )

@@ -1,5 +1,5 @@
 RTAStats
 ========
 
-.. automodule:: RTAscience.lib.RTAStats
+.. automodule:: rtasci.lib.RTAStats
    :members: 

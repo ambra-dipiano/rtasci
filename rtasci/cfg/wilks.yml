@@ -1,0 +1,44 @@
+setup:
+  simtype: wilks                       
+  runid: run0406_ID000126        
+  trials: 1                      
+  start_count: 0                
+  scalefluxfactor: 1              
+simulation:
+  caldb: prod3b-v2                
+  irf: South_z20_0.5h  
+  tobs: 1200                   
+  onset: 0                     
+  delay: 0                    
+  emin: 0.03                  
+  emax: 150                 
+  roi: 5                    
+  offset: 0.5                  
+  nruns:                      
+analysis:
+  skypix: 0.02                     
+  skyroifrac: 0.75                 
+  smooth: 0.1                    
+  maxsrc: 1                      
+  sgmthresh: 5                  
+  usepnt: yes                   
+  exposure:  
+    - 10                   
+  binned: yes                         
+  blind: no                  
+  tool: rtatool                      
+  type: 1d                     
+  cumulative: no
+  index: 2.4
+  lightcurve: yes             
+options:
+  set_ebl: False                   
+  extract_data: False               
+  plotsky: False                   
+path: 
+  data: $DATA                      
+  ebl: 
+  model: $DATA/models
+  merger: $DATA/mergers                     
+  bkg: $DATA/models/CTAIrfBackground.xml   
+  catalog: $DATA/templates/grb_afterglow/GammaCatalogV1.0

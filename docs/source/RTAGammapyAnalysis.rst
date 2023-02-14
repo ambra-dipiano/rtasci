@@ -1,5 +1,5 @@
 RTAGammapyAnalysis
 ==================
 
-.. automodule:: RTAscience.lib.RTAGammapyAnalysis
+.. automodule:: rtasci.lib.RTAGammapyAnalysis
    :members: 

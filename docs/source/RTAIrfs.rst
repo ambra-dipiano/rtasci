@@ -1,5 +1,5 @@
 RTAIrfs
 =======
 
-.. automodule:: RTAscience.lib.RTAIrfs
+.. automodule:: rtasci.lib.RTAIrfs
    :members: 
