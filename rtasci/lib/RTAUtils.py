@@ -9,7 +9,6 @@
 
 import os
 import astropy.units as u
-import healpy as hp
 import numpy as np
 from astropy.io import fits
 from os.path import join

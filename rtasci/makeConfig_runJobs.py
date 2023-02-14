@@ -5,6 +5,7 @@
 #
 # Authors:
 # Ambra Di Piano <ambra.dipiano@inaf.it>
+# Leonardo Baroncelli <leonardo.baroncelli@inaf.it>
 # *******************************************************************************
 
 import yaml

@@ -7,6 +7,7 @@
 # Ambra Di Piano <ambra.dipiano@inaf.it>
 # Leonardo Baroncelli <leonardo.baroncelli@inaf.it>
 # *******************************************************************************
+
 import os
 import yaml
 
@@ -86,13 +87,11 @@ class Config:
         sectionDict = self.cfg['setup'] 
         
         # Add validations here
-        
         simTypeValues = ['grb', 'bkg', 'skip', 'wobble', 'wilks']
         if sectionDict['simtype'] not in simTypeValues:
             raise BadConfiguration(f'simtype={sectionDict["simtype"]} is not supported. Available values: {simTypeValues}')
 
         # Add other validations here....
-        # ....
 
     ######################
     # Simulation section #
@@ -106,7 +105,6 @@ class Config:
         sectionDict = self.cfg['simulation'] 
         
         # Add other validations here....
-        # ....      
 
     ###################
     # Options section #
@@ -120,7 +118,6 @@ class Config:
         sectionDict = self.cfg['options']
 
         # Add other validations here....
-        # ....        
 
     ####################
     # Analysis section #
@@ -134,7 +131,6 @@ class Config:
         sectionDict = self.cfg['analysis']
 
         # Add other validations here....
-        # ....        
         toolTypeValues = ['ctools', 'gammapy', 'rtatool', 'skip']
         if sectionDict['tool'] not in toolTypeValues:
             raise BadConfiguration(f'tool={sectionDict["tool"]} is not supported. Available values: {toolTypeValues}')
@@ -152,12 +148,10 @@ class Config:
             raise BadConfiguration(f'Configuration file params of "path" section are missing: {paramsMissing}')
 
         sectionDict = self.cfg['path']
-
         if not sectionDict['data']:
             raise BadConfiguration(f'data={sectionDict["data"]} is empty!')
 
         self.cfg['path']['data'] = os.path.expandvars(self.cfg['path']['data'])
-        
         if not os.path.isdir(sectionDict['data']):
             raise BadConfiguration(f'data={sectionDict["data"]} is not a folder!')
 

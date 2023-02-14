@@ -4,6 +4,7 @@
 #
 # Authors:
 # Ambra Di Piano <ambra.dipiano@inaf.it>
+# Leonardo Baroncelli <leonardo.baroncelli@inaf.it>
 # *****************************************************************************
 
 from setuptools import setup, find_packages
