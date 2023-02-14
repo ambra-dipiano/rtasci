@@ -8,7 +8,7 @@ conda env create --name <envname> --file=environment.yaml
 
 Note that you should already have anaconda installed: https://www.anaconda.com/
 
-## **RTAscience**
+## **rtasci**
 All code is found in this directory, you can setup the source code as follows:
 
 ```bash
@@ -81,7 +81,7 @@ python degradation_caldb.py --caldb prod3b pro3b-v2
 
 Note: currently the code simply halves the affective area (and consequently renormalise the background rates).
 
-### RTAscience
+### rtasci
 To extract spectra and lightcurves from the templates (one, a list or the entire sample):
 
 ```bash

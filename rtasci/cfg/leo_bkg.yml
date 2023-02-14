@@ -1,0 +1,48 @@
+options:
+  extract_data: true
+  plotsky: false
+  set_ebl: true
+
+path: 
+  data: $DATA                      
+  ebl: $DATA/ebl_tables/gilmore_tau_fiducial.csv
+  model: $DATA/models
+  merger: $DATA/mergers                     
+  bkg: $DATA/models/CTAIrfBackground.xml   
+  catalog: $DATA/templates/grb_afterglow/GammaCatalogV1.0
+
+setup:
+  runid: run0406_ID000126 # run0063_ID000286] # all
+  scalefluxfactor: 1.0
+  simtype: bkg
+  start_count: 1
+  trials: 1
+
+simulation:
+  caldb: prod5-v0.1
+  delay: 0
+  emax: 1
+  emin: 0.04
+  irf: North_z40_5h_LST
+  nruns: null
+  offset: 0.5 # maggiore del diametro della regione
+  onset: 0
+  roi: 2.5
+  tobs: 200
+
+analysis:
+  skypix: 0.02                     
+  skyroifrac: 0.75                 
+  smooth: 0.1                    
+  maxsrc: 1                      
+  sgmthresh: 5                  
+  usepnt: yes                   
+  exposure:  
+    - 200                  
+  binned: yes                         
+  blind: no                  
+  tool: rtatool                      
+  type: 1d                     
+  cumulative: no
+  index: 2.4
+  lightcurve: yes  

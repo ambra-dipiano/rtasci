@@ -1,5 +1,5 @@
 RTACtoolsAnalysis
 =================
 
-.. automodule:: RTAscience.lib.RTACtoolsAnalysis
+.. automodule:: rtasci.lib.RTACtoolsAnalysis
    :members: 

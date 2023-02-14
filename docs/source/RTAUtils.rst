@@ -1,5 +1,5 @@
 RTAUtils
 ========
 
-.. automodule:: RTAscience.lib.RTAUtils
+.. automodule:: rtasci.lib.RTAUtils
    :members: 

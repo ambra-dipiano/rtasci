@@ -1,5 +1,5 @@
 RTACtoolsSimulation
 ===================
 
-.. automodule:: RTAscience.lib.RTACtoolsSimulation
+.. automodule:: rtasci.lib.RTACtoolsSimulation
    :members: 

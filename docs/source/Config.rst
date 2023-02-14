@@ -1,5 +1,5 @@
 Config
 ======
 
-.. automodule:: RTAscience.cfg.Config
+.. automodule:: rtasci.cfg.Config
    :members: 
