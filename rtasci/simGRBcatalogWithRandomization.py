@@ -1,3 +1,13 @@
+# *******************************************************************************
+# Copyright (C) 2021 INAF
+#
+# This software is distributed under the terms of the BSD-3-Clause license
+#
+# Authors:
+# Ambra Di Piano <ambra.dipiano@inaf.it>
+# Leonardo Baroncelli <leonardo.baroncelli@inaf.it>
+# *******************************************************************************
+
 import os
 import random
 import argparse
@@ -8,7 +18,7 @@ from astropy.io import fits
 from datetime import datetime
 from multiprocessing import Pool
 from os.path import join, isfile
-from shutil import copy, move, rmtree
+from shutil import move, rmtree
 from rtasci.cfg.Config import Config
 from rtasci.lib.RTACtoolsSimulation import RTACtoolsSimulation, make_obslist
 from rtasci.lib.RTAUtils import get_alert_pointing_gw, get_mergermap, get_pointing, str2bool
@@ -31,8 +41,6 @@ def is_randomizable(val):
 def randomize(val):
     _min, _max = val.replace("random$","").split("-")
     return round(random.uniform(float(_min), float(_max)), 2)
-
-    
 
 def config_runid(cfg):
     # GRB ---!
@@ -352,14 +360,9 @@ def main():
     #trial_output = simulate_trial(('run0406_ID000126', 1, cfg, args))
     #profiler.disable()
     #stats = pstats.Stats(profiler).sort_stats('tottime')
-    #stats.print_stats()
-    """
-
+    #stats.print_stats()"""
     
     print(f'\n...[{now()}] done.\n')
-
-
-
 
 
 if __name__=='__main__':

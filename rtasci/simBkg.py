@@ -40,7 +40,7 @@ def main(args):
         raise ValueError('Please specify a valid path')
     if args.output_dir:
         bkgpath = Path(args.output_dir)
-    else: 
+    else:
         bkgpath = Path(datapath).joinpath('obs', 'backgrounds')
     bkgpath.mkdir(parents=True, exist_ok=True)
 
