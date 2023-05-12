@@ -13,15 +13,13 @@ import time
 from time import time
 from shutil import copy
 from pathlib import Path
-from astropy.io import fits
 from datetime import datetime
 from multiprocessing import Pool
-from os.path import isdir, isfile, join, expandvars
+from os.path import isdir, expandvars
 from rtasci.cfg.Config import Config
-from rtasci.lib.RTAManageXml import ManageXml
 from rtasci.lib.RTACtoolsSimulation import RTACtoolsSimulation
-from rtasci.lib.RTAUtils import get_pointing, get_mergermap, get_alert_pointing_gw, str2bool
-
+from rtasci.lib.RTAUtils import get_pointing, get_mergermap, str2bool
+from rtasci.lib.RTAUtilsGW import get_alert_pointing_gw
 
 def main(args):
     cfg = Config(args.cfgfile)
@@ -38,7 +36,10 @@ def main(args):
     datapath = cfg.get('data')
     if not isdir(datapath):  # main data folder
         raise ValueError('Please specify a valid path')
-    bkgpath = Path(datapath).joinpath('obs', 'backgrounds')
+    if args.output_dir:
+        bkgpath = Path(args.output_dir)
+    else:
+        bkgpath = Path(datapath).joinpath('obs', 'backgrounds')
     bkgpath.mkdir(parents=True, exist_ok=True)
 
     # background model ---!
@@ -116,7 +117,6 @@ def simulateTrial(trial_args):
     if args.print:
         print(f"Simulation {bkg}")    
     sim.run_simulation()
-    print(sim.fov)
     if remove_logs:
         Path(sim.output).with_suffix('.log').unlink()
     sim.input = bkg
@@ -137,6 +137,7 @@ if __name__=='__main__':
     parser.add_argument('--remove', type=str2bool, default='true', help='Keep only .fits files and not .log')
     parser.add_argument('-mp', '--mp-enabled', type=str2bool, default='false', help='To parallelize trials loop')
     parser.add_argument('-mpt', '--mp-threads', type=int, default=4, help='The size of the threads pool')
+    parser.add_argument('-out', '--output-dir', type=str, required=False, default="", help='The path to the output directory')
     args = parser.parse_args()
 
     main(args)

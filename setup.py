@@ -4,9 +4,17 @@
 #
 # Authors:
 # Ambra Di Piano <ambra.dipiano@inaf.it>
+# Leonardo Baroncelli <leonardo.baroncelli@inaf.it>
 # *****************************************************************************
 
 from setuptools import setup, find_packages
+
+entry_points = {
+	'console_scripts': [
+		'simGRBcatalogWithRandomization = rtasci.simGRBcatalogWithRandomization:main',
+		'simGRBcatalog = rtasci.simGRBcatalog:main'
+     ]
+}
 
 setup(name='rtasci',
      author='Ambra Di Piano',

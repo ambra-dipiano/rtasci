@@ -7,12 +7,8 @@
 # Ambra Di Piano <ambra.dipiano@inaf.it>
 # *******************************************************************************
 
-import csv
 import numpy as np
 import pandas as pd
-from astropy import units as u
-from astropy.coordinates import SkyCoord
-import os
 from os import listdir
 from os.path import isfile, isdir, join, expandvars
 

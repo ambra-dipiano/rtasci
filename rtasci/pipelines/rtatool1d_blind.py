@@ -7,27 +7,23 @@
 # Ambra Di Piano <ambra.dipiano@inaf.it>
 # *******************************************************************************
 
-import numpy as np
 import os
-import sys
 import argparse
-from os.path import isdir, join, isfile, expandvars
-from rtasci.lib.RTACtoolsAnalysis import RTACtoolsAnalysis, onoff_counts
-from rtasci.lib.RTAManageXml import ManageXml
-from rtasci.lib.RTAUtils import phflux_powerlaw, get_pointing, get_mergermap, get_alert_pointing_gw, phm_options, increase_exposure
-from rtasci.cfg.Config import Config
-from rtasci.lib.RTAVisualise import plotSkymap
-from rtasci.aph.utils import *
+import numpy as np
 import astropy.units as u
+from os.path import isdir, join, isfile, expandvars
+from rtasci.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
+from rtasci.lib.RTAManageXml import ManageXml
+from rtasci.lib.RTAUtils import get_pointing, get_mergermap, phm_options
+from rtasci.lib.RTAUtilsGW import get_alert_pointing_gw
+from rtasci.cfg.Config import Config
+from rtasci.aph.utils import *
 from astropy.coordinates import SkyCoord
-from regions import CircleSkyRegion
 from gammapy.analysis import Analysis, AnalysisConfig
 from gammapy.data import EventList, GTI, Observation, Observations
 from gammapy.irf import load_cta_irfs
-from gammapy.modeling import Fit
 from gammapy.estimators import ExcessMapEstimator
 from gammapy.estimators.utils import find_peaks
-from gammapy.modeling.models import PointSpatialModel, PowerLawSpectralModel, SkyModel
 from rtasci.lib.RTAGammapyAnalysis import *
 
 

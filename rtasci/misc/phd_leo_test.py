@@ -1,3 +1,12 @@
+# *******************************************************************************
+# Copyright (C) 2020 INAF
+#
+# This software is distributed under the terms of the BSD-3-Clause license
+#
+# Authors:
+# Ambra Di Piano <.dipiano@inaf.it>
+# *******************************************************************************
+
 from sagsci.tools.utils import *
 from sagsci.wrappers.rtaph.photometry import Photometrics, aeff_eval
 

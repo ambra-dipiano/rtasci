@@ -8,7 +8,6 @@
 # *******************************************************************************
 
 import os
-import sys
 import argparse
 import numpy as np
 from time import time
@@ -17,13 +16,24 @@ from astropy.io import fits
 from multiprocessing import Pool
 from os.path import isdir, join, isfile
 from rtasci.cfg.Config import Config
-from rtasci.lib.RTAManageXml import ManageXml
 from rtasci.lib.RTACtoolsSimulation import RTACtoolsSimulation, make_obslist
-from rtasci.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
-from rtasci.lib.RTAUtils import get_alert_pointing_gw, get_mergermap, get_pointing, str2bool
+from rtasci.lib.RTAUtils import get_mergermap, get_pointing, str2bool
+from rtasci.lib.RTAUtilsGW import get_alert_pointing_gw
 
+def main():
 
-def main(args):
+    parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
+    parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
+    parser.add_argument('--merge', type=str2bool, default=True, help='Merge in single phlist (true) or use observation library (false)')
+    parser.add_argument('--remove', type=str2bool, default=True, help='Keep only outputs')
+    parser.add_argument('--print', type=str2bool, default=False, help='Print out results')
+    parser.add_argument('-mp', '--mp-enabled', type=str2bool, default=False, help='To parallelize trials loop')
+    parser.add_argument('-mpt', '--mp-threads', type=int, default=4, help='The size of the threads pool') 
+    args = parser.parse_args()
+
+    if args.remove and not args.merge:
+        raise ValueError('Keyword "remove" cannot be True if keyword "merge" is False.')
+
     cfg = Config(args.cfgfile)
     # GRB ---!
     if cfg.get('runid') == 'all':
@@ -86,10 +96,10 @@ def main(args):
         # ---------------------------------------------------- loop trials ---!!!
         if args.mp_enabled:                
             with Pool(args.mp_threads) as p:
-                times = p.map(simulateTrial, [ (i, cfg, pointing, tmax, datapath, runid, tcsv, grbpath, bkg_model) for i in range(trials)])
+                times = p.map(simulateTrial, [ (i, cfg, pointing, tmax, datapath, runid, tcsv, grbpath, bkg_model, args.print, args.merge, args.remove) for i in range(trials)])
         else:
             for i in range(trials):
-                times = simulateTrial((i, cfg, pointing, tmax, datapath, runid, tcsv, grbpath, bkg_model))
+                times = simulateTrial((i, cfg, pointing, tmax, datapath, runid, tcsv, grbpath, bkg_model, args.print, args.merge, args.remove))
         # time ---!
         if args.print:
             if len(times) > 1:
@@ -110,6 +120,10 @@ def simulateTrial(trial_args):
     tcsv=trial_args[6]
     grbpath=trial_args[7]
     bkg_model=trial_args[8]
+    verbose=trial_args[9]
+    merge=trial_args[10]
+    remove=trial_args[11]
+
     # initialise ---!
     count = cfg.get('start_count') + i + 1
     name = f'ebl{count:06d}'
@@ -128,7 +142,7 @@ def simulateTrial(trial_args):
     sim.seed = count
     sim.set_ebl = cfg.get('set_ebl')
     sim.pointing = pointing
-    if args.print:
+    if verbose:
         print(f'Pointing = {sim.pointing} s')
     sim.tmax = tmax
 
@@ -142,7 +156,7 @@ def simulateTrial(trial_args):
     print(f'Simulate template seed={sim.seed}')
     for j in range(tbin_stop-tbin_start-1):
         sim.t = [tgrid[j]+cfg.get('onset'), tgrid[j + 1]+cfg.get('onset')]
-        if args.print:
+        if verbose:
             print(f'GTI (bin) = {sim.t} s')
         sim.model = join(datapath, f'extracted_data/{runid}/{runid}_tbin{tbin_start+j:02d}.xml')
         event = join(grbpath, f'{name}_tbin{tbin_start+j:02d}.fits')
@@ -158,20 +172,20 @@ def simulateTrial(trial_args):
         bkg = os.path.join(grbpath, f'bkg{count:06d}.fits')
         event_bins.insert(0, bkg)
         sim.t = [0, cfg.get('onset')]
-        if args.print:
+        if verbose:
             print(f"GTI (bkg) = {sim.t} s")
         sim.model = bkg_model
         sim.output = bkg
         sim.run_simulation()
 
     # ---------------------------------------- gather bins ---!!!
-    if args.merge:
+    if merge:
         print('Merge in photon-list')
         phlist = join(grbpath, f'{name}.fits')
         sim.input = event_bins
         sim.output = phlist
         sim.appendEventsSinglePhList(GTI=[cfg.get('delay'), cfg.get('delay')+cfg.get('tobs')])
-        if args.print:
+        if verbose:
             h = fits.open(phlist)
             print('Check GTI and EVENTS time range:')
             print('************')
@@ -199,18 +213,18 @@ def simulateTrial(trial_args):
         grb.roi = cfg.get('roi')
         grb.e = [cfg.get('emin'), cfg.get('emax')]
         grb.t = [cfg.get('delay'), cfg.get('delay')+texp]
-        if args.print:
+        if verbose:
             print(f"Selection t = {grb.t} s")
         grb.input = phlist
         grb.output = selphlist
-        if args.merge:
+        if merge:
             grb.run_selection()
         else:
             prefix = join(grbpath, f'texp{texp}s_')
             grb.run_selection(prefix=prefix) """
 
     # remove files ---!
-    if args.remove and args.merge:
+    if remove and merge:
         # remove bins ---!
         os.system('rm ' + join(grbpath, f'{name}*tbin*'))
         if cfg.get('onset') != 0:
@@ -219,21 +233,10 @@ def simulateTrial(trial_args):
 
     # time ---!   
     elapsed_t = time()-start_t
-    if args.print:
+    if verbose:
         print(f"Trial {count} took {elapsed_t} seconds")
     return (count, elapsed_t)
 
 
 if __name__=='__main__':
-    parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')
-    parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")
-    parser.add_argument('--merge', type=str2bool, default=True, help='Merge in single phlist (true) or use observation library (false)')
-    parser.add_argument('--remove', type=str2bool, default=True, help='Keep only outputs')
-    parser.add_argument('--print', type=str2bool, default=False, help='Print out results')
-    parser.add_argument('-mp', '--mp-enabled', type=str2bool, default=False, help='To parallelize trials loop')
-    parser.add_argument('-mpt', '--mp-threads', type=int, default=4, help='The size of the threads pool') 
-    args = parser.parse_args()
-
-    if args.remove and not args.merge:
-        raise ValueError('Keyword "remove" cannot be True if keyword "merge" is False.')
-    main(args)
+    main()

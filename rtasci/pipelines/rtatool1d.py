@@ -7,17 +7,17 @@
 # Ambra Di Piano <ambra.dipiano@inaf.it>
 # *******************************************************************************
 
-import numpy as np
 import os
 import sys
 import argparse
 import time
+import numpy as np
 from os.path import isdir, join, isfile, expandvars
-from rtasci.lib.RTACtoolsAnalysis import RTACtoolsAnalysis, onoff_counts
+from rtasci.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
 from rtasci.lib.RTAManageXml import ManageXml
 from rtasci.lib.RTAUtils import *
+from rtasci.lib.RTAUtilsGW import *
 from rtasci.cfg.Config import Config
-from rtasci.lib.RTAVisualise import plotSkymap
 from rtasci.aph.utils import *
 
 parser = argparse.ArgumentParser(description='ADD SCRIPT DESCRIPTION HERE')

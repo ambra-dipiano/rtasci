@@ -9,7 +9,6 @@
 
 import time
 import sys
-import os
 texp = sys.argv[1]
 first = sys.argv[2]
 

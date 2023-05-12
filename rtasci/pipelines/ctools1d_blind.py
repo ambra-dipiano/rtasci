@@ -6,18 +6,20 @@
 # Authors:
 # Ambra Di Piano <ambra.dipiano@inaf.it>
 # *******************************************************************************
+
 import time
 tstamp = time.time()
-import numpy as np
 import os
 import sys
 import argparse
+import numpy as np
 from os.path import isdir, join, isfile, expandvars
 from rtasci.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
 from rtasci.lib.RTAManageXml import ManageXml
 from rtasci.lib.RTAUtils import *
 from rtasci.cfg.Config import Config
 from rtasci.aph.utils import *
+from rtasci.lib.RTAUtilsGW import *
 from astropy.coordinates import SkyCoord
 
 runtime = time.time() - tstamp

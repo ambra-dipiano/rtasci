@@ -9,11 +9,10 @@
 
 import os
 import argparse
-import numpy as np
 from rtasci.lib.RTACtoolsSimulation import RTACtoolsSimulation, make_obslist
 from rtasci.lib.RTAUtils import wobble_pointing
 from rtasci.cfg.Config import Config
-from os.path import join, isfile, isdir, expandvars
+from os.path import join, isdir
 
 parser = argparse.ArgumentParser(description='This scripts allows to simulate wobble observation')
 parser.add_argument('-f', '--cfgfile', type=str, required=True, help="Path to the yaml configuration file")

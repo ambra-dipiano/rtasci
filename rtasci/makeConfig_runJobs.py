@@ -5,14 +5,13 @@
 #
 # Authors:
 # Ambra Di Piano <ambra.dipiano@inaf.it>
+# Leonardo Baroncelli <leonardo.baroncelli@inaf.it>
 # *******************************************************************************
 
-import yaml
-import sys
 import os
-from pathlib import Path
-import pandas as pd
+import yaml
 import argparse
+from pathlib import Path
 
 # ---------------------------------------------------------------------------- !
 
@@ -26,15 +25,14 @@ parser.add_argument('--delay', type=float, default=90, help='delay')
 parser.add_argument('--off', type=str, default='gw', help='offset')
 parser.add_argument('--flux', type=float, default=1, help='flux scaling factor')
 parser.add_argument('--print', type=str, default='false', help='print checks and outputs')
+parser.add_argument('-out', '--output-dir', type=str, required=False, default="", help='The path to the output directory')
 args = parser.parse_args()
 
 if "DATA" not in os.environ:
     raise ValueError("Please, export DATA")
-    exit(0)
 print(f'\nDATA={os.environ["DATA"]}')
 
 # compose file path
-#filename = os.path.join(os.path.expandvars('$PWD'), args.infile)
 filename = Path(args.infile)
 if not filename.is_file():
     raise ValueError('configuration file not found')
@@ -58,7 +56,7 @@ config['setup']['scalefluxfactor'] = args.flux
 config['options']['plotsky'] = False
 start_count = config['setup']['start_count']
 
-print(f"SLURM configuration:\n\tNumber of jobs: {args.cpus}\n\tTotal trials: {args.cpus*trials_per_cpu}\n\tTrials per job: {trials_per_cpu}\n\tStart count: {start_count}")
+print(f"SLURM configuration:\n\tNumber of jobs: {args.cpus}\n\tTotal trials: {args.cpus*trials_per_cpu}\n\tTrials per job: {trials_per_cpu}\n\tStart count: {start_count}\n\tOutput dir: {args.output_dir}")
 input("Press any key to start!")
 
 for i in range(args.cpus):
@@ -86,16 +84,15 @@ for i in range(args.cpus):
         f.write(f'\nsource activate {args.env}')
         f.write(f'\n\texport DATA={os.environ["DATA"]}')
 
-        scriptName = Path(args.script).stem.lower()
-
-        if scriptName == 'pipe':
-            f.write(f'\n\tpython {args.script} -f {config_outname} --print {args.print.lower()}\n')
-        elif scriptName == 'wilks':
+        script_name = Path(args.script).stem.lower()
+        if script_name == 'rtapipe':
+            f.write(f'\n\tpython {args.script}.py -f {config_outname} --print {args.print.lower()}\n')
+        elif script_name == 'wilks':
             f.write(f'\n\tpython {args.script} -f {config_outname}\n')
-        elif scriptName == "simbkg":
-            f.write(f'\n\tpython {args.script} -f {config_outname}\n')
+        elif script_name == "simbkg":
+            f.write(f'\n\tpython {args.script} -f {config_outname} -out {args.output_dir}\n')
         else:
-            raise ValueError(f"Script {scriptName} is not supported.")
+            raise ValueError(f"Script {script_name} is not supported.")
 
     # write job
     job_outname = output_dir.joinpath(f"job_{job_name}").with_suffix(".sh")
@@ -103,12 +100,10 @@ for i in range(args.cpus):
 
     with open(job_outname, 'w+') as f:
         f.write('#!/bin/bash')
-        f.write(f'\n\n#SBATCH --job-name=CTA-sim-slurm-job_{job_name}')
+        f.write(f'\n\n#SBATCH --job-name={script_name}-slurm-job')
         f.write(f'\n#SBATCH --output={job_outlog}')
         f.write('\n#SBATCH --account=baroncelli')
-        f.write('\n#SBATCH --ntasks=1')
-        f.write('\n#SBATCH --nodes=1')
-        f.write('\n#SBATCH --cpus-per-task=1')
+        f.write('\n#SBATCH --partition=large_lc')
         f.write(f'\n\nexec sh {str(sh_outname)}\n')
 
     #print(f"Configuration file={config_outname}")

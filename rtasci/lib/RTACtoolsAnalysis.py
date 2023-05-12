@@ -7,7 +7,6 @@
 # Ambra Di Piano <ambra.dipiano@inaf.it>
 # *******************************************************************************
 
-import gammalib
 import ctools
 import cscripts
 import os

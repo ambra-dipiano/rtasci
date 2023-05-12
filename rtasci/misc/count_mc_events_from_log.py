@@ -1,3 +1,12 @@
+# *******************************************************************************
+# Copyright (C) 2020 INAF
+#
+# This software is distributed under the terms of the BSD-3-Clause license
+#
+# Authors:
+# Leonardo Baroncelli <leonardo.barconcelli@inaf.it>
+# *******************************************************************************
+
 import os 
 import argparse
 

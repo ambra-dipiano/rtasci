@@ -7,14 +7,8 @@
 # Ambra Di Piano <ambra.dipiano@inaf.it>
 # *******************************************************************************
 
-import numpy as np
-from astropy.io import fits
-from astropy import units as u
 from astropy.coordinates import SkyCoord
-from gammapy.analysis import Analysis, AnalysisConfig
-from gammapy.data import EventList, GTI, Observation, Observations
-from gammapy.irf import load_cta_irfs
-from gammapy.modeling import Fit
+from gammapy.analysis import AnalysisConfig
 from gammapy.modeling.models import PowerLawSpectralModel, SkyModel, PointSpatialModel
 
 

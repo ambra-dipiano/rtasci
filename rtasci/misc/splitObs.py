@@ -8,14 +8,12 @@
 # *******************************************************************************
 
 import os
-import sys
 import astropy.units as u
 import numpy as np
 from os.path import join
 from astropy.time import Time
 from astropy.io import fits
 from gammapy.data import DataStore
-import os
 from os.path import join
 
 path = os.path.join(os.path.expandvars('$DATA'), 'obs/crab/')
