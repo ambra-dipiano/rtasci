@@ -10,8 +10,6 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
-from time import time
-from os.path import isfile
 from matplotlib.patches import Rectangle
 from scipy import stats
 from scipy.stats import rayleigh, norm, chi2

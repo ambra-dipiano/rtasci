@@ -8,12 +8,11 @@
 # *******************************************************************************
 
 import os
-import astropy.units as u
 import numpy as np
 from astropy.io import fits
 from os.path import join
 from scipy import stats
-from scipy.interpolate import interp1d, interp2d
+from scipy.interpolate import interp2d
 
 # center of fov from FITS ---!
 def get_pointing(fits_file):

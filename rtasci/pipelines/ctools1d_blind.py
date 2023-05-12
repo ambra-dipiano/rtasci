@@ -9,10 +9,10 @@
 
 import time
 tstamp = time.time()
-import numpy as np
 import os
 import sys
 import argparse
+import numpy as np
 from os.path import isdir, join, isfile, expandvars
 from rtasci.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
 from rtasci.lib.RTAManageXml import ManageXml

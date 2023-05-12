@@ -9,9 +9,8 @@
 
 import os
 import sys
-import pandas as pd
 from rtasci.thesis.pkg_blindsearch import *
-from os.path import join, expandvars, isdir, isfile
+from os.path import join, expandvars, isdir
 
 inst = str(sys.argv[1])
 

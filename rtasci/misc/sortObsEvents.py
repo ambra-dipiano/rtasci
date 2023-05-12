@@ -8,8 +8,7 @@
 # *******************************************************************************
 
 import sys
-import numpy as np
-from os.path import expandvars, join, abspath
+from os.path import expandvars
 from rtasci.lib.RTACtoolsSimulation import RTACtoolsSimulation as sim
 
 events = sim()

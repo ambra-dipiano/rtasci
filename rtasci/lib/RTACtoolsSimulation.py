@@ -7,7 +7,6 @@
 # Ambra Di Piano <ambra.dipiano@inaf.it>
 # *******************************************************************************
 
-from astropy.io.fits import hdu
 import gammalib
 import ctools
 import os.path

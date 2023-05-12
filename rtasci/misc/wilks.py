@@ -8,7 +8,6 @@
 # *******************************************************************************
 
 import os
-import sys
 from rtasci.lib.RTAStats import *
 
 dof = 1

@@ -7,10 +7,11 @@
 # Ambra Di Piano <ambra.dipiano@inaf.it>
 # *******************************************************************************
 
-import numpy as np
 import os
 import sys
 import argparse
+import numpy as np
+import astropy.units as u
 from os.path import isdir, join, isfile, expandvars
 from rtasci.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
 from rtasci.lib.RTAManageXml import ManageXml
@@ -19,7 +20,6 @@ from rtasci.lib.RTAUtilsGW import *
 from rtasci.cfg.Config import Config
 from rtasci.aph.utils import *
 from astropy.coordinates import SkyCoord
-import astropy.units as u
 from astropy.coordinates import SkyCoord
 from regions import CircleSkyRegion
 from gammapy.analysis import Analysis, AnalysisConfig

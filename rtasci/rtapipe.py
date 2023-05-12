@@ -7,11 +7,8 @@
 # Ambra Di Piano <ambra.dipiano@inaf.it>
 # *******************************************************************************
 
-import yaml
-import sys
 import os
 import argparse
-from os.path import join
 from rtasci.cfg.Config import Config
 
 # configure

@@ -13,12 +13,10 @@ import time
 from time import time
 from shutil import copy
 from pathlib import Path
-from astropy.io import fits
 from datetime import datetime
 from multiprocessing import Pool
-from os.path import isdir, isfile, join, expandvars
+from os.path import isdir, expandvars
 from rtasci.cfg.Config import Config
-from rtasci.lib.RTAManageXml import ManageXml
 from rtasci.lib.RTACtoolsSimulation import RTACtoolsSimulation
 from rtasci.lib.RTAUtils import get_pointing, get_mergermap, str2bool
 from rtasci.lib.RTAUtilsGW import get_alert_pointing_gw

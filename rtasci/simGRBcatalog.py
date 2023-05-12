@@ -8,7 +8,6 @@
 # *******************************************************************************
 
 import os
-import sys
 import argparse
 import numpy as np
 from time import time
@@ -17,9 +16,7 @@ from astropy.io import fits
 from multiprocessing import Pool
 from os.path import isdir, join, isfile
 from rtasci.cfg.Config import Config
-from rtasci.lib.RTAManageXml import ManageXml
 from rtasci.lib.RTACtoolsSimulation import RTACtoolsSimulation, make_obslist
-from rtasci.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
 from rtasci.lib.RTAUtils import get_mergermap, get_pointing, str2bool
 from rtasci.lib.RTAUtilsGW import get_alert_pointing_gw
 

@@ -7,10 +7,9 @@
 # Ambra Di Piano <ambra.dipiano@inaf.it>
 # *******************************************************************************
 
-import numpy as np
 import os
-import sys
 import argparse
+import numpy as np
 from os.path import isdir, join, isfile
 from rtasci.lib.RTACtoolsAnalysis import RTACtoolsAnalysis
 from rtasci.lib.RTAManageXml import ManageXml

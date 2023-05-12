@@ -9,7 +9,6 @@
 
 import os
 import pandas as pd
-import numpy as np
 import seaborn as sns
 from lib.RTAVisualise import *
 from os.path import join, isdir, isfile
