@@ -17,16 +17,15 @@ python setup.py develop
 
 **Sub-directories:**
 
-cfg -> configuration class and configuration files
-lib -> classes
-misc -> miscellaneous scripts
-thesis -> version of the pipeline from my thesis project
-timing -> scripts to compare tools and techniques
+- cfg -> configuration class and configuration files
+- lib -> classes
+- misc -> miscellaneous scripts
+- pipelines -> pipelines with different tools and techniques
+- timing -> scripts to compare tools and techniques
 
 ### **Calibration database**
 
 To complete the environment be sure to download and install the correct IRFs (only prod2 comes with ctools installation). Public ones can be found here: https://www.cta-observatory.org/science/cta-performance/
-
 
 ### **Configuration file**
 
