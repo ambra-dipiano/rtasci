@@ -41,7 +41,7 @@ python degradation_caldb.py --caldb prod3b pro3b-v2
 
 Note: currently the code simply halves the affective area (and consequently renormalise the background rates).
 
-### rtasci
+## rtasci
 To extract spectra and lightcurves from the templates (one, a list or the entire sample):
 
 ```bash
@@ -68,7 +68,6 @@ python rtapipe.py -f cfg/config.yaml
 ```
 This will first extract all data specified in the configuration file, then simulate the entire sample, finally it will analyse each simulation. Files will be removed (by default) after the simulation so be sure to have enough space to store them. It will avoid running multiple simulation of the same sample if, i.e., you want to perform different types of analysis on it.
 
-### Others
 To simulate a single run you can alternatively use
 
 ```bash
