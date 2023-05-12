@@ -19,7 +19,7 @@ from scipy.interpolate import interp1d, interp2d
 def get_pointing(fits_file):
     '''Given a template, returns the target coordinates.'''
     with fits.open(fits_file) as hdul:
-        ra = hdul[0].header['RA']
+        ra = abs(hdul[0].header['RA'])
         dec = hdul[0].header['DEC']
     return (ra, dec)
 

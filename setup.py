@@ -9,6 +9,13 @@
 
 from setuptools import setup, find_packages
 
+entry_points = {
+	'console_scripts': [
+		'simGRBcatalogWithRandomization = rtasci.simGRBcatalogWithRandomization:main',
+		'simGRBcatalog = rtasci.simGRBcatalog:main'
+     ]
+}
+
 setup(name='rtasci',
      author='Ambra Di Piano',
      author_email='ambra.dipiano@inaf.it',

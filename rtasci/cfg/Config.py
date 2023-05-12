@@ -62,6 +62,13 @@ class Config:
                 return self.cfg[sectionName][paramName]
         raise ConfigParamNotFound(f"Config param {paramName} not found in configuration.")
 
+    def set(self, paramName, paramValue):
+        for sectionName in self.cfgDesc['sections']:
+            if paramName in self.cfg[sectionName]:
+                self.cfg[sectionName][paramName] = paramValue
+                return
+        raise ConfigParamNotFound(f"Config param {paramName} not found in configuration.")
+
     def validateCfg(self):
         self.checkSections(               self.cfgDesc['sections'])
         self.checkSetupSectionParams(     self.cfgDesc['setup'])
@@ -74,6 +81,10 @@ class Config:
         sectionMissing = set(sections) - set(self.cfg.keys())
         if len(sectionMissing) > 0:
             raise BadConfiguration(f'Configuration file sections are missing: {sectionMissing}')
+
+    def dump(self, cfgfile_path):
+        with open(cfgfile_path, 'w') as f:
+            yaml.dump(self.cfg, f)
 
     #################
     # Setup section #

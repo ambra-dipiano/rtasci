@@ -38,7 +38,10 @@ def main(args):
     datapath = cfg.get('data')
     if not isdir(datapath):  # main data folder
         raise ValueError('Please specify a valid path')
-    bkgpath = Path(datapath).joinpath('obs', 'backgrounds')
+    if args.output_dir:
+        bkgpath = Path(args.output_dir)
+    else:
+        bkgpath = Path(datapath).joinpath('obs', 'backgrounds')
     bkgpath.mkdir(parents=True, exist_ok=True)
 
     # background model ---!
@@ -116,7 +119,6 @@ def simulateTrial(trial_args):
     if args.print:
         print(f"Simulation {bkg}")    
     sim.run_simulation()
-    print(sim.fov)
     if remove_logs:
         Path(sim.output).with_suffix('.log').unlink()
     sim.input = bkg
@@ -137,6 +139,7 @@ if __name__=='__main__':
     parser.add_argument('--remove', type=str2bool, default='true', help='Keep only .fits files and not .log')
     parser.add_argument('-mp', '--mp-enabled', type=str2bool, default='false', help='To parallelize trials loop')
     parser.add_argument('-mpt', '--mp-threads', type=int, default=4, help='The size of the threads pool')
+    parser.add_argument('-out', '--output-dir', type=str, required=False, default="", help='The path to the output directory')
     args = parser.parse_args()
 
     main(args)
