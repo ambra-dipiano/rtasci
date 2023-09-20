@@ -77,8 +77,8 @@ class ManageXml():
                 if 'Background' not in src.attrib['name']:
                     ra = float(src.find('spatialModel/parameter[@name="RA"]').attrib['value'])
                     dec = float(src.find('spatialModel/parameter[@name="DEC"]').attrib['value'])
-                    ra_list.append(ra)
-                    dec_list.append(dec)
+                    ra_list.append(float(ra))
+                    dec_list.append(float(dec))
             else:
                 if src.attrib['name'] == highest:
                     ra = float(src.find('spatialModel/parameter[@name="RA"]').attrib['value'])
@@ -87,7 +87,16 @@ class ManageXml():
                     dec_list.append(float(dec))
         self.pos = [ra_list, dec_list]
         return self.pos
-
+    
+    # get Source Name ---!
+    def getName(self):
+        '''Returns the names all sources in library except the background.'''
+        names = []
+        for src in self.root.findall('source'):
+            if 'Background' not in src.attrib['name']:
+                    names.append(src.attrib['name'])
+        return names
+    
     # get Gaussian sigma values ---!
     def getConfInt(self, highest=None):
         '''Returns spatial errors for all sources in library.'''
