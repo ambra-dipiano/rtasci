@@ -217,7 +217,7 @@ def phm_options(erange, texp, time_int, target, pointing, irf_file, index=-2.4, 
 def check_energy_thresholds(erange, irf):
     # minimum energy
     if "z60" in irf and erange[0] < 0.11:
-        erange[0] = 0.011
+        erange[0] = 0.11
     elif "z40" in irf and erange[0] < 0.04:
         erange[0] = 0.04
     elif "z20" in irf and erange[0] < 0.03:
