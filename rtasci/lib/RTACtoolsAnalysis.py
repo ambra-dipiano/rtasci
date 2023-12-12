@@ -57,7 +57,7 @@ class RTACtoolsAnalysis() :
         # condition control ---!
         self.set_debug = False  # set/unset debug mode for ctools ---!
         self.set_log = True  # set/unset logfiles for ctools ---!
-        self.edisp = True  # require enegy dispersion ---!
+        self.edisp = False  # require enegy dispersion ---!
         # data ---!
         self.e = [0.03, 150.0]  # energy range (TeV) ---!
         self.roi = 5  # region of interest (deg) ---!
