@@ -113,7 +113,6 @@ class RTACtoolsAnalysis() :
             selection.execute()
         else:
             selection.run()
-        return
 
     # ctskymap wrapper ---!
     def run_skymap(self, wbin=0.02, roi_factor=1):
@@ -143,7 +142,6 @@ class RTACtoolsAnalysis() :
             skymap.execute()
         else:
             skymap.run()
-        return
 
     # cssrcdetect wrapper ---!
     def run_blindsearch(self, fit_pos=False, fit_shape=False):
@@ -170,7 +168,6 @@ class RTACtoolsAnalysis() :
             detection.execute()
         else:
             detection.run()
-        return
 
     # csphagen wrapper ---!
     def run_onoff(self, method='reflected', prefix='onoff', maxoffset=2.5, radius=0.2, ebins=40, ebins_alg='LOG', binfile=None, exp=None, use_model_bkg=True, etruemin=0.01, etruemax=0.01, etruebins=30, bkgskip=1, bkgmin=2):
@@ -223,7 +220,6 @@ class RTACtoolsAnalysis() :
             onoff.execute()
         else:
             onoff.run()
-        return
 
     # ctbin wrapper ---!
     def run_binning(self, prefix='cube_', ebins_alg='LOG', ebins=10, binfile=None, exp=None, nbins=None, wbin=0.02):
@@ -264,7 +260,6 @@ class RTACtoolsAnalysis() :
             bins.execute()
         else:
             bins.run()
-        return
 
     # ctexpcube wrapper ---!
     def run_expcube(self, cube, ebins=10, nbins=None, wbin=0.02, ebin_alg='LOG', ebinfile=None, ebingamma=None, addbounds=False):
@@ -306,7 +301,6 @@ class RTACtoolsAnalysis() :
             exp.execute()
         else: 
             exp.run()
-        return
     
     # ctpsfcube wrapper ---!
     def run_psfcube(self, cube, ebins=10, nbins=None, wbin=0.02, amax=0.3, abins=200, ebin_alg='LOG', ebinfile=None, ebingamma=None, addbounds=False):
@@ -350,7 +344,6 @@ class RTACtoolsAnalysis() :
             psf.execute()
         else:
             psf.run()
-        return
 
     # ctedispcube wrapper ---!
     def run_edispcube(self, cube, ebins=10, nbins=None, wbin=1.0, migramax=2.0, migrabins=100, ebin_alg='LOG', ebinfile=None, ebingamma=None, addbounds=False):
@@ -394,7 +387,6 @@ class RTACtoolsAnalysis() :
             edisp.execute()
         else:
             edisp.run()
-        return
 
     # ctbkgcube wrapper ---!
     def run_bkgcube(self, cube, model):
@@ -418,7 +410,6 @@ class RTACtoolsAnalysis() :
             bkg.execute()       
         else: 
             bkg.run()
-        return
 
     # ctlike wrapper ---!
     def run_maxlikelihood(self, binned=False, exp=None, bkg=None, psf=None, edisp=False, edispcube=None, fix_spat_for_ts=True):
@@ -453,7 +444,6 @@ class RTACtoolsAnalysis() :
             like.execute()
         else:
             like.run()
-        return
 
     # cterror wrapper ---!
     def run_asymerrors(self, asym_errors):
@@ -506,7 +496,6 @@ class RTACtoolsAnalysis() :
             uplim.execute()
         else:
             uplim.run()
-        return
 
     # ctulimit wrapper ---!
     def run_lightcurve(self, nbins=20, bin_type='LIN'):
@@ -539,7 +528,6 @@ class RTACtoolsAnalysis() :
             lc.execute()
         else:
             lc.run()
-        return
 
     # cssens wrapper ---!
     def run_sensitivity(self, bins=20, wbin=0.05, enumbins=0):
@@ -572,5 +560,4 @@ class RTACtoolsAnalysis() :
             sens.execute()
         else:
             sens.run()
-        return
 
