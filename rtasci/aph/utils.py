@@ -15,15 +15,25 @@ from astropy.coordinates import SkyCoord, Angle
 from rtasci.aph.photometry import Photometrics
 from rtasci.aph.irf import EffectiveArea
 
-def photometrics_counts(events_list, events_type, pointing, true_coords, region_rad=0.2):
+def photometrics_counts(events_list, events_type, pointing, true_coords, region_rad=0.2, skip_adjacent=True, min_regions_number=4, emin=None, emax=None, tmin=None, tmax=None):
   phm = Photometrics({events_type: events_list})
-  reflected_regions = phm.reflected_regions(pointing, true_coords, region_rad)
-  on_count = phm.region_counter(true_coords, region_rad)
+  reflected_regions = phm.reflected_regions(pointing, true_coords, region_rad, skip_adjacent, min_regions_number)
+  on_count = phm.region_counter(true_coords, region_rad, tmin=tmin, tmax=tmax, emin=emin, emax=emax)
   off_count = 0
   for r in reflected_regions:
-    off_count += phm.region_counter(r, r['rad'])
+    off_count += phm.region_counter(r, r['rad'], tmin=tmin, tmax=tmax, emin=emin, emax=emax)
   alpha = 1 / len(reflected_regions)
-  return {'on': on_count, 'off': off_count, 'alpha': alpha, 'excess': on_count - alpha * off_count}
+  return {'on': on_count, 'off': off_count, 'alpha': alpha, 'excess': on_count - alpha * off_count, 'regions': reflected_regions}
+
+def heatmap_photometrics_counts(events_list, events_type, pointing, true_coords, region_rad=0.2, skip_adjacent=True, min_regions_number=4, binning=200):
+  phm = Photometrics({events_type: events_list})
+  reflected_regions = phm.reflected_regions(pointing, true_coords, region_rad, skip_adjacent, min_regions_number)
+  on_count = phm.heatmap_region_counter(true_coords, region_rad, binning)
+  off_count = 0
+  for r in reflected_regions:
+    off_count += phm.heatmap_region_counter(r, r['rad'])
+  alpha = 1 / len(reflected_regions)
+  return {'on': on_count, 'off': off_count, 'alpha': alpha, 'excess': on_count - alpha * off_count, 'regions': reflected_regions}
 
 def li_ma (n_on, n_off, alpha):
     if n_on <= 0 or n_off <= 0 or alpha == 0:
@@ -145,6 +155,24 @@ def aeff_eval(args, src, pnt):
     # the source data struct need a 'rad'
     source_reg_aeff = aeff.weighted_value_for_region(src, pnt, [args.energy_min, args.energy_max], args.pixel_size, args.power_law_index) * 1e4 # cm2
     return source_reg_aeff
+
+def get_offset(pointing, target):
+    if type(pointing) is dict:
+        pointing = (pointing['ra'], pointing['dec'])
+    if type(target) is dict:
+        target = (target['ra'], target['dec'])
+    assert (type(pointing) and type(target)) is tuple or list, 'points should be given as tuple = (RA, DEC)'
+    pointing = get_skycoord(pointing)
+    target = get_skycoord(target)
+    radius = pointing.separation(target).to('deg').value 
+    return radius
+
+def angle_between(pointing, target):
+    assert (type(pointing) and type(target)) is tuple, 'points should be given as tuple = (RA, DEC)'
+    dx, dy = target[0]-pointing[0], target[1]-pointing[1]
+    angle_in_radians = np.arctan2(dy,dx)
+    angle_in_degrees = np.rad2deg(angle_in_radians)
+    return angle_in_degrees
 
 class ObjectConfig(object):
     def __init__(self, d):
