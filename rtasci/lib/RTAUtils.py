@@ -252,3 +252,7 @@ def str2bool(v):
         return False
     else:
         raise TypeError('Boolean value expected.')
+
+def get_snr(excess, bkg):
+    snr = excess/np.sqrt(excess+bkg)
+    return snr
