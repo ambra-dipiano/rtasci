@@ -91,8 +91,8 @@ class RTACtoolsSimulation():
         if self.set_ebl:
             try:
                 self.__ebl = np.array(hdul[4].data)
-            except:
-                raise IndexError('Template extensions out of range. Unable to load EBL absorbed spectra.')
+            except (IndexError, KeyError) as e:
+                raise IndexError('Template extensions out of range. Unable to load EBL absorbed spectra.') from e
         self.__closeFITS(hdul)
         return
 
